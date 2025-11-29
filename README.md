@@ -25,35 +25,26 @@ This lack of standardization creates an information asymmetry, preventing shoppe
 
 ### Project Structure
 ```
-basket-optimiser/
-├── README.md
-├── pyproject.toml / requirements.txt
-├── .env                        # API keys, DB URL, proxies (gitignore)
-│   ├── __main__.py
-│   ├── config.py               # parameter, constant, store mapping
-│   ├── logger.py
-│   ├── db/
-│   │   ├── __init__.py
-│   │   ├── models.py           # PriceHistory, Product, StoreProduct
-│   │   └── repository.py
-│   ├── scrapers/
-│   │   ├── __init__.py
-│   │   ├── base_scraper.py     # search(), fetch_product()
-│   │   ├── target_scraper.py
-│   │   ├── walmart_scraper.py
-│   │   └── amazon_scraper.py
-│   ├── transformers/
-│   │   └── unit_converter.py   # oz -> g, count -> unit 
-│   ├── pipelines/
-│   │   └── ingest_pipeline.py  # search -> fetch -> normalize -> save
-│   └── scheduler/
-│       └── run_schedule.py     # cron's entrypoint or airflow DAG wrapper
-├── notebooks/                  # advanced analysis / debug
-├── scripts/
-│   └── run_once.py
-├── web/                        # front end dashboard（streamlit / nextjs）
-└── infra/
-    └── docker/                 # Dockerfile, docker-compose
+BASKET-OPTIMISER/
+├── .venv/                      # Python virtual environment for dependency management
+├── dataset/                    # Raw outputs from the web scraping process (JSON/CSV)
+│   ├── dataset_Amazon-crawler_...
+│   ├── dataset_Target-product_...
+│   └── dataset_Walmart-product_...
+├── db/                         # Data Access Layer and Database Models
+│   ├── models.py               # Defines the database schema and data structures
+│   └── repository.py           # Handles database interactions (CRUD operations)
+├── scripts/                    # Automation and pipeline orchestration scripts
+│   └── run_ingest_pipeline.py  # Script to initiate the full data ingestion process
+├── transformers/               # Core data engineering and standardization logic
+│   ├── cleaner.py              # Functions for data cleaning and pre-processing
+│   └── unit_converter.py       # Crucial logic for standardizing product units (e.g., oz to g)
+├── web/                        # Web application and front-end files
+│   ├── app.py                  # Main script for the web dashboard (e.g., Streamlit/Dash app)
+│   └── index.html              # Frontend template or static files (if using Flask/React)
+├── .gitignore                  # Specifies files/folders to be ignored by Git
+├── .python-version             # Specifies the required Python version (e.g., via pyenv)
+└── README.md                   # Project documentation
 ```
 
 ### Tech Stack
@@ -63,6 +54,13 @@ basket-optimiser/
 **Scheduling:** Cron jobs, optional Airflow integration \
 **Frontend:** Streamlit (MVP), Next.js (for production) \
 **Deployment:** Docker & docker-compose
+
+### Indexed Data Samples
+- toilet paper 
+- protein bar 
+- paper towel 
+- chicken breast
+
 
 ### Future Roadmap
 

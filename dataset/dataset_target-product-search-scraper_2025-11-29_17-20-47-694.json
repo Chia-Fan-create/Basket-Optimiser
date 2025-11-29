@@ -1,0 +1,1955 @@
+[{
+  "url": "https://www.target.com/s",
+  "title": "Barebells Nutrition Protein Bars - Peanut Butter - 7.76oz/4pk",
+  "description": {
+    "bullet_descriptions": [
+      "<B>Consistency:</B> Chewy",
+      "<B>Protein Grams per Serving:</B> 20 Grams",
+      "<B>Form:</B> Bar",
+      "<B>State of Readiness:</B> Ready to Eat",
+      "<B>Package Quantity:</B> 4",
+      "<B>Net weight:</B> 7.76 Ounces"
+    ],
+    "soft_bullets": {
+      "bullets": [
+        "BAREBELLS PEANUT BUTTER PROTEIN BAR - 4 individual yummy Barebells protein bars! Tired of eating bars that taste like cardboard? Chocolate dough covered in creamy milk chocolate and coated in chocolate crisps.",
+        "DELICIOUS PROTEIN SNACKS WITHOUT ADDED SUGAR - Searching for protein bars that taste like a regular chocolate bar? Buckle up and grab a Barebells bar! Protein bars from Barebells are completely free from added sugars and packed with 15-20 grams of protein.",
+        "ON THE GO HIGH PROTEIN SNACKS - Barebells is the ultimate choice for pre- and post-workout, as low calorie snacks at the office or for anyone who wants to satisfy their chocolate cravings.",
+        "100% BAREBELLICIOUS SNACK BARS - We are on a mission to continue to develop our products to prove to the world that protein products don’t have to taste bland… But can be simply irresistible!",
+        "NO ADDED SUGAR - *Not a low or reduced calorie food. See nutrition information for sugar, calorie and saturated fat content"
+      ]
+    }
+  },
+  "primary_brand": {
+    "canonical_url": "/b/barebells/-/N-q643lelqwxh",
+    "linking_id": "q643lelqwxh",
+    "name": "Barebells"
+  },
+  "tcin": "94409127",
+  "original_tcin": "94409127",
+  "desirability_cues": null,
+  "promotions": [
+    {
+      "plp_message": "Get a coupon, $10 off a $20 purchase with a flu shot",
+      "promotion_id": "157453588",
+      "promotion_class": "No Discount",
+      "subscription_type": "ALL",
+      "threshold_type": "none",
+      "threshold_value": 1,
+      "reward_type": "NoDiscount",
+      "reward_value": 0,
+      "circle_offer": false,
+      "mass_offer": true,
+      "channel": "online_only"
+    }
+  ],
+  "price": {
+    "current_retail": 9.59,
+    "display_was_now": false,
+    "formatted_current_price": "$9.59",
+    "formatted_current_price_type": "reg",
+    "formatted_unit_price": "$1.24",
+    "formatted_unit_price_suffix": "/ounce",
+    "reg_retail": 9.59,
+    "location_id": 2272
+  },
+  "rating_score": 4.53,
+  "aspects_rating_score": [
+    {
+      "id": "flavor",
+      "label": "flavor",
+      "value": 4.5
+    },
+    {
+      "id": "quality",
+      "label": "quality",
+      "value": 4.46
+    },
+    {
+      "id": "value",
+      "label": "value",
+      "value": 4
+    }
+  ],
+  "cart_add_on_threshold": 35,
+  "is_limited_time_offer": null,
+  "relationship_type": "Stand Alone",
+  "relationship_type_code": "SA",
+  "buy_url": "https://www.target.com/p/barebells-nutrition-protein-bars-peanut-butter-7-76oz-4pk/-/A-94409127",
+  "images": {
+    "primary_image_url": "https://target.scene7.com/is/image/Target/GUEST_96b31006-2a77-4f79-b91e-70034737beb0",
+    "alternate_image_urls": [
+      "https://target.scene7.com/is/image/Target/GUEST_aea88ac5-5798-4616-9d9b-32e111748144",
+      "https://target.scene7.com/is/image/Target/GUEST_603cfc0f-662d-4011-a728-fd0cf91325dc",
+      "https://target.scene7.com/is/image/Target/GUEST_48c56814-de9d-478e-8b6f-47485755613d"
+    ]
+  },
+  "videos": null,
+  "product_classification": {
+    "item_type": {
+      "name": "Snack and Protein Bars",
+      "type": "440456"
+    }
+  },
+  "dpci": "094-08-0498"
+},
+{
+  "url": "https://www.target.com/s",
+  "title": "Quest Nutrition 18g Crispy Hero Protein Bar - Chocolate Peanut Butter - 4ct",
+  "description": {
+    "bullet_descriptions": [
+      "<B>Consistency:</B> Chewy",
+      "<B>Protein Grams per Serving:</B> 18 Grams",
+      "<B>Form:</B> Bar",
+      "<B>State of Readiness:</B> Ready to Eat",
+      "<B>Package Quantity:</B> 4",
+      "<B>Net weight:</B> 7.62 Ounces",
+      "<B>Primary dietary ingredient:</B> Whey Protein Isolate"
+    ],
+    "soft_bullets": {
+      "bullets": [
+        "YOU DESERVE A SWEET TREAT: The Quest Crispy Protein Bar tastes like an oven-baked . Only our version has 16g protein, 3g net carbs and 1g of sugar.",
+        "UNWRAP COMPLETE PROTEINS: The Quest Crispy Protein Bars are made with complete, dairy-based proteins to provide your body with 9 essential amino acids.",
+        "FIBER IS YOUR FRIEND: The Quest Crispy Bars have 6g of fiber to provide your body with a more complete macro profile.",
+        "SWEET WITHOUT ALL THE SUGAR: Enjoy the sweet taste of without worrying about excess sugar. The Quest Crispy Protein Bar has 1g of sugar per bar.",
+        "COMFORT FOODS FOR ANYTIME CRAVINGS: The Quest Crispy Chocolate Peanut Butter Hero Protein Bar is a sweet treat, without all the sugar, you can enjoy whenever you want to satisfy your sweet cravings."
+      ]
+    }
+  },
+  "primary_brand": {
+    "canonical_url": "/b/quest-nutrition/-/N-sfjs0",
+    "linking_id": "sfjs0",
+    "name": "Quest Nutrition"
+  },
+  "tcin": "78613230",
+  "original_tcin": "78613230",
+  "desirability_cues": null,
+  "promotions": [
+    {
+      "plp_message": "Get a coupon, $10 off a $20 purchase with a flu shot",
+      "promotion_id": "157453588",
+      "promotion_class": "No Discount",
+      "subscription_type": "ALL",
+      "threshold_type": "none",
+      "threshold_value": 1,
+      "reward_type": "NoDiscount",
+      "reward_value": 0,
+      "circle_offer": false,
+      "mass_offer": true,
+      "channel": "online_only"
+    }
+  ],
+  "price": {
+    "current_retail": 9.49,
+    "display_was_now": false,
+    "formatted_current_price": "$9.49",
+    "formatted_current_price_type": "reg",
+    "formatted_unit_price": "$1.25",
+    "formatted_unit_price_suffix": "/ounce",
+    "reg_retail": 9.49,
+    "location_id": 2272
+  },
+  "rating_score": null,
+  "aspects_rating_score": null,
+  "cart_add_on_threshold": 35,
+  "is_limited_time_offer": false,
+  "relationship_type": "Variation Child",
+  "relationship_type_code": "VC",
+  "buy_url": "https://www.target.com/p/quest-nutrition-18g-hero-protein-bar-crispy-chocolate-peanut-butter-4ct/-/A-78613230",
+  "images": {
+    "primary_image_url": "https://target.scene7.com/is/image/Target/GUEST_c229bce0-c4f9-43f5-853b-88261f0d653d",
+    "alternate_image_urls": [
+      "https://target.scene7.com/is/image/Target/GUEST_cb052f3a-67d1-4aed-9e90-54e76b2d1bd9",
+      "https://target.scene7.com/is/image/Target/GUEST_f512ffe7-a384-4664-b5f9-bcb9ab384c7e",
+      "https://target.scene7.com/is/image/Target/GUEST_15a04378-7405-435f-8743-c5b7e07dcab1",
+      "https://target.scene7.com/is/image/Target/GUEST_e1b5e4d0-30bf-4ce6-873c-bd2c6c92eff9",
+      "https://target.scene7.com/is/image/Target/GUEST_b98446b6-a2bb-42ca-8d24-9920c54ab204"
+    ]
+  },
+  "videos": [
+    {
+      "is_list_page_eligible": false,
+      "video_files": [
+        {
+          "mime_type": "video/mp4",
+          "video_url": "https://target.scene7.com/is/content/Target/GUEST_49e5619a-858c-4707-9b76-bb81fb1ba98e"
+        }
+      ]
+    },
+    {
+      "is_list_page_eligible": false,
+      "video_files": [
+        {
+          "mime_type": "video/mp4",
+          "video_url": "https://target.scene7.com/is/content/Target/GUEST_16071fef-b75c-4e42-8848-16f256314dac"
+        }
+      ]
+    }
+  ],
+  "product_classification": {
+    "item_type": {
+      "name": "Snack and Protein Bars",
+      "type": "440456"
+    }
+  },
+  "dpci": "094-08-6402"
+},
+{
+  "url": "https://www.target.com/s",
+  "title": "RXBAR Protein Bars Variety Pack - 18.3oz/10ct",
+  "description": {
+    "bullet_descriptions": [
+      "<B>Consistency:</B> Chewy",
+      "<B>Protein Grams per Serving:</B> 12 Grams",
+      "<B>Dietary Needs:</B> Gluten-Free",
+      "<B>Features:</B> Dairy-Free, Soy-Free",
+      "<B>Form:</B> Bar",
+      "<B>State of Readiness:</B> Ready to Eat",
+      "<B>Package Quantity:</B> 10",
+      "<B>Net weight:</B> 18.3 Ounces",
+      "<B>Primary dietary ingredient:</B> Egg White Protein",
+      "<B>Protein type:</B> Egg Protein"
+    ],
+    "soft_bullets": {
+      "bullets": [
+        "Enjoy a protein bar made with simple ingredients; Variety pack includes Peanut Butter Chocolate, Blueberry, Chocolate Sea Salt, and Coconut Chocolate",
+        "Discover a snack made with delicious ingredients; High protein bar made with simple foods for great flavor and texture ​",
+        "Gluten free; Contains 12g protein (up to 21% daily value); Kosher Pareve; Contains egg, almond, cashew, peanut, and coconut ingredients ​",
+        "Protein snacks are great for the office, before or after your workout, or as a quick, feel-good boost for on-the-go snacking ​",
+        "Includes 1, 18.3oz box containing 10 RXBAR protein bars​"
+      ]
+    }
+  },
+  "primary_brand": {
+    "canonical_url": "/b/rxbar/-/N-deg40",
+    "linking_id": "deg40",
+    "name": "RXBAR"
+  },
+  "tcin": "53142576",
+  "original_tcin": "53142576",
+  "desirability_cues": null,
+  "promotions": [],
+  "price": {
+    "current_retail": 17.39,
+    "display_was_now": false,
+    "formatted_current_price": "$17.39",
+    "formatted_current_price_type": "reg",
+    "formatted_unit_price": "$0.95",
+    "formatted_unit_price_suffix": "/ounce",
+    "reg_retail": 17.39,
+    "location_id": 2272
+  },
+  "rating_score": 4.49,
+  "aspects_rating_score": [
+    {
+      "id": "quality",
+      "label": "quality",
+      "value": 4.46
+    },
+    {
+      "id": "taste",
+      "label": "taste",
+      "value": 4.27
+    },
+    {
+      "id": "value",
+      "label": "value",
+      "value": 4.15
+    }
+  ],
+  "cart_add_on_threshold": 35,
+  "is_limited_time_offer": false,
+  "relationship_type": "Stand Alone",
+  "relationship_type_code": "SA",
+  "buy_url": "https://www.target.com/p/rxbar-protein-bars-variety-pack-10ct/-/A-53142576",
+  "images": {
+    "primary_image_url": "https://target.scene7.com/is/image/Target/GUEST_e63aefe4-5fa5-4d01-ae7b-b913e7239789",
+    "alternate_image_urls": [
+      "https://target.scene7.com/is/image/Target/GUEST_c3ed77c5-6360-4b6c-9d6c-ca02f40e8785",
+      "https://target.scene7.com/is/image/Target/GUEST_bb6ae353-d003-4c33-b715-e85338c39c10",
+      "https://target.scene7.com/is/image/Target/GUEST_f3ea124d-3a75-4fa5-8fe9-8eecfc673881",
+      "https://target.scene7.com/is/image/Target/GUEST_7aad925d-61c9-4138-9409-4214d8231ecf",
+      "https://target.scene7.com/is/image/Target/GUEST_57448b48-ebcb-4f01-b0f8-fc98ad659bfe",
+      "https://target.scene7.com/is/image/Target/GUEST_fa687d5b-22ad-4c3d-af86-75cb59ea0e56",
+      "https://target.scene7.com/is/image/Target/GUEST_3b51c583-a12e-4739-bd07-4daed7fdd46c",
+      "https://target.scene7.com/is/image/Target/GUEST_0b230365-a0a4-4e73-b3b5-b968a58c0bab",
+      "https://target.scene7.com/is/image/Target/GUEST_938ad1cd-6758-41a6-904e-b203064024ce",
+      "https://target.scene7.com/is/image/Target/GUEST_11308316-a009-417c-b99d-c737de5bc291"
+    ]
+  },
+  "videos": [
+    {
+      "is_list_page_eligible": false,
+      "video_files": [
+        {
+          "mime_type": "video/mp4",
+          "video_url": "https://target.scene7.com/is/content/Target/GUEST_328acda0-cf7a-4d94-a31b-35d95298e58b"
+        }
+      ]
+    }
+  ],
+  "product_classification": {
+    "item_type": {
+      "name": "Snack and Protein Bars",
+      "type": "440456"
+    }
+  },
+  "dpci": "071-20-1936"
+},
+{
+  "url": "https://www.target.com/s",
+  "title": "Barebells Nutrition Protein Bars - Peanut Butter - 7.76oz/4pk",
+  "description": {
+    "bullet_descriptions": [
+      "<B>Consistency:</B> Chewy",
+      "<B>Protein Grams per Serving:</B> 20 Grams",
+      "<B>Form:</B> Bar",
+      "<B>State of Readiness:</B> Ready to Eat",
+      "<B>Package Quantity:</B> 4",
+      "<B>Net weight:</B> 7.76 Ounces"
+    ],
+    "soft_bullets": {
+      "bullets": [
+        "BAREBELLS PEANUT BUTTER PROTEIN BAR - 4 individual yummy Barebells protein bars! Tired of eating bars that taste like cardboard? Chocolate dough covered in creamy milk chocolate and coated in chocolate crisps.",
+        "DELICIOUS PROTEIN SNACKS WITHOUT ADDED SUGAR - Searching for protein bars that taste like a regular chocolate bar? Buckle up and grab a Barebells bar! Protein bars from Barebells are completely free from added sugars and packed with 15-20 grams of protein.",
+        "ON THE GO HIGH PROTEIN SNACKS - Barebells is the ultimate choice for pre- and post-workout, as low calorie snacks at the office or for anyone who wants to satisfy their chocolate cravings.",
+        "100% BAREBELLICIOUS SNACK BARS - We are on a mission to continue to develop our products to prove to the world that protein products don’t have to taste bland… But can be simply irresistible!",
+        "NO ADDED SUGAR - *Not a low or reduced calorie food. See nutrition information for sugar, calorie and saturated fat content"
+      ]
+    }
+  },
+  "primary_brand": {
+    "canonical_url": "/b/barebells/-/N-q643lelqwxh",
+    "linking_id": "q643lelqwxh",
+    "name": "Barebells"
+  },
+  "tcin": "94409127",
+  "original_tcin": "94409127",
+  "desirability_cues": null,
+  "promotions": [
+    {
+      "plp_message": "Get a coupon, $10 off a $20 purchase with a flu shot",
+      "promotion_id": "157453588",
+      "promotion_class": "No Discount",
+      "subscription_type": "ALL",
+      "threshold_type": "none",
+      "threshold_value": 1,
+      "reward_type": "NoDiscount",
+      "reward_value": 0,
+      "circle_offer": false,
+      "mass_offer": true,
+      "channel": "online_only"
+    }
+  ],
+  "price": {
+    "current_retail": 9.59,
+    "display_was_now": false,
+    "formatted_current_price": "$9.59",
+    "formatted_current_price_type": "reg",
+    "formatted_unit_price": "$1.24",
+    "formatted_unit_price_suffix": "/ounce",
+    "reg_retail": 9.59,
+    "location_id": 2272
+  },
+  "rating_score": 4.53,
+  "aspects_rating_score": [
+    {
+      "id": "flavor",
+      "label": "flavor",
+      "value": 4.5
+    },
+    {
+      "id": "quality",
+      "label": "quality",
+      "value": 4.46
+    },
+    {
+      "id": "value",
+      "label": "value",
+      "value": 4
+    }
+  ],
+  "cart_add_on_threshold": 35,
+  "is_limited_time_offer": null,
+  "relationship_type": "Stand Alone",
+  "relationship_type_code": "SA",
+  "buy_url": "https://www.target.com/p/barebells-nutrition-protein-bars-peanut-butter-7-76oz-4pk/-/A-94409127",
+  "images": {
+    "primary_image_url": "https://target.scene7.com/is/image/Target/GUEST_96b31006-2a77-4f79-b91e-70034737beb0",
+    "alternate_image_urls": [
+      "https://target.scene7.com/is/image/Target/GUEST_aea88ac5-5798-4616-9d9b-32e111748144",
+      "https://target.scene7.com/is/image/Target/GUEST_603cfc0f-662d-4011-a728-fd0cf91325dc",
+      "https://target.scene7.com/is/image/Target/GUEST_48c56814-de9d-478e-8b6f-47485755613d"
+    ]
+  },
+  "videos": null,
+  "product_classification": {
+    "item_type": {
+      "name": "Snack and Protein Bars",
+      "type": "440456"
+    }
+  },
+  "dpci": "094-08-0498"
+},
+{
+  "url": "https://www.target.com/s",
+  "title": "Barebells Nutrition Bars - Cookies &#38; Cream - 7.76oz/4pk",
+  "description": {
+    "bullet_descriptions": [
+      "<B>Consistency:</B> Chewy",
+      "<B>Protein Grams per Serving:</B> 20 Grams",
+      "<B>Form:</B> Bar",
+      "<B>State of Readiness:</B> Ready to Eat",
+      "<B>Package Quantity:</B> 4",
+      "<B>Net weight:</B> 7.76 Ounces"
+    ],
+    "soft_bullets": {
+      "bullets": [
+        "High in Protien: 20 GRAMS OF PROTEIN PER BAR AND NEVER COMPROMISING ON FLAVOR. GO AHEAD AND ENJOY A MOUTH-WATERING SNACK! YOU WILL NOT REGRET IT!",
+        "No Added Sugar: REAL COCOA BUTTER AND COCOA POWDER ALONG WITH SPECIALLY FORMULATED PRODUCT TO TASTE GREAT WITHOUT THE SUGAR.",
+        "Delicious Flavors with ONLY 190 CALORIES and 100 % BAREBELLICIOUS – AVAILABLE IN SEVEN INCREDIBLE FLAVORS. BAREBELLS PROTEIN BARS WERE BORN TO WOW YOUR TASTE BUDS.",
+        "No Palm: WE ARE DOING OUR PART TO BECOME EVEN MORE SUSTAINABLE AND HELP MOTHER NATURE OUT, SO WE SAY ‘NO’ TO PALM OIL IN OUR PRODUCTS."
+      ]
+    }
+  },
+  "primary_brand": {
+    "canonical_url": "/b/barebells/-/N-q643lelqwxh",
+    "linking_id": "q643lelqwxh",
+    "name": "Barebells"
+  },
+  "tcin": "89709561",
+  "original_tcin": "89709561",
+  "desirability_cues": null,
+  "promotions": [
+    {
+      "plp_message": "Get a coupon, $10 off a $20 purchase with a flu shot",
+      "promotion_id": "157453588",
+      "promotion_class": "No Discount",
+      "subscription_type": "ALL",
+      "threshold_type": "none",
+      "threshold_value": 1,
+      "reward_type": "NoDiscount",
+      "reward_value": 0,
+      "circle_offer": false,
+      "mass_offer": true,
+      "channel": "online_only"
+    }
+  ],
+  "price": {
+    "current_retail": 9.59,
+    "display_was_now": false,
+    "formatted_current_price": "$9.59",
+    "formatted_current_price_type": "reg",
+    "formatted_unit_price": "$1.24",
+    "formatted_unit_price_suffix": "/ounce",
+    "reg_retail": 9.59,
+    "location_id": 2272
+  },
+  "rating_score": null,
+  "aspects_rating_score": null,
+  "cart_add_on_threshold": 35,
+  "is_limited_time_offer": false,
+  "relationship_type": "Variation Child",
+  "relationship_type_code": "VC",
+  "buy_url": "https://www.target.com/p/barebells-nutrition-bars-cookies-38-cream-7-76oz-4pk/-/A-89709561",
+  "images": {
+    "primary_image_url": "https://target.scene7.com/is/image/Target/GUEST_e2225597-c23a-41dc-9715-fb050991caa6",
+    "alternate_image_urls": [
+      "https://target.scene7.com/is/image/Target/GUEST_0b3f4bcd-a06d-49bc-af9d-23cc88b0dabd"
+    ]
+  },
+  "videos": [
+    {
+      "is_list_page_eligible": false,
+      "video_files": [
+        {
+          "mime_type": "video/mp4",
+          "video_url": "https://target.scene7.com/is/content/Target/GUEST_26d05940-3783-4409-9554-24dba3ad1736"
+        }
+      ]
+    }
+  ],
+  "product_classification": {
+    "item_type": {
+      "name": "Snack and Protein Bars",
+      "type": "440456"
+    }
+  },
+  "dpci": "094-08-0092"
+},
+{
+  "url": "https://www.target.com/s",
+  "title": "IQBAR Salted Chocolate Protein Bars - 6.4oz/4ct",
+  "description": {
+    "bullet_descriptions": [
+      "<B>Consistency:</B> Chewy",
+      "<B>Protein Grams per Serving:</B> 12 Grams",
+      "<B>Form:</B> Bar",
+      "<B>State of Readiness:</B> Ready to Eat",
+      "<B>Package Quantity:</B> 4",
+      "<B>Net weight:</B> 6.4 Ounces"
+    ],
+    "soft_bullets": {
+      "bullets": [
+        "Keto-Friendly Snack Bars for Brain & Body",
+        "Designed to keep you focused & energized throughout the day",
+        "IQBAR contains 12g plant-based protein, 1g sugar, and 2 net-carbs",
+        "Made with clean-label ingredients and a science-backed formulation",
+        "Developed for diet restrictions including celiac, paleo, and vegan",
+        "Meal replacements bars you can enjoy on-the-go",
+        "Formulated with Lion’s Mane, Magnesium, Vitamin E, MCTs & Flavonoids",
+        "Perfect for your active & busy lifestyle"
+      ]
+    }
+  },
+  "primary_brand": {
+    "canonical_url": "/b/iqbar/-/N-q643legl07m",
+    "linking_id": "q643legl07m",
+    "name": "IQBAR"
+  },
+  "tcin": "90669414",
+  "original_tcin": "90669414",
+  "desirability_cues": null,
+  "promotions": [],
+  "price": {
+    "current_retail": 6.39,
+    "display_was_now": false,
+    "formatted_current_price": "$6.39",
+    "formatted_current_price_type": "reg",
+    "formatted_unit_price": "$1.00",
+    "formatted_unit_price_suffix": "/ounce",
+    "reg_retail": 6.39,
+    "location_id": 2272
+  },
+  "rating_score": 4.63,
+  "aspects_rating_score": [
+    {
+      "id": "taste",
+      "label": "taste",
+      "value": 3
+    },
+    {
+      "id": "quality",
+      "label": "quality",
+      "value": 3.78
+    },
+    {
+      "id": "value",
+      "label": "value",
+      "value": 3.56
+    }
+  ],
+  "cart_add_on_threshold": 35,
+  "is_limited_time_offer": null,
+  "relationship_type": "Stand Alone",
+  "relationship_type_code": "SA",
+  "buy_url": "https://www.target.com/p/iqbar-chocolate-sea-salt-protein-bars-6-4oz-4ct/-/A-90669414",
+  "images": {
+    "primary_image_url": "https://target.scene7.com/is/image/Target/GUEST_b427ca3d-adad-497d-a45d-b684e8fc3633",
+    "alternate_image_urls": [
+      "https://target.scene7.com/is/image/Target/GUEST_f715dc2a-d457-4217-885a-062f6c0f518c",
+      "https://target.scene7.com/is/image/Target/GUEST_6d058433-2418-495b-8fae-aebe897c4271",
+      "https://target.scene7.com/is/image/Target/GUEST_8b25a39f-da78-490d-bce3-5e2eabe9ccf6",
+      "https://target.scene7.com/is/image/Target/GUEST_9ea57d0e-9706-46b7-922a-61cf65ce7957",
+      "https://target.scene7.com/is/image/Target/GUEST_735ac1fb-da2e-4f8e-9fb7-668fdaec1423"
+    ]
+  },
+  "videos": [
+    {
+      "is_list_page_eligible": false,
+      "video_files": [
+        {
+          "mime_type": "video/mp4",
+          "video_url": "https://target.scene7.com/is/content/Target/GUEST_973b9178-cd24-4282-b96d-8fbbb7a72dd5"
+        }
+      ]
+    },
+    {
+      "is_list_page_eligible": false,
+      "video_files": [
+        {
+          "mime_type": "video/mp4",
+          "video_url": "https://target.scene7.com/is/content/Target/GUEST_06cce052-54bc-4455-8d02-3886204a7a39"
+        }
+      ]
+    },
+    {
+      "is_list_page_eligible": false,
+      "video_files": [
+        {
+          "mime_type": "video/mp4",
+          "video_url": "https://target.scene7.com/is/content/Target/GUEST_895c547b-442c-47b3-a7a2-99e6f834a23f"
+        }
+      ]
+    }
+  ],
+  "product_classification": {
+    "item_type": {
+      "name": "Snack and Protein Bars",
+      "type": "440456"
+    }
+  },
+  "dpci": "071-20-0686"
+},
+{
+  "url": "https://www.target.com/s",
+  "title": "Chomps Chomplings Original Beef Mini Sticks - 7oz/14ct",
+  "description": {
+    "bullet_descriptions": [
+      "<B>Protein Grams per Serving:</B> 4 Grams",
+      "<B>Type of Meat:</B> Beef",
+      "<B>Form:</B> Stick",
+      "<B>State of Readiness:</B> Ready to Eat",
+      "<B>Package Quantity:</B> 14",
+      "<B>Pre-package preparation:</B> Dried",
+      "<B>Net weight:</B> .5 Ounces"
+    ],
+    "soft_bullets": {
+      "bullets": [
+        "Total Snackage: Each satisfying 0.5 oz Original Beef Jerky snack stick is made with high quality, real ingredients, has 4 grams of protein, zero sugar, and just 45 calories",
+        "Convenience Meets Quality: Our commitment to quality shines through with 100% grass-fed and finished beef",
+        "Bold Flavors: Our Original Beef meat sticks feature the same savory taste that made us popular: slightly smoky, slightly spicy",
+        "Nutrition your taste buds understand: Nourishing snack that's as friendly to your body as your taste buds - Keto Friendly, Whole30 approved, Paleo, Certified Gluten Free, non-GMO, free from the top 9 allergens",
+        "As a minority, family-owned and operated healthy snacking brand, Chomps is made from the highest-quality proteins with no hidden, harmful ingredients",
+        "As a Certified B Corp Chomps is committed to accountability, transparency, and continuous improvement"
+      ]
+    }
+  },
+  "primary_brand": {
+    "canonical_url": "/b/chomps-snack-sticks/-/N-ucfi",
+    "linking_id": "ucfi",
+    "name": "Chomps Snack Sticks"
+  },
+  "tcin": "92993812",
+  "original_tcin": "92993812",
+  "desirability_cues": null,
+  "promotions": [],
+  "price": {
+    "current_retail": 18.49,
+    "display_was_now": false,
+    "formatted_current_price": "$18.49",
+    "formatted_current_price_type": "reg",
+    "formatted_unit_price": "$2.64",
+    "formatted_unit_price_suffix": "/ounce",
+    "reg_retail": 18.49,
+    "location_id": 2272
+  },
+  "rating_score": 4.81,
+  "aspects_rating_score": [
+    {
+      "id": "quality",
+      "label": "quality",
+      "value": 3.22
+    },
+    {
+      "id": "taste",
+      "label": "taste",
+      "value": 3.22
+    },
+    {
+      "id": "value",
+      "label": "value",
+      "value": 3.22
+    }
+  ],
+  "cart_add_on_threshold": 35,
+  "is_limited_time_offer": false,
+  "relationship_type": "Stand Alone",
+  "relationship_type_code": "SA",
+  "buy_url": "https://www.target.com/p/chomplings-original-beef-mini-sticks-7oz-14ct/-/A-92993812",
+  "images": {
+    "primary_image_url": "https://target.scene7.com/is/image/Target/GUEST_35828b52-a483-4ce5-892e-31714f74a72e",
+    "alternate_image_urls": [
+      "https://target.scene7.com/is/image/Target/GUEST_de2b114e-b517-4462-bc68-e023c882d195",
+      "https://target.scene7.com/is/image/Target/GUEST_45394c16-da84-4a60-baf3-a0bbda28e16e",
+      "https://target.scene7.com/is/image/Target/GUEST_c391ab77-def0-4c19-b514-007085c3852a",
+      "https://target.scene7.com/is/image/Target/GUEST_73f906c5-f3cf-4a0f-bdc9-d51dbaee648e",
+      "https://target.scene7.com/is/image/Target/GUEST_364e8058-676d-430e-9c91-ac1c519c6cf8",
+      "https://target.scene7.com/is/image/Target/GUEST_3106a6f1-fa6a-405a-9067-ddc5066fb452"
+    ]
+  },
+  "videos": [
+    {
+      "is_list_page_eligible": false,
+      "video_files": [
+        {
+          "mime_type": "video/mp4",
+          "video_url": "https://target.scene7.com/is/content/Target/GUEST_ddec2941-bd43-4e0a-85de-9642943685ff"
+        }
+      ]
+    }
+  ],
+  "product_classification": {
+    "item_type": {
+      "name": "Meat Sticks",
+      "type": "426178"
+    }
+  },
+  "dpci": "071-08-0102"
+},
+{
+  "url": "https://www.target.com/s",
+  "title": "Legendary Foods Gluten Free and Keto Friendly Protein Pastry - Brown Sugar Cinnamon - 8.6oz/4ct",
+  "description": {
+    "bullet_descriptions": [
+      "<B>Protein Grams per Serving:</B> 20 Grams",
+      "<B>Filling:</B> Brown Sugar",
+      "<B>Dietary Needs:</B> Gluten-Free, Certified Gluten-Free",
+      "<B>State of Readiness:</B> Ready to Eat",
+      "<B>Package Quantity:</B> 4",
+      "<B>Bakery topping:</B> Icing",
+      "<B>Net weight:</B> 8.6 Ounces"
+    ],
+    "soft_bullets": {
+      "bullets": [
+        "20G PROTEIN: A perfect snack for high protein diets",
+        "4G NET CARBS: A great option for low carb diets",
+        "0G SUGAR: A fantastic addition for low sugar snacking",
+        "180 Calories per pastry",
+        "Gluten-Free and Keto Friendly",
+        "Amazing Brown Sugar Cinnamon flavor with incredible Legendary Foods nutrition. Ready-to-eat right out of the wrapper, or microwave about 10 seconds for a next level experience",
+        "A delicious and protein packed alternative to typical protein bars or breakfast pastries",
+        "Each box contains 4 individually wrapped Legendary Foods Brown Sugar Cinnamon Protein Pastries"
+      ]
+    }
+  },
+  "primary_brand": {
+    "canonical_url": "/b/legendary-foods/-/N-5h01c",
+    "linking_id": "5h01c",
+    "name": "Legendary Foods"
+  },
+  "tcin": "87656951",
+  "original_tcin": "87656951",
+  "desirability_cues": null,
+  "promotions": [
+    {
+      "plp_message": "Get a coupon, $10 off a $20 purchase with a flu shot",
+      "promotion_id": "157453588",
+      "promotion_class": "No Discount",
+      "subscription_type": "ALL",
+      "threshold_type": "none",
+      "threshold_value": 1,
+      "reward_type": "NoDiscount",
+      "reward_value": 0,
+      "circle_offer": false,
+      "mass_offer": true,
+      "channel": "online_only"
+    }
+  ],
+  "price": {
+    "current_retail": 9.99,
+    "display_was_now": false,
+    "formatted_current_price": "$9.99",
+    "formatted_current_price_type": "reg",
+    "formatted_unit_price": "$1.16",
+    "formatted_unit_price_suffix": "/ounce",
+    "reg_retail": 9.99,
+    "location_id": 2272
+  },
+  "rating_score": 3.67,
+  "aspects_rating_score": [
+    {
+      "id": "flavor",
+      "label": "flavor",
+      "value": 2.54
+    },
+    {
+      "id": "quality",
+      "label": "quality",
+      "value": 2.76
+    },
+    {
+      "id": "value",
+      "label": "value",
+      "value": 2.25
+    }
+  ],
+  "cart_add_on_threshold": 35,
+  "is_limited_time_offer": false,
+  "relationship_type": "Collection Child",
+  "relationship_type_code": "CC",
+  "buy_url": "https://www.target.com/p/legendary-foods-protein-pastries-nutrition-bars-brown-sugar-cinnamon-8-6oz-4ct/-/A-87656951",
+  "images": {
+    "primary_image_url": "https://target.scene7.com/is/image/Target/GUEST_5528a59a-a91e-4e79-9120-cf38da372bb0",
+    "alternate_image_urls": [
+      "https://target.scene7.com/is/image/Target/GUEST_e9bf1bab-e431-4bbd-9fde-e52d6198990c",
+      "https://target.scene7.com/is/image/Target/GUEST_33ca441c-0dc1-4606-9218-370cb1eac33d",
+      "https://target.scene7.com/is/image/Target/GUEST_815e897a-93b9-4a52-9d79-7e3bd3771063",
+      "https://target.scene7.com/is/image/Target/GUEST_aa110bfb-e9ee-422e-b0f7-f9e9b2d4826e",
+      "https://target.scene7.com/is/image/Target/GUEST_783df79a-4f23-49fd-a2a3-2a07be44d587"
+    ]
+  },
+  "videos": [
+    {
+      "is_list_page_eligible": false,
+      "video_files": [
+        {
+          "mime_type": "video/mp4",
+          "video_url": "https://target.scene7.com/is/content/Target/GUEST_fe4f69b0-a5d0-46c7-acd7-35e4a2037079"
+        }
+      ]
+    }
+  ],
+  "product_classification": {
+    "item_type": {
+      "name": "Toaster Pastries",
+      "type": "437745"
+    }
+  },
+  "dpci": "094-08-7639"
+},
+{
+  "url": "https://www.target.com/s",
+  "title": "David Protein Bars with 28g Protein&#160;- Chocolate Chip Cookie Dough Flavor - 12ct",
+  "description": {
+    "bullet_descriptions": [
+      "<B>Consistency:</B> Creamy",
+      "<B>Protein Grams per Serving:</B> 28 Grams",
+      "<B>Form:</B> Bar",
+      "<B>State of Readiness:</B> Ready to Eat",
+      "<B>Package Quantity:</B> 12",
+      "<B>Net weight:</B> 62 Grams",
+      "<B>Protein type:</B> Whey Protein, Milk Protein, Collagen Protein, Egg Protein"
+    ],
+    "soft_bullets": {
+      "bullets": [
+        "<li>Introducing the most effective portable protein on this planet</li>",
+        "<li>David delivers 28g of protein, 0g of sugar, and 150 calories for the optimal high protein snack</li>",
+        "<li>75% of David's calories come from protein—50% higher than any other bar</li>",
+        "<li>The perfect healthy protein bar for pre- or post-workout nutrition, easy snack on the go, or an afternoon craving fix</li>",
+        "<li>David is gluten free and blood-sugar friendly, and contains a mixture of milk protein isolate, collagen, whey protein concentrate, and egg white, for a 1.0 PDCAAS score</li>"
+      ]
+    }
+  },
+  "primary_brand": {
+    "canonical_url": "/b/david-protein/-/N-q643le8a7jt",
+    "linking_id": "q643le8a7jt",
+    "name": "David Protein"
+  },
+  "tcin": "94747357",
+  "original_tcin": "94747357",
+  "desirability_cues": null,
+  "promotions": [
+    {
+      "plp_message": "Get a coupon, $10 off a $20 purchase with a flu shot",
+      "promotion_id": "157453588",
+      "promotion_class": "No Discount",
+      "subscription_type": "ALL",
+      "threshold_type": "none",
+      "threshold_value": 1,
+      "reward_type": "NoDiscount",
+      "reward_value": 0,
+      "circle_offer": false,
+      "mass_offer": true,
+      "channel": "online_only"
+    }
+  ],
+  "price": {
+    "current_retail": 39.49,
+    "display_was_now": false,
+    "formatted_current_price": "$39.49",
+    "formatted_current_price_type": "reg",
+    "formatted_unit_price": "$1.39",
+    "formatted_unit_price_suffix": "/ounce",
+    "reg_retail": 39.49,
+    "location_id": 3991,
+    "price_handle": "When purchased online"
+  },
+  "rating_score": 4.48,
+  "aspects_rating_score": [
+    {
+      "id": "flavor",
+      "label": "flavor",
+      "value": 5
+    },
+    {
+      "id": "quality",
+      "label": "quality",
+      "value": 5
+    },
+    {
+      "id": "value",
+      "label": "value",
+      "value": 2
+    }
+  ],
+  "cart_add_on_threshold": 35,
+  "is_limited_time_offer": null,
+  "relationship_type": "Stand Alone",
+  "relationship_type_code": "SA",
+  "buy_url": "https://www.target.com/p/david-protein-protein-bars-with-28g-protein-160-chocolate-chip-cookie-dough-flavor-12ct/-/A-94747357",
+  "images": {
+    "primary_image_url": "https://target.scene7.com/is/image/Target/GUEST_f9b65b32-1dc4-431b-89c3-ebc4bb5f1ba7",
+    "alternate_image_urls": [
+      "https://target.scene7.com/is/image/Target/GUEST_aa0f01e8-9ab5-444b-84e7-ac7b48eecdfb",
+      "https://target.scene7.com/is/image/Target/GUEST_eab4a316-ce00-4b67-ac39-3688db635660",
+      "https://target.scene7.com/is/image/Target/GUEST_830f9f21-0911-44fa-bcab-6f81bbeecb22",
+      "https://target.scene7.com/is/image/Target/GUEST_31e3ab26-15a7-4249-a183-70f236656b54",
+      "https://target.scene7.com/is/image/Target/GUEST_f39118ea-d989-45bb-9172-97d3372dcec4",
+      "https://target.scene7.com/is/image/Target/GUEST_d2b67781-dfeb-4074-af05-6f4d6c0e5595",
+      "https://target.scene7.com/is/image/Target/GUEST_231e0a6f-e36b-4ab4-8dc0-e56ea0ca84e0",
+      "https://target.scene7.com/is/image/Target/GUEST_d7acafce-8f81-4dca-988c-66ab2305f67f"
+    ]
+  },
+  "videos": [
+    {
+      "is_list_page_eligible": false,
+      "video_files": [
+        {
+          "mime_type": "video/mp4",
+          "video_url": "https://target.scene7.com/is/content/Target/GUEST_00678d62-9ee2-4540-bfa8-7bda1d6a0f01"
+        }
+      ]
+    }
+  ],
+  "product_classification": {
+    "item_type": {
+      "name": "Snack and Protein Bars",
+      "type": "440456"
+    }
+  },
+  "dpci": "094-08-7220"
+},
+{
+  "url": "https://www.target.com/s",
+  "title": "RXBAR High Protein Bars Vanilla Peanut Butter - 10.5oz/5ct",
+  "description": {
+    "bullet_descriptions": [
+      "<B>Consistency:</B> Chewy",
+      "<B>Protein Grams per Serving:</B> 18 Grams",
+      "<B>Form:</B> Bar",
+      "<B>State of Readiness:</B> Ready to Eat",
+      "<B>Package Quantity:</B> 5",
+      "<B>Net weight:</B> 10.5 Ounces"
+    ],
+    "soft_bullets": {
+      "bullets": [
+        "Deliciously rich and creamy high protein snacks with 6 simple ingredients; A grab and go protein pick-me-up loaded with flavor",
+        "Naturally sweetened with agave nectar, peanuts for texture, and smooth vanilla; Better-for-you snack without the artificial aftertaste",
+        "Excellent source of protein with 18g per serving; Made with high quality pea protein; Vegan; Gluten free; Kosher Pareve; Contains peanuts​",
+        "Packed with core ingredients that power you; Perfect on the go; A pre workout bar and post workout recovery, between-meal bite, or easy office snacks",
+        "Includes 1, 10.5oz box containing 5 RXBAR High Protein Vanilla Peanut Butter bars"
+      ]
+    }
+  },
+  "primary_brand": {
+    "canonical_url": "/b/rxbar/-/N-deg40",
+    "linking_id": "deg40",
+    "name": "RXBAR"
+  },
+  "tcin": "94257224",
+  "original_tcin": "94257224",
+  "desirability_cues": null,
+  "promotions": [
+    {
+      "plp_message": "$8.99 price on select RXBAR high protein bars",
+      "promotion_id": "574581610",
+      "promotion_class": "Buy and Save",
+      "subscription_type": "ALL",
+      "threshold_type": "quantity",
+      "reward_type": "FixedPrice",
+      "reward_value": 8.99,
+      "external_promotion_alternate_id": "574581610",
+      "circle_offer": true,
+      "mass_offer": true,
+      "channel": "online_and_store"
+    }
+  ],
+  "price": {
+    "current_retail": 9.59,
+    "formatted_current_price": "$9.59",
+    "formatted_current_price_type": "reg",
+    "formatted_unit_price": "$0.91",
+    "formatted_unit_price_suffix": "/ounce",
+    "reg_retail": 9.59,
+    "discount_price_circle_base": {
+      "price": 8.99,
+      "formatted_price": "$8.99",
+      "formatted_comparison_price": "$9.59",
+      "formatted_comparison_price_type": "reg",
+      "is_price_range": false,
+      "formatted_unit_price": "$0.86",
+      "discount_promotions": [
+        {
+          "promotion_id": "574581610",
+          "pdp_message": "$8.99 price on select RXBAR high protein bars",
+          "circle_offer": true
+        }
+      ]
+    },
+    "location_id": 2272
+  },
+  "rating_score": 3.79,
+  "aspects_rating_score": [
+    {
+      "id": "quality",
+      "label": "quality",
+      "value": 3.44
+    },
+    {
+      "id": "taste",
+      "label": "taste",
+      "value": 3.28
+    },
+    {
+      "id": "value",
+      "label": "value",
+      "value": 3.61
+    }
+  ],
+  "cart_add_on_threshold": 35,
+  "is_limited_time_offer": null,
+  "relationship_type": "Stand Alone",
+  "relationship_type_code": "SA",
+  "buy_url": "https://www.target.com/p/rxbar-high-protein-bars-vanilla-peanut-butter-10-5oz-5ct/-/A-94257224",
+  "images": {
+    "primary_image_url": "https://target.scene7.com/is/image/Target/GUEST_76e47929-31fe-4ca7-8c7d-b833c3549365",
+    "alternate_image_urls": [
+      "https://target.scene7.com/is/image/Target/GUEST_50a255ad-9547-4ca7-8858-71329a443a21",
+      "https://target.scene7.com/is/image/Target/GUEST_22ca6ed5-fbf1-46ac-a910-bd03c0a96762",
+      "https://target.scene7.com/is/image/Target/GUEST_ca3eba6e-aef8-4048-9ec6-55f147722138",
+      "https://target.scene7.com/is/image/Target/GUEST_34670928-2e53-4216-b2ce-ef93cd7125e9",
+      "https://target.scene7.com/is/image/Target/GUEST_26b23a03-10c7-4ec8-95e5-3cd44ff53d29",
+      "https://target.scene7.com/is/image/Target/GUEST_a64a5f36-badf-448e-9186-8b6678f1b4b8",
+      "https://target.scene7.com/is/image/Target/GUEST_74d13d56-f8cb-43a6-b862-1b7307a71b57",
+      "https://target.scene7.com/is/image/Target/GUEST_d5890815-62b2-43bf-a36e-3bb5be586233",
+      "https://target.scene7.com/is/image/Target/GUEST_f29ed965-7918-46c1-b036-775cea0dd2e0"
+    ]
+  },
+  "videos": [
+    {
+      "is_list_page_eligible": false,
+      "video_files": [
+        {
+          "mime_type": "video/mp4",
+          "video_url": "https://target.scene7.com/is/content/Target/GUEST_d459ffb8-46fb-44df-8cb8-be7a655104c4"
+        }
+      ]
+    }
+  ],
+  "product_classification": {
+    "item_type": {
+      "name": "Snack and Protein Bars",
+      "type": "440456"
+    }
+  },
+  "dpci": "071-20-0420"
+},
+{
+  "url": "https://www.target.com/s",
+  "title": "Kind Breakfast Dark Chocolate Protein Bars - 10.58oz",
+  "description": {
+    "bullet_descriptions": [
+      "<B>Consistency:</B> Chewy",
+      "<B>Protein Grams per Serving:</B> 8 Grams",
+      "<B>Form:</B> Bar",
+      "<B>State of Readiness:</B> Ready to Eat",
+      "<B>Package Quantity:</B> 12",
+      "<B>Net weight:</B> 10.58 Ounces"
+    ],
+    "soft_bullets": {
+      "bullets": [
+        "One box of six 1.76 oz two-bar packs of KIND Breakfast Protein, Healthy Snack Bar, Dark Chocolate breakfast bars",
+        "Gluten free bars made with five super grains - oats, buckwheat, millet, amaranth and quinoa",
+        "Low sodium snacks with a double dose of chocolate creates a delicious flavor",
+        "KIND gluten free protein bars are convenient, individually wrapped snacks for a great addition to any breakfast",
+        "Kosher snacks made without genetically engineered ingredients, and contain 19 grams of whole grains and 8 grams of protein per serving",
+        "Nutrition bars that make eating healthy easier"
+      ]
+    }
+  },
+  "primary_brand": {
+    "canonical_url": "/b/kind/-/N-4y5en",
+    "linking_id": "4y5en",
+    "name": "KIND"
+  },
+  "tcin": "85282336",
+  "original_tcin": "85282336",
+  "desirability_cues": null,
+  "promotions": [],
+  "price": {
+    "current_retail": 5.39,
+    "display_was_now": false,
+    "formatted_current_price": "$5.39",
+    "formatted_current_price_type": "reg",
+    "formatted_unit_price": "$0.51",
+    "formatted_unit_price_suffix": "/ounce",
+    "reg_retail": 5.39,
+    "location_id": 2272
+  },
+  "rating_score": 4.56,
+  "aspects_rating_score": [
+    {
+      "id": "quality",
+      "label": "quality",
+      "value": 4.2
+    },
+    {
+      "id": "taste",
+      "label": "taste",
+      "value": 4
+    },
+    {
+      "id": "value",
+      "label": "value",
+      "value": 3.83
+    }
+  ],
+  "cart_add_on_threshold": 35,
+  "is_limited_time_offer": null,
+  "relationship_type": "Stand Alone",
+  "relationship_type_code": "SA",
+  "buy_url": "https://www.target.com/p/kind-breakfast-dark-chocolate-protein-bars-10-58oz/-/A-85282336",
+  "images": {
+    "primary_image_url": "https://target.scene7.com/is/image/Target/GUEST_0fa4ac18-c5b0-45d3-b404-b5b1ba40e781",
+    "alternate_image_urls": [
+      "https://target.scene7.com/is/image/Target/GUEST_8f72da81-80e7-47db-af83-56ef06f09d67",
+      "https://target.scene7.com/is/image/Target/GUEST_d7e67d61-b535-4d44-9f78-14b418e7fbf2",
+      "https://target.scene7.com/is/image/Target/GUEST_af2dc5f2-4e15-4946-b79c-fe2df3f96f43",
+      "https://target.scene7.com/is/image/Target/GUEST_ac48aff0-2e34-4f3e-a19e-91a0d0b08baf",
+      "https://target.scene7.com/is/image/Target/GUEST_23c9aa8b-423b-4d2d-ad04-66aecd448f81",
+      "https://target.scene7.com/is/image/Target/GUEST_58d7df1f-07ea-47a4-8598-e139b6171ba4"
+    ]
+  },
+  "videos": null,
+  "product_classification": {
+    "item_type": {
+      "name": "Snack and Protein Bars",
+      "type": "440456"
+    }
+  },
+  "dpci": "071-20-1123"
+},
+{
+  "url": "https://www.target.com/s",
+  "title": "Kind Breakfast Peanut Butter Banana Bars - 10.56oz",
+  "description": {
+    "bullet_descriptions": [
+      "<B>Consistency:</B> Chewy",
+      "<B>Protein Grams per Serving:</B> 8 Grams",
+      "<B>Form:</B> Bar",
+      "<B>State of Readiness:</B> Ready to Eat",
+      "<B>Package Quantity:</B> 12",
+      "<B>Net weight:</B> 10.58 Ounces"
+    ],
+    "soft_bullets": {
+      "bullets": [
+        "One box of six 1.76 oz two-bar packs of KIND Breakfast Protein, Healthy Snack Bar, Peanut Butter Dark Chocolate breakfast bars",
+        "Gluten free bars made with five super grains - oats, buckwheat, millet, amaranth and quinoa",
+        "Low sodium snacks made with peanut butter, banana and the taste of dark chocolate for a delicious flavor",
+        "KIND gluten free protein bars are convenient, individually wrapped snacks for a great addition to any breakfast",
+        "Kosher snacks made without genetically engineered ingredients, and contain 16 grams of whole grains and 8 grams of protein per serving"
+      ]
+    }
+  },
+  "primary_brand": {
+    "canonical_url": "/b/kind/-/N-4y5en",
+    "linking_id": "4y5en",
+    "name": "KIND"
+  },
+  "tcin": "85282337",
+  "original_tcin": "85282337",
+  "desirability_cues": null,
+  "promotions": [],
+  "price": {
+    "current_retail": 5.39,
+    "display_was_now": false,
+    "formatted_current_price": "$5.39",
+    "formatted_current_price_type": "reg",
+    "formatted_unit_price": "$0.51",
+    "formatted_unit_price_suffix": "/ounce",
+    "reg_retail": 5.39,
+    "location_id": 2272
+  },
+  "rating_score": 4.62,
+  "aspects_rating_score": [
+    {
+      "id": "quality",
+      "label": "quality",
+      "value": 4.06
+    },
+    {
+      "id": "taste",
+      "label": "taste",
+      "value": 4.06
+    },
+    {
+      "id": "value",
+      "label": "value",
+      "value": 4
+    }
+  ],
+  "cart_add_on_threshold": 35,
+  "is_limited_time_offer": null,
+  "relationship_type": "Stand Alone",
+  "relationship_type_code": "SA",
+  "buy_url": "https://www.target.com/p/kind-breakfast-peanut-butter-banana-bars-10-56oz/-/A-85282337",
+  "images": {
+    "primary_image_url": "https://target.scene7.com/is/image/Target/GUEST_453f47a2-57bf-4133-b9c7-bc2ba0aa616f",
+    "alternate_image_urls": [
+      "https://target.scene7.com/is/image/Target/GUEST_8e558ccd-09b3-4d46-bbd7-40e402e09e5b",
+      "https://target.scene7.com/is/image/Target/GUEST_929e86d1-4b54-407e-bb30-527bbe177aaa",
+      "https://target.scene7.com/is/image/Target/GUEST_4cfad2a7-0271-4396-82c4-99ea7ccf114f",
+      "https://target.scene7.com/is/image/Target/GUEST_15e50b03-6e7a-45e8-89f8-bb3ba868b9e3",
+      "https://target.scene7.com/is/image/Target/GUEST_a55d68ae-27bb-466a-8d7c-1441ef3b5520",
+      "https://target.scene7.com/is/image/Target/GUEST_de9f4980-8859-4e6b-a8c8-33a2f6ba8777",
+      "https://target.scene7.com/is/image/Target/GUEST_79cd4bef-d11f-4cf3-b248-1338e6798411"
+    ]
+  },
+  "videos": null,
+  "product_classification": {
+    "item_type": {
+      "name": "Snack and Protein Bars",
+      "type": "440456"
+    }
+  },
+  "dpci": "071-20-1124"
+},
+{
+  "url": "https://www.target.com/s",
+  "title": "Barebells Nutrition Bars - Caramel Cashew - 7.76oz/4pk",
+  "description": {
+    "bullet_descriptions": [
+      "<B>Consistency:</B> Chewy",
+      "<B>Protein Grams per Serving:</B> 20 Grams",
+      "<B>Form:</B> Bar",
+      "<B>State of Readiness:</B> Ready to Eat",
+      "<B>Package Quantity:</B> 4",
+      "<B>Net weight:</B> 7.76 Ounces"
+    ],
+    "soft_bullets": {
+      "bullets": [
+        "High in Protien: 20 GRAMS OF PROTEIN PER BAR AND NEVER COMPROMISING ON FLAVOR. GO AHEAD AND ENJOY A MOUTH-WATERING SNACK! YOU WILL NOT REGRET IT!",
+        "No Added Sugar: REAL COCOA BUTTER AND COCOA POWDER ALONG WITH SPECIALLY FORMULATED PRODUCT TO TASTE GREAT WITHOUT THE SUGAR.",
+        "Delicious Flavors with ONLY 200 CALORIES and 100 % BAREBELLICIOUS – AVAILABLE IN SEVEN INCREDIBLE FLAVORS. BAREBELLS PROTEIN BARS WERE BORN TO WOW YOUR TASTE BUDS.",
+        "No Palm: WE ARE DOING OUR PART TO BECOME EVEN MORE SUSTAINABLE AND HELP MOTHER NATURE OUT, SO WE SAY ‘NO’ TO PALM OIL IN OUR PRODUCTS."
+      ]
+    }
+  },
+  "primary_brand": {
+    "canonical_url": "/b/barebells/-/N-q643lelqwxh",
+    "linking_id": "q643lelqwxh",
+    "name": "Barebells"
+  },
+  "tcin": "89709564",
+  "original_tcin": "89709564",
+  "desirability_cues": null,
+  "promotions": [
+    {
+      "plp_message": "Get a coupon, $10 off a $20 purchase with a flu shot",
+      "promotion_id": "157453588",
+      "promotion_class": "No Discount",
+      "subscription_type": "ALL",
+      "threshold_type": "none",
+      "threshold_value": 1,
+      "reward_type": "NoDiscount",
+      "reward_value": 0,
+      "circle_offer": false,
+      "mass_offer": true,
+      "channel": "online_only"
+    }
+  ],
+  "price": {
+    "current_retail": 9.59,
+    "display_was_now": false,
+    "formatted_current_price": "$9.59",
+    "formatted_current_price_type": "reg",
+    "formatted_unit_price": "$1.24",
+    "formatted_unit_price_suffix": "/ounce",
+    "reg_retail": 9.59,
+    "location_id": 2272
+  },
+  "rating_score": null,
+  "aspects_rating_score": null,
+  "cart_add_on_threshold": 35,
+  "is_limited_time_offer": false,
+  "relationship_type": "Variation Child",
+  "relationship_type_code": "VC",
+  "buy_url": "https://www.target.com/p/barebells-nutrition-bars-caramel-cashew-7-76oz-4pk/-/A-89709564",
+  "images": {
+    "primary_image_url": "https://target.scene7.com/is/image/Target/GUEST_f4358461-9a5e-4c2b-9f1a-df008def9321",
+    "alternate_image_urls": [
+      "https://target.scene7.com/is/image/Target/GUEST_bece63f1-4b0e-4fcc-b13c-f6932609ed7c"
+    ]
+  },
+  "videos": [
+    {
+      "is_list_page_eligible": false,
+      "video_files": [
+        {
+          "mime_type": "video/mp4",
+          "video_url": "https://target.scene7.com/is/content/Target/GUEST_26d05940-3783-4409-9554-24dba3ad1736_Flash9_Autox720p_2600k"
+        }
+      ]
+    }
+  ],
+  "product_classification": {
+    "item_type": {
+      "name": "Snack and Protein Bars",
+      "type": "440456"
+    }
+  },
+  "dpci": "094-08-0321"
+},
+{
+  "url": "https://www.target.com/s",
+  "title": "Built Bar Coconut Puff Protein Bars - 17g Protein - 4ct",
+  "description": {
+    "bullet_descriptions": [
+      "<B>Consistency:</B> Chewy",
+      "<B>Protein Grams per Serving:</B> 17 Grams",
+      "<B>Form:</B> Bar",
+      "<B>State of Readiness:</B> Ready to Eat",
+      "<B>Package Quantity:</B> 1",
+      "<B>Net weight:</B> 5.64 Ounces",
+      "<B>Protein type:</B> Whey Protein Isolate"
+    ],
+    "soft_bullets": {
+      "bullets": [
+        "Protein Packed: Enjoy 17g of high-quality protein in each protein bar fuel your active lifestyle and support muscle growth and recovery with built",
+        "Plus collagen: Enjoy collagen peptides in every bite to help support the health of your hair, skin, nails, and joints",
+        "Guilt-free snack: only 140 calories per bar make this the perfect guilt-free snack for on-the-go or satisfying that afternoon sweet tooth you're welcome",
+        "Smooth & delicious taste: Enjoy a each bite from start to finish without that typical chalky aftertaste found in many protein bars so good, that you will forget you're eating a protein bar",
+        "Soft, satisfying light and fluffy texture reminiscent of a chocolate-covered marshmallow, making it a pleasure to eat this protein candy bar",
+        "Gluten Free: Enjoy peace of mind with a protein bar that caters to gluten-sensitive and celiac-friendly diets, ensuring a safe and delicious snack for everyone"
+      ]
+    }
+  },
+  "primary_brand": {
+    "canonical_url": "/b/built-bar/-/N-q643lejv7f4",
+    "linking_id": "q643lejv7f4",
+    "name": "Built Bar"
+  },
+  "tcin": "94291350",
+  "original_tcin": "94291350",
+  "desirability_cues": null,
+  "promotions": [],
+  "price": {
+    "current_retail": 8.99,
+    "display_was_now": false,
+    "formatted_current_price": "$8.99",
+    "formatted_current_price_type": "reg",
+    "formatted_unit_price": "$2.25",
+    "formatted_unit_price_suffix": "/count",
+    "reg_retail": 8.99,
+    "location_id": 2272
+  },
+  "rating_score": 4.63,
+  "aspects_rating_score": [
+    {
+      "id": "quality",
+      "label": "quality",
+      "value": 4.88
+    },
+    {
+      "id": "taste",
+      "label": "taste",
+      "value": 4.86
+    },
+    {
+      "id": "value",
+      "label": "value",
+      "value": 4.7
+    }
+  ],
+  "cart_add_on_threshold": 35,
+  "is_limited_time_offer": null,
+  "relationship_type": "Stand Alone",
+  "relationship_type_code": "SA",
+  "buy_url": "https://www.target.com/p/built-bar-coconut-puff-snack-bars-5-64oz-4ct/-/A-94291350",
+  "images": {
+    "primary_image_url": "https://target.scene7.com/is/image/Target/GUEST_51aa7e1f-330a-4c64-a957-c468023d36d7",
+    "alternate_image_urls": [
+      "https://target.scene7.com/is/image/Target/GUEST_3ad44aeb-41c4-408e-a732-42cc7a6d2b21",
+      "https://target.scene7.com/is/image/Target/GUEST_3d68d014-09b2-43cf-92a9-1abbf5509c3f",
+      "https://target.scene7.com/is/image/Target/GUEST_6274fdbd-376f-489e-8241-97e9fdbb210b",
+      "https://target.scene7.com/is/image/Target/GUEST_c619a87b-048c-4836-99f1-3b787123bc90",
+      "https://target.scene7.com/is/image/Target/GUEST_84e26d78-0638-42a6-9399-b7847456539a",
+      "https://target.scene7.com/is/image/Target/GUEST_6eee9eae-0572-4962-8115-b6cc77688f0e",
+      "https://target.scene7.com/is/image/Target/GUEST_a3235672-57c4-4cf8-bf28-0fe50bb02e8f"
+    ]
+  },
+  "videos": [
+    {
+      "is_list_page_eligible": false,
+      "video_files": [
+        {
+          "mime_type": "video/mp4",
+          "video_url": "https://target.scene7.com/is/content/Target/GUEST_22a0daa7-3955-4fc7-81af-16b2c66efdab"
+        }
+      ]
+    }
+  ],
+  "product_classification": {
+    "item_type": {
+      "name": "Snack and Protein Bars",
+      "type": "440456"
+    }
+  },
+  "dpci": "071-20-1379"
+},
+{
+  "url": "https://www.target.com/s",
+  "title": "Barebells Nutrition Bars - Chocolate Dough - 4pk",
+  "description": {
+    "bullet_descriptions": [
+      "<B>Consistency:</B> Chewy",
+      "<B>Protein Grams per Serving:</B> 20 Grams",
+      "<B>Form:</B> Bar",
+      "<B>State of Readiness:</B> Ready to Eat",
+      "<B>Package Quantity:</B> 4",
+      "<B>Net weight:</B> 7.76 Ounces"
+    ],
+    "soft_bullets": {
+      "bullets": [
+        "BAREBELLS CHOCOALTE DOUGH PROTEIN BAR - 4 individual yummy Barebells protein bars! Tired of eating bars that taste like cardboard? Chocolate dough covered in creamy milk chocolate and coated in chocolate crisps.",
+        "DELICIOUS PROTEIN SNACKS WITHOUT ADDED SUGAR - Searching for protein bars that taste like a regular chocolate bar? Buckle up and grab a Barebells bar! Protein bars from Barebells are completely free from added sugars and packed with 15-20 grams of protein.",
+        "ON THE GO HIGH PROTEIN SNACKS - Barebells is the ultimate choice for pre- and post-workout, as low calorie snacks at the office or for anyone who wants to satisfy their chocolate cravings.",
+        "100% BAREBELLICIOUS SNACK BARS - We are on a mission to continue to develop our products to prove to the world that protein products don’t have to taste bland… But can be simply irresistible!",
+        "NO ADDED SUGAR - *Not a low or reduced calorie food. See nutrition information for sugar, calorie and saturated fat content"
+      ]
+    }
+  },
+  "primary_brand": {
+    "canonical_url": "/b/barebells/-/N-q643lelqwxh",
+    "linking_id": "q643lelqwxh",
+    "name": "Barebells"
+  },
+  "tcin": "89709562",
+  "original_tcin": "89709562",
+  "desirability_cues": null,
+  "promotions": [
+    {
+      "plp_message": "Get a coupon, $10 off a $20 purchase with a flu shot",
+      "promotion_id": "157453588",
+      "promotion_class": "No Discount",
+      "subscription_type": "ALL",
+      "threshold_type": "none",
+      "threshold_value": 1,
+      "reward_type": "NoDiscount",
+      "reward_value": 0,
+      "circle_offer": false,
+      "mass_offer": true,
+      "channel": "online_only"
+    }
+  ],
+  "price": {
+    "current_retail": 9.59,
+    "display_was_now": false,
+    "formatted_current_price": "$9.59",
+    "formatted_current_price_type": "reg",
+    "formatted_unit_price": "$1.24",
+    "formatted_unit_price_suffix": "/ounce",
+    "reg_retail": 9.59,
+    "location_id": 2272
+  },
+  "rating_score": 4.57,
+  "aspects_rating_score": [
+    {
+      "id": "flavor",
+      "label": "flavor",
+      "value": 4.65
+    },
+    {
+      "id": "quality",
+      "label": "quality",
+      "value": 4.5
+    },
+    {
+      "id": "value",
+      "label": "value",
+      "value": 4.11
+    }
+  ],
+  "cart_add_on_threshold": 35,
+  "is_limited_time_offer": false,
+  "relationship_type": "Stand Alone",
+  "relationship_type_code": "SA",
+  "buy_url": "https://www.target.com/p/barebells-nutrition-bars-chocolate-dough-4pk/-/A-89709562",
+  "images": {
+    "primary_image_url": "https://target.scene7.com/is/image/Target/GUEST_709998c2-4e9b-428c-8936-e0eb053ccf39",
+    "alternate_image_urls": [
+      "https://target.scene7.com/is/image/Target/GUEST_8c7e356b-89d1-486a-9f5d-83d0abfa83a2",
+      "https://target.scene7.com/is/image/Target/GUEST_879378c9-d5c5-4370-a465-744b6e5cac47"
+    ]
+  },
+  "videos": [
+    {
+      "is_list_page_eligible": false,
+      "video_files": [
+        {
+          "mime_type": "video/mp4",
+          "video_url": "https://target.scene7.com/is/content/Target/GUEST_26d05940-3783-4409-9554-24dba3ad1736"
+        }
+      ]
+    }
+  ],
+  "product_classification": {
+    "item_type": {
+      "name": "Snack and Protein Bars",
+      "type": "440456"
+    }
+  },
+  "dpci": "094-08-2223"
+},
+{
+  "url": "https://www.target.com/s",
+  "title": "Perfect Bar Dark Chocolate Chip Peanut Butter Mini Protein Bars - 7oz/8ct",
+  "description": {
+    "bullet_descriptions": [
+      "<B>Consistency:</B> Chewy",
+      "<B>Protein Grams per Serving:</B> 6 Grams",
+      "<B>Dietary Needs:</B> Organic Certified",
+      "<B>Form:</B> Bar",
+      "<B>State of Readiness:</B> Ready to Eat",
+      "<B>Package Quantity:</B> 8",
+      "<B>Net weight:</B> 7.0 Ounces"
+    ],
+    "soft_bullets": {
+      "bullets": [
+        "PERFECT BAR MINI DARK CHOCOLATE CHIP PEANUT BUTTER PROTEIN BAR: Eight .88-oz organic protein bars with freshly ground peanut butter, honey, dark chocolate chips, sea salt, a satisfying cookie dough texture, whole food protein, and 20+ superfoods",
+        "CONVENIENT PROTEIN SNACKS: Protein bar in a mini size with peanut butter and 6 grams of whole food protein",
+        "SUPERFOOD: 20+ organic superfoods, like fruits, vegetables, seeds, and oils, in a chocolate chip peanut butter protein snack food bar that’s a convenient source of vitamins, minerals, natural energy, and clean eating",
+        "WHOLE FOODS: Organic, non-GMO, low-glycemic, clean eating snacks that are gluten-free, soy-free, and kosher and contain no sugar alcohols or artificial flavors, colors, or preservatives",
+        "REFRIGERATED FOR A REASON: Delicious nut butter bar with nothing artificial that is best kept refrigerated for optimal taste and texture but still perfectly fresh out of the fridge for as long as one week; ideal on-the-go, between-meal bars"
+      ]
+    }
+  },
+  "primary_brand": {
+    "canonical_url": "/b/perfect-bar/-/N-73j12",
+    "linking_id": "73j12",
+    "name": "Perfect Bar"
+  },
+  "tcin": "81885477",
+  "original_tcin": "81885477",
+  "desirability_cues": null,
+  "promotions": [],
+  "price": {
+    "current_retail": 7.99,
+    "display_was_now": false,
+    "formatted_current_price": "$7.99",
+    "formatted_current_price_type": "reg",
+    "formatted_unit_price": "$1.14",
+    "formatted_unit_price_suffix": "/ounce",
+    "reg_retail": 7.99,
+    "location_id": 2272
+  },
+  "rating_score": 4.58,
+  "aspects_rating_score": [
+    {
+      "id": "quality",
+      "label": "quality",
+      "value": 4.58
+    },
+    {
+      "id": "taste",
+      "label": "taste",
+      "value": 4.52
+    },
+    {
+      "id": "value",
+      "label": "value",
+      "value": 4
+    }
+  ],
+  "cart_add_on_threshold": 35,
+  "is_limited_time_offer": null,
+  "relationship_type": "Stand Alone",
+  "relationship_type_code": "SA",
+  "buy_url": "https://www.target.com/p/perfect-bar-dark-chocolate-chip-peanut-butter-snack-size-protein-bars-7oz-8ct/-/A-81885477",
+  "images": {
+    "primary_image_url": "https://target.scene7.com/is/image/Target/GUEST_5af8f671-3f13-4a22-b24b-04a9da9c0eb9",
+    "alternate_image_urls": [
+      "https://target.scene7.com/is/image/Target/GUEST_276d5b8b-d0b0-4fca-8862-63d9457b1886",
+      "https://target.scene7.com/is/image/Target/GUEST_fbe1039e-39f6-4257-bd62-cdf76603f284",
+      "https://target.scene7.com/is/image/Target/GUEST_7b76a3de-9e3f-41f4-8dfd-1cfe187556ce",
+      "https://target.scene7.com/is/image/Target/GUEST_b7de8ab4-544d-4d22-984e-747b7eb9b05f",
+      "https://target.scene7.com/is/image/Target/GUEST_b5f59ab5-cc89-450c-a9f8-4721eedd7b20",
+      "https://target.scene7.com/is/image/Target/GUEST_615b6d63-e3ee-4331-8ada-3853dfa61145",
+      "https://target.scene7.com/is/image/Target/GUEST_b31f8a0f-0b30-424d-bb3b-d4379845a26a",
+      "https://target.scene7.com/is/image/Target/GUEST_65f746e0-2a3f-4bef-9344-9571b51cdfa1",
+      "https://target.scene7.com/is/image/Target/GUEST_83d21d69-3189-4c36-93ef-53882d1e55d5",
+      "https://target.scene7.com/is/image/Target/GUEST_7b3ead8a-df45-4d8b-8e6c-1da6b154bd28",
+      "https://target.scene7.com/is/image/Target/GUEST_854840f5-73d9-490c-8f51-b1ff2bfd76c4",
+      "https://target.scene7.com/is/image/Target/GUEST_1051fc68-5ebf-4187-a760-388205b02b13",
+      "https://target.scene7.com/is/image/Target/GUEST_c344fb8c-c54a-4437-96f3-5064d5330ce1",
+      "https://target.scene7.com/is/image/Target/GUEST_20113f63-cff3-4f87-9f76-723c50b5ac91",
+      "https://target.scene7.com/is/image/Target/GUEST_3f483fc8-d19a-4ed5-bb0b-d914c8d81986",
+      "https://target.scene7.com/is/image/Target/GUEST_6b040e8d-1986-40d1-a35b-8fb29938dbbb",
+      "https://target.scene7.com/is/image/Target/GUEST_2ffa6c98-a0dc-4159-b88f-848b8061eccf",
+      "https://target.scene7.com/is/image/Target/GUEST_9b9bbf89-d8d3-4eda-86a0-a65b692784b7"
+    ]
+  },
+  "videos": [
+    {
+      "is_list_page_eligible": false,
+      "video_files": [
+        {
+          "mime_type": "video/mp4",
+          "video_url": "https://target.scene7.com/is/content/Target/GUEST_ceb32b5f-e709-4131-971c-cf504138e8f5"
+        }
+      ]
+    },
+    {
+      "is_list_page_eligible": false,
+      "video_files": [
+        {
+          "mime_type": "video/mp4",
+          "video_url": "https://target.scene7.com/is/content/Target/GUEST_168dc25d-fede-4747-85dc-159c0282f1c6"
+        }
+      ]
+    }
+  ],
+  "product_classification": {
+    "item_type": {
+      "name": "Snack and Protein Bars",
+      "type": "440456"
+    }
+  },
+  "dpci": "211-34-0274"
+},
+{
+  "url": "https://www.target.com/s",
+  "title": "Nature Valley Peanut Butter Dark Chocolate Protein Chewy Bars - 14.2oz - 10ct",
+  "description": {
+    "bullet_descriptions": [
+      "<B>Consistency:</B> Chewy",
+      "<B>Protein Grams per Serving:</B> 10 Grams",
+      "<B>Dietary Needs:</B> 0 Grams Trans Fat, Gluten-Free",
+      "<B>Features:</B> No Artificial Sweeteners, No Synthetic Colors, No High Fructose Corn Syrup, No Artificial Flavors, No Hydrogenated Oil, No Artificial Colors",
+      "<B>Form:</B> Bar",
+      "<B>State of Readiness:</B> Ready to Eat",
+      "<B>Package Quantity:</B> 10",
+      "<B>Net weight:</B> 14.2 Ounces",
+      "<B>Primary dietary ingredient:</B> Plant-Based Protein",
+      "<B>Protein type:</B> Whey Protein"
+    ],
+    "soft_bullets": {
+      "bullets": [
+        "CHEWY GRANOLA BARS: Protein Granola Bars made with rich dark chocolate chips, roasted peanuts and creamy peanut butter; A must-have for an on-the-go snack",
+        "PROTEIN: Contains 10g of protein per serving; The perfect snack to help keep you going",
+        "PERFECTLY PORTABLE: Convenient bars for snack time or an on-the-go invigorating treat; Perfect for the pantry, lunch box, and hiking trail",
+        "TASTY SNACK: Gluten-free snack with no artificial flavors, artificial colors, or high fructose corn syrup",
+        "CONTAINS: One 14.2 oz box of Nature Valley Peanut Butter Dark Chocolate Chewy Protein Granola Bars; 10 bars"
+      ]
+    }
+  },
+  "primary_brand": {
+    "canonical_url": "/b/nature-valley/-/N-56fcs",
+    "linking_id": "56fcs",
+    "name": "Nature Valley"
+  },
+  "tcin": "14742167",
+  "original_tcin": "14742167",
+  "desirability_cues": null,
+  "promotions": [],
+  "price": {
+    "current_retail": 7.99,
+    "display_was_now": false,
+    "formatted_current_price": "$7.99",
+    "formatted_current_price_type": "reg",
+    "formatted_unit_price": "$0.56",
+    "formatted_unit_price_suffix": "/ounce",
+    "reg_retail": 7.99,
+    "location_id": 2272
+  },
+  "rating_score": 4.61,
+  "aspects_rating_score": [
+    {
+      "id": "quality",
+      "label": "quality",
+      "value": 4.38
+    },
+    {
+      "id": "taste",
+      "label": "taste",
+      "value": 4.36
+    },
+    {
+      "id": "value",
+      "label": "value",
+      "value": 3.96
+    }
+  ],
+  "cart_add_on_threshold": 35,
+  "is_limited_time_offer": null,
+  "relationship_type": "Stand Alone",
+  "relationship_type_code": "SA",
+  "buy_url": "https://www.target.com/p/nature-valley-peanut-butter-dark-chocolate-protein-chewy-bars-14-2oz-10ct/-/A-14742167",
+  "images": {
+    "primary_image_url": "https://target.scene7.com/is/image/Target/GUEST_5872dc50-7cfa-4f1b-8702-f5f1e1a69946",
+    "alternate_image_urls": [
+      "https://target.scene7.com/is/image/Target/GUEST_73c35843-1df5-48e7-b998-354af58c6ccc",
+      "https://target.scene7.com/is/image/Target/GUEST_c96817c8-8904-44bd-b507-4f3d54ffe530",
+      "https://target.scene7.com/is/image/Target/GUEST_f95f1e53-d609-4a7a-a1bd-bebf2920414d",
+      "https://target.scene7.com/is/image/Target/GUEST_1de59f40-1335-4334-afb1-8d2ddbd8cb23",
+      "https://target.scene7.com/is/image/Target/GUEST_9a489015-3ff7-43f9-b6e4-6a78d9d8190c",
+      "https://target.scene7.com/is/image/Target/GUEST_c175217e-e445-4c1d-880d-c0b8756dc966",
+      "https://target.scene7.com/is/image/Target/GUEST_6298486c-67d0-487c-85a8-f35fa7cf590c",
+      "https://target.scene7.com/is/image/Target/GUEST_7d22b2e9-892d-436c-b0c7-f3eea001d902",
+      "https://target.scene7.com/is/image/Target/GUEST_3e11468b-5f2b-4771-b883-4e1f7a4cac43",
+      "https://target.scene7.com/is/image/Target/GUEST_22ce9c97-d2bb-4b39-80bc-6548012919f6"
+    ]
+  },
+  "videos": [
+    {
+      "is_list_page_eligible": false,
+      "video_files": [
+        {
+          "mime_type": "video/mp4",
+          "video_url": "https://target.scene7.com/is/content/Target/GUEST_b708ac3c-a9c2-4772-9619-1a63d8b4ce64"
+        }
+      ]
+    }
+  ],
+  "product_classification": {
+    "item_type": {
+      "name": "Snack and Protein Bars",
+      "type": "440456"
+    }
+  },
+  "dpci": "071-20-0113"
+},
+{
+  "url": "https://www.target.com/s",
+  "title": "IQBAR Chocolate Chip Peanut Butter Protein Bars - 6.4oz/4ct",
+  "description": {
+    "bullet_descriptions": [
+      "<B>Consistency:</B> Chewy",
+      "<B>Protein Grams per Serving:</B> 12 Grams",
+      "<B>Form:</B> Bar",
+      "<B>State of Readiness:</B> Ready to Eat",
+      "<B>Package Quantity:</B> 4",
+      "<B>Net weight:</B> 6.4 Ounces"
+    ],
+    "soft_bullets": {
+      "bullets": [
+        "Keto-Friendly Snack Bars for Brain & Body",
+        "Designed to keep you focused & energized throughout the day",
+        "IQBAR contains 12g plant-based protein, 1g sugar, and 3 net-carbs",
+        "Made with clean-label ingredients and a science-backed formulation",
+        "Developed for diet restrictions including celiac, paleo, and vegan",
+        "Meal replacements bars you can enjoy on-the-go",
+        "Formulated with Lion’s Mane, Magnesium, Vitamin E, MCTs & Flavonoids",
+        "Perfect for your active & busy lifestyle"
+      ]
+    }
+  },
+  "primary_brand": {
+    "canonical_url": "/b/iqbar/-/N-q643legl07m",
+    "linking_id": "q643legl07m",
+    "name": "IQBAR"
+  },
+  "tcin": "90669415",
+  "original_tcin": "90669415",
+  "desirability_cues": null,
+  "promotions": [],
+  "price": {
+    "current_retail": 6.39,
+    "display_was_now": false,
+    "formatted_current_price": "$6.39",
+    "formatted_current_price_type": "reg",
+    "formatted_unit_price": "$1.00",
+    "formatted_unit_price_suffix": "/ounce",
+    "reg_retail": 6.39,
+    "location_id": 2272
+  },
+  "rating_score": 4.7,
+  "aspects_rating_score": [
+    {
+      "id": "taste",
+      "label": "taste",
+      "value": 2.33
+    },
+    {
+      "id": "quality",
+      "label": "quality",
+      "value": 3.5
+    },
+    {
+      "id": "value",
+      "label": "value",
+      "value": 2.75
+    }
+  ],
+  "cart_add_on_threshold": 35,
+  "is_limited_time_offer": null,
+  "relationship_type": "Stand Alone",
+  "relationship_type_code": "SA",
+  "buy_url": "https://www.target.com/p/iqbar-peanut-butter-chip-protein-bars-6-4oz-4ct/-/A-90669415",
+  "images": {
+    "primary_image_url": "https://target.scene7.com/is/image/Target/GUEST_3742a7bb-910d-4d54-8021-c7498406393c",
+    "alternate_image_urls": [
+      "https://target.scene7.com/is/image/Target/GUEST_d0250cfa-c9d7-4f04-a491-133518051ba8",
+      "https://target.scene7.com/is/image/Target/GUEST_45059997-3688-46b4-a2ac-dababdeb5e20",
+      "https://target.scene7.com/is/image/Target/GUEST_c2b053ba-8b39-4869-8f56-73bdb5e042ca",
+      "https://target.scene7.com/is/image/Target/GUEST_ff952721-fc20-4845-9a3d-1a5e8887d1a8",
+      "https://target.scene7.com/is/image/Target/GUEST_e8afa413-bf4b-4481-ba65-5150d16d54bb"
+    ]
+  },
+  "videos": null,
+  "product_classification": {
+    "item_type": {
+      "name": "Snack and Protein Bars",
+      "type": "440456"
+    }
+  },
+  "dpci": "071-20-0695"
+},
+{
+  "url": "https://www.target.com/s",
+  "title": "IQBAR Mint Chocolate Protein Bars - 6.4oz/4ct",
+  "description": {
+    "bullet_descriptions": [
+      "<B>Consistency:</B> Chewy",
+      "<B>Protein Grams per Serving:</B> 12 Grams",
+      "<B>Form:</B> Bar",
+      "<B>State of Readiness:</B> Ready to Eat",
+      "<B>Package Quantity:</B> 4",
+      "<B>Net weight:</B> 6.4 Ounces"
+    ],
+    "soft_bullets": {
+      "bullets": [
+        "Keto-Friendly Snack Bars for Brain & Body",
+        "Designed to keep you focused & energized throughout the day",
+        "IQBAR contains 12g plant-based protein, 1g sugar, and 2 net-carbs",
+        "Made with clean-label ingredients and a science-backed formulation",
+        "Developed for diet restrictions including celiac, paleo, and vegan",
+        "Meal replacements bars you can enjoy on-the-go",
+        "Formulated with Lion’s Mane, Magnesium, Vitamin E, MCTs & Flavonoids",
+        "Perfect for your active & busy lifestyle"
+      ]
+    }
+  },
+  "primary_brand": {
+    "canonical_url": "/b/iqbar/-/N-q643legl07m",
+    "linking_id": "q643legl07m",
+    "name": "IQBAR"
+  },
+  "tcin": "93974404",
+  "original_tcin": "93974404",
+  "desirability_cues": null,
+  "promotions": [],
+  "price": {
+    "current_retail": 6.39,
+    "display_was_now": false,
+    "formatted_current_price": "$6.39",
+    "formatted_current_price_type": "reg",
+    "formatted_unit_price": "$1.00",
+    "formatted_unit_price_suffix": "/ounce",
+    "reg_retail": 6.39,
+    "location_id": 2272
+  },
+  "rating_score": 4.75,
+  "aspects_rating_score": [
+    {
+      "id": "quality",
+      "label": "quality",
+      "value": 3.67
+    },
+    {
+      "id": "taste",
+      "label": "taste",
+      "value": 3.11
+    },
+    {
+      "id": "value",
+      "label": "value",
+      "value": 3.44
+    }
+  ],
+  "cart_add_on_threshold": 35,
+  "is_limited_time_offer": null,
+  "relationship_type": "Stand Alone",
+  "relationship_type_code": "SA",
+  "buy_url": "https://www.target.com/p/iqbar-chocolate-mint-chip-protein-bars-6-4oz-4ct/-/A-93974404",
+  "images": {
+    "primary_image_url": "https://target.scene7.com/is/image/Target/GUEST_fd6d7804-602e-4273-add1-b1068cb73a5a",
+    "alternate_image_urls": [
+      "https://target.scene7.com/is/image/Target/GUEST_29ab9d06-77c1-4101-b64d-0c8241a22dbb",
+      "https://target.scene7.com/is/image/Target/GUEST_59075331-8922-4be0-8ea0-13748ebf6f63",
+      "https://target.scene7.com/is/image/Target/GUEST_c8b5eb7b-5082-40d0-a333-6573c7f0d785",
+      "https://target.scene7.com/is/image/Target/GUEST_24b73d1f-b22a-4645-9eeb-8c3abde9314e",
+      "https://target.scene7.com/is/image/Target/GUEST_d6768fd4-0bc2-45d8-afa9-b7a323e3a7e9"
+    ]
+  },
+  "videos": null,
+  "product_classification": {
+    "item_type": {
+      "name": "Snack and Protein Bars",
+      "type": "440456"
+    }
+  },
+  "dpci": "071-20-0391"
+},
+{
+  "url": "https://www.target.com/s",
+  "title": "Think! Chocolate Peanut Butter Cookie Dough Keto Protein Bar - 10 bars, 1.2 oz",
+  "description": {
+    "bullet_descriptions": [
+      "<B>Consistency:</B> Chewy",
+      "<B>Protein Grams per Serving:</B> 10 grams",
+      "<B>Dietary Needs:</B> High Protein",
+      "<B>Features:</B> No Artificial Sweeteners",
+      "<B>Form:</B> Bar",
+      "<B>State of Readiness:</B> Ready to Eat",
+      "<B>Protein type:</B> Milk Protein",
+      "<B>Net weight:</B> 1.2 ounces",
+      "<B>Package Quantity:</B> 10"
+    ],
+    "soft_bullets": {
+      "bullets": [
+        "10 bars, 1.2 oz",
+        "Chocolate peanut butter cookie dough flavor",
+        "Keto-friendly",
+        "Low carb and sugar",
+        "Delivers a delicious combination of flavors"
+      ]
+    }
+  },
+  "primary_brand": {
+    "canonical_url": "/b/think/-/N-q643le4s8eu",
+    "linking_id": "q643le4s8eu",
+    "name": "think!"
+  },
+  "tcin": "89574493",
+  "original_tcin": "89574493",
+  "desirability_cues": null,
+  "promotions": [],
+  "price": {
+    "current_retail": 41.49,
+    "display_was_now": false,
+    "formatted_comparison_price": "$43.49",
+    "formatted_comparison_price_type": "reg",
+    "formatted_current_price": "$41.49",
+    "formatted_current_price_type": "sale",
+    "formatted_unit_price": "$3.46",
+    "formatted_unit_price_suffix": "/ounce",
+    "reg_retail": 43.49,
+    "save_dollar": 2,
+    "save_percent": 5,
+    "location_id": 3991
+  },
+  "rating_score": 4.31,
+  "aspects_rating_score": null,
+  "cart_add_on_threshold": 35,
+  "is_limited_time_offer": null,
+  "relationship_type": "Stand Alone",
+  "relationship_type_code": "SA",
+  "buy_url": "https://www.target.com/p/think-chocolate-peanut-butter-cookie-dough-keto-protein-bar-10-bars-1-2-oz/-/A-89574493",
+  "images": {
+    "primary_image_url": "https://target.scene7.com/is/image/Target/GUEST_148d1cca-4b64-4cf4-84a2-d46487720fd5",
+    "alternate_image_urls": [
+      "https://target.scene7.com/is/image/Target/GUEST_3aa4b532-6bf9-4309-bb97-b4f64ab00f3c",
+      "https://target.scene7.com/is/image/Target/GUEST_f50b4a73-7ec9-4a38-9308-a56baf7b9666"
+    ]
+  },
+  "videos": null,
+  "product_classification": {
+    "item_type": {
+      "name": "Snack and Protein Bars",
+      "type": "440456"
+    }
+  },
+  "dpci": null
+}]
