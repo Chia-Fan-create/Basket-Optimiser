@@ -1,0 +1,38 @@
+:root {
+--bg-main: #0b1c2d;
+--accent-primary: #4dd4ff;
+--accent-gold: #f4c430;
+}
+
+body {
+background-color: var(--bg-main);
+color: #eaecef;
+font-family: 'Open Sans', sans-serif;
+}
+
+h1, h2, h3, .fw-bold, .unit-price {
+font-family: 'Roboto', sans-serif;
+}
+
+.unit-price {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+}
+
+.card {
+  background-color: #ffffff;
+  color: #212529;
+  border-radius: 12px;
+}
+
+.best-deal {
+  border: 3px solid var(--accent-gold);
+  background: linear-gradient(145deg, #fff7d3, #ffffff);
+}
+
+.best-badge {
+  background-color: var(--accent-gold);
+  color: #000;
+  font-size: 0.75rem;
+}

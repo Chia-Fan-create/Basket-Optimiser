@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Basket Optimiser</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body {
+  background-color: #0b1c2d;
+  font-family: 'Open Sans', sans-serif;
+  color: #eaecef;
+}
+
+h1, h2, .unit-price {
+  font-family: 'Roboto', sans-serif;
+}
+
+.unit-price {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #4dd4ff;
+}
+
+.card {
+  background-color: #ffffff;
+  color: #212529;
+  border-radius: 12px;
+}
+
+.best-deal {
+  border: 3px solid #f4c430;
+  background: linear-gradient(145deg, #fffdf3, #ffffff);
+}
+
+.best-badge {
+  background-color: #f4c430;
+  color: #000;
+  font-size: 0.75rem;
+}
+
+.store-badge {
+  font-size: 0.7rem;
+  letter-spacing: .05em;
+}
+
+.nav-pills .nav-link {
+  color: #cfd8dc;
+}
+
+.nav-pills .nav-link.disabled {
+  opacity: 0.4;
+}
+</style>
+</head>
+
+<body>
+<div class="container py-4">
+
+  <!-- Header -->
+  <h1 class="fw-bold mb-1">🧺 Basket Optimiser</h1>
+  <p class="text-secondary mb-3">
+    Compare unit prices across Amazon, Target, and Walmart
+  </p>
+
+  <!-- Feature Tabs -->
+  <ul class="nav nav-pills mb-4">
+    <li class="nav-item">
+      <span class="nav-link active">Unit Price Comparison</span>
+    </li>
+    <li class="nav-item">
+      <span class="nav-link disabled">Price Trend (soon)</span>
+    </li>
+    <li class="nav-item">
+      <span class="nav-link disabled">Price Forecast (soon)</span>
+    </li>
+  </ul>
+
+  <!-- Product Selector -->
+  <div class="mb-4">
+    <label class="form-label">Select Product</label>
+    <select id="productSelector" class="form-select">
+      <option value="toilet_paper">Toilet Paper</option>
+      <option value="protein_bar">Protein Bar</option>
+      <option value="laundry_detergent">Laundry Detergent</option>
+      <option value="vitamin_c">Vitamin C Supplement</option>
+    </select>
+  </div>
+
+  <!-- Top Comparison -->
+  <div id="topCards" class="row g-4 mb-5"></div>
+
+  <!-- Other Options -->
+  <h6 class="text-uppercase text-secondary mb-2">Other options (ranked)</h6>
+  <ul id="otherList" class="list-group"></ul>
+
+</div>
+
+<script>
+const sampleData = {
+  toilet_paper: [
+    { store:"Walmart", title:"Scott 1000 Toilet Paper", price_per_unit:0.047, url:"#"},
+    { store:"Target", title:"Charmin Ultra Strong", price_per_unit:0.055, url:"#"},
+    { store:"Amazon", title:"Amazon Basics 2-Ply", price_per_unit:0.067, url:"#"},
+    { store:"Costco", title:"Kirkland Signature", price_per_unit:0.060, url:"#"}
+  ]
+};
+
+const selector = document.getElementById("productSelector");
+const topCards = document.getElementById("topCards");
+const otherList = document.getElementById("otherList");
+
+function render(product) {
+  const items = [...sampleData[product]].sort((a,b)=>a.price_per_unit-b.price_per_unit);
+  topCards.innerHTML = "";
+  otherList.innerHTML = "";
+
+  items.slice(0,3).forEach((item,i)=>{
+    const col = document.createElement("div");
+    col.className = "col-md-4";
+    col.innerHTML = `
+      <div class="card h-100 p-3 ${i===0?"best-deal":""}">
+        <span class="badge store-badge bg-secondary mb-2">${item.store}</span>
+        ${i===0?'<span class="badge best-badge mb-2">👑 Best Value</span>':""}
+        <div class="unit-price">$${item.price_per_unit.toFixed(3)} / unit</div>
+        <div class="text-muted small mb-3">${item.title}</div>
+        <a href="${item.url}" class="btn btn-outline-primary btn-sm mt-auto">View</a>
+      </div>
+    `;
+    topCards.appendChild(col);
+  });
+
+  items.slice(3,10).forEach((item,i)=>{
+    const li = document.createElement("li");
+    li.className="list-group-item d-flex justify-content-between";
+    li.innerHTML = `
+      <span>${i+4}. ${item.store} – ${item.title}</span>
+      <strong>$${item.price_per_unit.toFixed(3)}</strong>
+    `;
+    otherList.appendChild(li);
+  });
+}
+
+selector.addEventListener("change", ()=>render(selector.value));
+render(selector.value);
+</script>
+
+</body>
+</html>
