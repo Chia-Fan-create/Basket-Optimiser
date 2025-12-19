@@ -25,26 +25,33 @@ This lack of standardization creates an information asymmetry, preventing shoppe
 
 ### Project Structure
 ```
-BASKET-OPTIMISER/
-├── .venv/                      # Python virtual environment for dependency management
-├── dataset/                    # Raw outputs from the web scraping process (JSON/CSV)
-│   ├── dataset_Amazon-crawler_...
-│   ├── dataset_Target-product_...
-│   └── dataset_Walmart-product_...
-├── db/                         # Data Access Layer and Database Models
-│   ├── models.py               # Defines the database schema and data structures
-│   └── repository.py           # Handles database interactions (CRUD operations)
-├── scripts/                    # Automation and pipeline orchestration scripts
-│   └── run_ingest_pipeline.py  # Script to initiate the full data ingestion process
-├── transformers/               # Core data engineering and standardization logic
-│   ├── cleaner.py              # Functions for data cleaning and pre-processing
-│   └── unit_converter.py       # Crucial logic for standardizing product units (e.g., oz to g)
-├── web/                        # Web application and front-end files
-│   ├── app.py                  # Main script for the web dashboard (e.g., Streamlit/Dash app)
-│   └── index.html              # Frontend template or static files (if using Flask/React)
-├── .gitignore                  # Specifies files/folders to be ignored by Git
-├── .python-version             # Specifies the required Python version (e.g., via pyenv)
-└── README.md                   # Project documentation
+Basket-Optimiser/
+│
+├── dataset/                 # Raw or preprocessed scraped data
+│
+├── db/                      # Database layer (SQLAlchemy)
+│   ├── __init__.py
+│   ├── models.py            # Product ORM model
+│   ├── repository.py        # Query & insert logic
+│   └── session.py           # DB session management
+│
+├── scripts/
+│   └── run_ingest_pipeline.py
+│                             # Orchestrates data cleaning → DB insertion
+│
+├── transformers/            # Data transformation logic
+│   ├── cleaner.py           # Cleans raw product fields
+│   └── unit_converter.py    # Unit normalization & price-per-unit logic
+│
+├── web/
+│   ├── css/                 # (Future) Custom dashboard styles
+│   └── ui_mock/             # UI mockups / design drafts
+│
+├── app.py                   # Streamlit dashboard application
+├── basket.db                # SQLite database (development)
+├── README.md
+└── .gitignore
+
 ```
 
 ### Tech Stack
@@ -60,6 +67,7 @@ BASKET-OPTIMISER/
 - protein bar 
 - paper towel 
 - chicken breast
+extension: vitamin C, laundry detergent
 
 
 ### Future Roadmap

@@ -53,14 +53,30 @@ def parse_unit_text(unit_str: str | None) -> tuple[float | None, str | None]:
 def convert_row(row: dict) -> dict:
     """
     Input the product info,
-    add "normalized_unit_qty" and "normalized_unit" columns
+    add normalized unit info and price per unit with status
+    ("normalized_unit_qty" and "normalized_unit" columns)
     """
     qty, unit = parse_unit_text(row.get("unit"))
     row["normalized_unit_qty"] = qty
     row["normalized_unit"] = unit
-    if qty and "price" in row:
-        row["price_per_unit"] = round(row["price"] / qty, 4)
-    else:
+    price = row.get("price")
+
+    # Add check to ensure qty and price are valid before performing division
+    if price is None:
         row["price_per_unit"] = None
+        row["price_per_unit_status"] = "missing_price"
+        return row
+    if qty is None or qty == 0:
+        row["price_per_unit"] = None
+        row["price_per_unit_status"] = "missing_or_zero_qty"
+        return row
+    if not isinstance(price, (int, float)):
+        row["price_per_unit"] = None
+        row["price_per_unit_status"] = "invalid_price_type"
+        return row
+    
+    # Calculate price per unit
+    row["price_per_unit"] = round(price / qty, 3)
+    row["price_per_unit_status"] = "OK"
     return row
 

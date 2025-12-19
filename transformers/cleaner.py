@@ -4,10 +4,13 @@ import re
 
 
 def clean_amazon(item: dict) -> dict:
+    # price field can be None (explicit null) in some datasets; guard against that
+    price_obj = item.get("price") or {}
+    title = item.get("title")
     return {
-        "title": item.get("title"),
-        "price": item.get("price", {}).get("value"),
-        "unit": extract_unit(item.get("title")),
+        "title": title,
+        "price": price_obj.get("value"),
+        "unit": extract_unit(title),
         "store": "Amazon",
         "url": item.get("url")
     }
@@ -15,7 +18,8 @@ def clean_amazon(item: dict) -> dict:
 
 def clean_target(item: dict) -> dict:
     title = item.get("title")
-    price = item.get("price", {}).get("current_retail")
+    price_obj = item.get("price") or {}
+    price = price_obj.get("current_retail")
     unit = extract_unit(title)
     return {
         "title": title,
@@ -28,8 +32,13 @@ def clean_target(item: dict) -> dict:
 
 def clean_walmart(item: dict) -> dict:
     title = item.get("name")
-    price_str = item.get("priceInfo.price", "$0")
-    price = float(price_str.replace("$", ""))
+    # priceInfo may be missing or price may be None
+    price_info = item.get("priceInfo") or {}
+    price_str = price_info.get("price") or "$0"
+    try:
+        price = float(str(price_str).replace("$", ""))
+    except (ValueError, TypeError):
+        price = None
     unit = extract_unit(title)
     return {
         "title": title,

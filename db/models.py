@@ -13,6 +13,7 @@ class Product(Base):
     normalized_unit_qty = Column(Float)
     normalized_unit = Column(String(32))
     price_per_unit = Column(Float)
+    price_per_unit_status = Column(String(32))
     store = Column(String(64))
     url = Column(String(512))
     timestamp = Column(DateTime)

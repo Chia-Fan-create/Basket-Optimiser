@@ -1,38 +1,65 @@
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
-from db.models import Product, Base
+from db.models import Product
 from datetime import datetime
-import os
+from sqlalchemy import func
 import uuid
+from types import SimpleNamespace
 
-# 設定你的連線字串 (from .env or config.py)
-# 如果 DB_URL 環境變數未設定，預設使用 SQLite 進行開發
-DB_URL = os.getenv("DB_URL") or "sqlite:///./basket.db"
 
-engine = create_engine(DB_URL, connect_args={"check_same_thread": False} if "sqlite" in DB_URL else {})
-Session = sessionmaker(bind=engine)
-Base.metadata.create_all(engine)
+class ProductRepository:
+    """Repository wrapper to insert products using an external session.
 
-def insert_products(data: list[dict]):
-    session = Session()
-    try:
-        for item in data:
-            product = Product(
-                id=str(uuid.uuid4()),
-                title=item.get("title"),
-                price=item.get("price"),
-                unit=item.get("unit"),
-                normalized_unit_qty=item.get("normalized_unit_qty"),
-                normalized_unit=item.get("normalized_unit"),
-                price_per_unit=item.get("price_per_unit"),
-                store=item.get("store"),
-                url=item.get("url"),
-                timestamp=datetime.now()
+    Usage:
+        db = SessionLocal()
+        repo = ProductRepository(db)
+        repo.insert_products(data)
+        db.close()
+    """
+
+    def __init__(self, db_session):
+        self.db = db_session
+
+    def insert_products(self, data: list[dict]):
+        try:
+            for item in data:
+                product = Product(
+                    id=str(uuid.uuid4()),
+                    title=item.get("title"),
+                    price=item.get("price"),
+                    unit=item.get("unit"),
+                    normalized_unit_qty=item.get("normalized_unit_qty"),
+                    normalized_unit=item.get("normalized_unit"),
+                    price_per_unit=item.get("price_per_unit"),
+                    price_per_unit_status=item.get("price_per_unit_status"),
+                    store=item.get("store"),
+                    url=item.get("url"),
+                    timestamp=datetime.now()
+                )
+                self.db.add(product)
+            self.db.commit()
+        except Exception as e:
+            self.db.rollback()
+            print("❌ Error inserting to DB:", e)
+    
+    def get_latest_prices_by_product(self, keyword: str):
+        subq = (
+            self.db.query(
+                Product.store,
+                func.max(Product.timestamp).label("latest_ts")
             )
-            session.add(product)
-        session.commit()
-    except Exception as e:
-        session.rollback()
-        print("❌ Error inserting to DB:", e)
-    finally:
-        session.close()
+            .filter(Product.title.ilike(f"%{keyword}%"))
+            .filter(Product.price_per_unit_status == "ok")
+            .group_by(Product.store)
+            .subquery()
+        )
+
+        results = (
+            self.db.query(Product)
+            .join(
+                subq,
+                (Product.store == subq.c.store) &
+                (Product.timestamp == subq.c.latest_ts)
+            )
+            .order_by(Product.price_per_unit.asc())
+            .all()
+        )
+        return results
