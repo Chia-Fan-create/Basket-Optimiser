@@ -53,6 +53,49 @@ Basket-Optimiser/
 └── .gitignore
 
 ```
+### Implementation:
+     .venv/bin/streamlit run app.py
+
+### Status Update
+✅ Fixed
+
+Resolved pricing sort issue where items with $0 unit price were incorrectly ranked at the top.
+
+Improved unit price normalization logic to prevent invalid or incomplete price data from affecting ranking.
+
+🚀 Enhancement
+
+Expanded advanced unit parsing & pricing engine to support more complex formats, including:
+
+12 x 1000 sheets
+
+24 x 2 oz
+
+40 pack of 16.9 oz
+
+Improved multi-pack and compound quantity detection for more accurate unit price calculation.
+
+Strengthened fallback handling for irregular product descriptions.
+
+🔜 Next Steps
+
+Redesign and simplify the dashboard UI to improve clarity and usability.
+
+Make ranking insights more visually intuitive.
+
+Reduce cognitive load and highlight the “Best Deal” more effectively.
+
+🎨 Recommended Tools for Dashboard Improvement
+
+- [x] Streamlit – rapid interactive dashboard prototyping
+
+- [x] Tailwind CSS (if moving toward web frontend)
+
+- [ ] Plotly – interactive visualizations
+
+- [ ] shadcn/ui (clean modern component system)
+
+- [ ] Figma – quick layout prototyping before implementation
 
 ### Tech Stack
 **Backend & Scraping:** Apify actors, JSON API ingestion, Python (requests, BeautifulSoup/Selenium), pandas \
@@ -67,7 +110,7 @@ Basket-Optimiser/
 - protein bar 
 - paper towel 
 - chicken breast
-extension: vitamin C, laundry detergent
+- extension: vitamin C, laundry detergent
 
 
 ### Future Roadmap

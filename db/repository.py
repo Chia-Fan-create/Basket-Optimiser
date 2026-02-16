@@ -4,6 +4,10 @@ from sqlalchemy import func
 import uuid
 from types import SimpleNamespace
 
+'''
+    ProductRepository is a repository wrapper to insert products using an external session.
+    It provides a method to insert products and another to retrieve the latest prices by product.
+'''
 
 class ProductRepository:
     """Repository wrapper to insert products using an external session.
@@ -39,27 +43,26 @@ class ProductRepository:
         except Exception as e:
             self.db.rollback()
             print("❌ Error inserting to DB:", e)
-    
+
     def get_latest_prices_by_product(self, keyword: str):
-        subq = (
-            self.db.query(
-                Product.store,
-                func.max(Product.timestamp).label("latest_ts")
-            )
-            .filter(Product.title.ilike(f"%{keyword}%"))
-            .filter(Product.price_per_unit_status == "ok")
-            .group_by(Product.store)
-            .subquery()
-        )
 
         results = (
             self.db.query(Product)
-            .join(
-                subq,
-                (Product.store == subq.c.store) &
-                (Product.timestamp == subq.c.latest_ts)
-            )
+            .filter(Product.title.ilike(f"%{keyword}%"))
             .order_by(Product.price_per_unit.asc())
             .all()
         )
-        return results
+
+        mapped = []
+        for r in results:
+            mapped.append({
+                "product_name": r.title,
+                "store_name": r.store,
+                "product_url": r.url,
+                "price_per_unit": r.price_per_unit,
+                "normalized_unit": r.normalized_unit,
+                "price": r.price,
+                "timestamp": r.timestamp
+            })
+
+        return mapped

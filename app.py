@@ -4,18 +4,22 @@ import textwrap # For Markdown formatting
 from db.session import SessionLocal
 from db.repository import ProductRepository
 
-# =====================
+'''
+Streamlit App: Basket Optimiser
+Using Streamlit for a user-friendly interface to compare unit prices of products across different stores.
+'''
+# ---------------------
 # Page Config
-# =====================
+# ---------------------
 st.set_page_config(
     page_title="Basket Optimiser",
     page_icon="🧺",
     layout="wide"
 )
 
-# =====================
-# Inject Custom Assets
-# =====================
+# ---------------------
+# Custom Assets
+# ---------------------
 
 def inject_custom_assets():
     with open("web/css/main.css", "r") as f:
@@ -52,15 +56,15 @@ def inject_custom_assets():
 
 inject_custom_assets()
 
-# =====================
+# ---------------------
 # DB Init
-# =====================
+# ---------------------
 db = SessionLocal()
 repo = ProductRepository(db)
 
-# =====================
+# ---------------------
 # Header
-# =====================
+# ---------------------
 st.markdown("""
 <div class="container py-3">
   <h1 class="fw-bold mb-1">🧺 Basket Optimiser</h1>
@@ -70,18 +74,18 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# =====================
+# ---------------------
 # Feature Tabs
-# =====================
+# ---------------------
 tab_compare, tab_trend, tab_forecast = st.tabs([
     "Unit Price Comparison",
     "Price Trend (Soon)",
     "Price Forecast (Soon)"
 ])
 
-# =====================
+# ---------------------
 # Unit Price Comparison
-# =====================
+# ---------------------
 with tab_compare:
     st.markdown("### 🔍 Select a product")
 
@@ -103,41 +107,36 @@ with tab_compare:
     if not raw_data:
         st.warning(f"No data available for **{selected_product}**.")
     else:
-        df = pd.DataFrame([
-            {
-                "title": p.title,
-                "price_per_unit": p.price_per_unit,
-                "normalized_unit": p.normalized_unit,
-                "store": p.store,
-                "url": p.url
-            }
-            for p in raw_data])
+        df = pd.DataFrame(raw_data)
 
-        # ✅ Ensure sorted by unit price
+        # only keep rows with valid price and unit info for comparison
+        df = df[df["price_per_unit"] > 0]
+
+        if df.empty:
+            st.warning("No valid price data available for comparison.")
+            st.stop()
+
         df = df.sort_values("price_per_unit").reset_index(drop=True)
 
-        # =====================
         # Best Deal (Top 1)
-        # =====================
         best = df.iloc[0]
+        unit_label = best['normalized_unit'] or "unit"
 
         st.markdown("### 👑 Best Deal")
         st.markdown(f"""
         <div class="card best-deal p-4 mb-4">
           <span class="badge best-badge mb-2">BEST VALUE</span>
-          <h4 class="fw-bold">{best['store']}</h4>
-          <p class="text-muted mb-1">{best['title']}</p>
-          <h2 class="unit-price">${best['price_per_unit']:.3f} / {best['normalized_unit']}</h2>
-          <a href="{best['url']}" target="_blank"
+          <h4 class="fw-bold">{best['store_name']}</h4>
+          <p class="text-muted mb-1">{best['product_name']}</p>
+          <h2 class="unit-price">${best['price_per_unit']:.3f} / {unit_label}</h2>
+          <a href="{best['product_url']}" target="_blank"
              class="btn btn-outline-primary btn-sm mt-2">
              View on Store
           </a>
         </div>
         """, unsafe_allow_html=True)
 
-        # =====================
         # Next Best Options (Top 2–3)
-        # =====================
         st.markdown("### 🥈 Other Top Options")
         cols = st.columns(2)
 
@@ -155,9 +154,7 @@ with tab_compare:
                 </div>
                 """, unsafe_allow_html=True)
 
-        # =====================
         # Remaining Options
-        # =====================
         st.markdown("### 📊 All Options (Ranked)")
         for i, (_, row) in enumerate(df.iloc[3:].iterrows(), start=4):
             st.markdown(f"""
@@ -173,15 +170,15 @@ with tab_compare:
             </div>
             """, unsafe_allow_html=True)
 
-# =====================
+# ---------------------
 # Price Trend (Placeholder)
-# =====================
+# ---------------------
 with tab_trend:
     st.info("📈 Price trend visualization coming soon. Historical price tracking is under development.")
 
-# =====================
+# ---------------------
 # Price Forecast (Placeholder)
-# =====================
+# ---------------------
 with tab_forecast:
     st.info("🔮 Price forecasting models will be added after sufficient historical data is collected.")
 

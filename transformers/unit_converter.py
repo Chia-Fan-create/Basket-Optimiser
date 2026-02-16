@@ -25,43 +25,83 @@ UNIT_MAP = {
 }
 
 def parse_unit_text(unit_str: str | None) -> tuple[float | None, str | None]:
-    """
-    e.g. string '12 rolls', '16.9 oz', '500 count' transfer to (quantity, standardized_unit)
-    """
     if not unit_str:
         return None, None
 
     unit_str = unit_str.lower()
 
-    # pick number and unit, e.g. 12 rolls
-    match = re.search(r"([\d,.]+)\s*(oz|fl oz|g|kg|ml|l|count|ct|bars|packs|tablets|sheets|rolls)", unit_str)
-    if not match:
-        return None, None
+    # ----------------------------
+    # 1 Pattern: 24 x 2 oz
+    # ----------------------------
+    multi_match = re.search(
+        r"(\d+)\s*[xX]\s*(\d+(\.\d+)?)\s*(oz|fl oz|g|kg|ml|l|count|ct|bars|packs|tablets|sheets|rolls)",
+        unit_str
+    )
 
-    quantity = float(match.group(1).replace(",", ""))
-    raw_unit = match.group(2).strip()
+    if multi_match:
+        outer = float(multi_match.group(1))
+        inner = float(multi_match.group(2))
+        raw_unit = multi_match.group(4)
 
-    # conversion
-    if raw_unit in UNIT_MAP:
-        std_unit, factor = UNIT_MAP[raw_unit]
-        std_quantity = quantity * factor
-        return round(std_quantity, 2), std_unit
-    else:
-        return quantity, raw_unit
+        total_quantity = outer * inner
+
+        if raw_unit in UNIT_MAP:
+            std_unit, factor = UNIT_MAP[raw_unit]
+            return round(total_quantity * factor, 2), std_unit
+        else:
+            return total_quantity, raw_unit
+
+    # ----------------------------
+    # 2 Pattern: 40 pack of 16.9 oz
+    # ----------------------------
+    pack_match = re.search(
+        r"(\d+)\s*pack[s]?\s*(of)?\s*(\d+(\.\d+)?)\s*(oz|fl oz|g|kg|ml|l|count|ct|bars|tablets|sheets|rolls)",
+        unit_str
+    )
+
+    if pack_match:
+        outer = float(pack_match.group(1))
+        inner = float(pack_match.group(3))
+        raw_unit = pack_match.group(5)
+
+        total_quantity = outer * inner
+
+        if raw_unit in UNIT_MAP:
+            std_unit, factor = UNIT_MAP[raw_unit]
+            return round(total_quantity * factor, 2), std_unit
+        else:
+            return total_quantity, raw_unit
+
+    # ----------------------------
+    # 3 Fallback: single unit
+    # ----------------------------
+    single_match = re.search(
+        r"([\d,.]+)\s*(oz|fl oz|g|kg|ml|l|count|ct|bars|packs|tablets|sheets|rolls)",
+        unit_str
+    )
+
+    if single_match:
+        quantity = float(single_match.group(1).replace(",", ""))
+        raw_unit = single_match.group(2)
+
+        if raw_unit in UNIT_MAP:
+            std_unit, factor = UNIT_MAP[raw_unit]
+            return round(quantity * factor, 2), std_unit
+        else:
+            return quantity, raw_unit
+
+    return None, None
 
 
 def convert_row(row: dict) -> dict:
     """
-    Input the product info,
-    add normalized unit info and price per unit with status
-    ("normalized_unit_qty" and "normalized_unit" columns)
+    Add normalized quantity/unit and computed price_per_unit fields.
     """
     qty, unit = parse_unit_text(row.get("unit"))
     row["normalized_unit_qty"] = qty
     row["normalized_unit"] = unit
-    price = row.get("price")
 
-    # Add check to ensure qty and price are valid before performing division
+    price = row.get("price")
     if price is None:
         row["price_per_unit"] = None
         row["price_per_unit_status"] = "missing_price"
@@ -74,9 +114,7 @@ def convert_row(row: dict) -> dict:
         row["price_per_unit"] = None
         row["price_per_unit_status"] = "invalid_price_type"
         return row
-    
-    # Calculate price per unit
+
     row["price_per_unit"] = round(price / qty, 3)
     row["price_per_unit_status"] = "OK"
     return row
-
