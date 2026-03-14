@@ -1,38 +1,405 @@
+/* ============================================
+   Basket Optimiser — Main Stylesheet
+   Dark mode compatible via CSS variables
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+/* ── Theme Variables ── */
 :root {
---bg-main: #0b1c2d;
---accent-primary: #4dd4ff;
---accent-gold: #f4c430;
+    --bo-bg: #ffffff;
+    --bo-bg-secondary: #f8f9fa;
+    --bo-bg-hover: #f3f4f6;
+    --bo-text: #111827;
+    --bo-text-secondary: #6b7280;
+    --bo-text-muted: #9ca3af;
+    --bo-border: #e5e7eb;
+    --bo-border-light: #f3f4f6;
+    --bo-green: #059669;
+    --bo-green-bg: #ecfdf5;
+    --bo-green-text: #065f46;
+    --bo-green-badge: #d1fae5;
+    --bo-red: #dc2626;
+    --bo-warn: #d97706;
+    --bo-blue-link: #2563eb;
+    --bo-walmart-bg: #dbeafe;
+    --bo-walmart-text: #1e40af;
+    --bo-target-bg: #fee2e2;
+    --bo-target-text: #991b1b;
+    --bo-amazon-bg: #fef3c7;
+    --bo-amazon-text: #92400e;
 }
 
-body {
-background-color: var(--bg-main);
-color: #eaecef;
-font-family: 'Open Sans', sans-serif;
+/* Dark mode — Streamlit uses prefers-color-scheme or theme attribute */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bo-bg: #0e1117;
+        --bo-bg-secondary: #262730;
+        --bo-bg-hover: #333333;
+        --bo-text: #e5e7eb;
+        --bo-text-secondary: #9ca3af;
+        --bo-text-muted: #6b7280;
+        --bo-border: #374151;
+        --bo-border-light: #262730;
+        --bo-green: #34d399;
+        --bo-green-bg: #064e3b;
+        --bo-green-text: #a7f3d0;
+        --bo-green-badge: #065f46;
+        --bo-red: #f87171;
+        --bo-warn: #fbbf24;
+        --bo-blue-link: #60a5fa;
+        --bo-walmart-bg: #1e3a5f;
+        --bo-walmart-text: #93c5fd;
+        --bo-target-bg: #5f1e1e;
+        --bo-target-text: #fca5a5;
+        --bo-amazon-bg: #5f4b1e;
+        --bo-amazon-text: #fde68a;
+    }
 }
 
-h1, h2, h3, .fw-bold, .unit-price {
-font-family: 'Roboto', sans-serif;
+/* Force dark vars when Streamlit is in dark mode (backup selector) */
+[data-testid="stAppViewContainer"][style*="color: rgb(250"],
+.stApp {
+    --bo-bg: #0e1117;
+    --bo-bg-secondary: #262730;
+    --bo-bg-hover: #333333;
+    --bo-text: #e5e7eb;
+    --bo-text-secondary: #9ca3af;
+    --bo-text-muted: #6b7280;
+    --bo-border: #374151;
+    --bo-border-light: #262730;
+    --bo-green: #34d399;
+    --bo-green-bg: #064e3b;
+    --bo-green-text: #a7f3d0;
+    --bo-green-badge: #065f46;
+    --bo-red: #f87171;
+    --bo-warn: #fbbf24;
+    --bo-blue-link: #60a5fa;
+    --bo-walmart-bg: #1e3a5f;
+    --bo-walmart-text: #93c5fd;
+    --bo-target-bg: #5f1e1e;
+    --bo-target-text: #fca5a5;
+    --bo-amazon-bg: #5f4b1e;
+    --bo-amazon-text: #fde68a;
 }
 
-.unit-price {
-  font-size: 1.7rem;
-  font-weight: 700;
-  color: var(--accent-primary);
+/* Light mode override — if Streamlit explicitly sets light */
+[data-testid="stAppViewContainer"][style*="color: rgb(49"],
+[data-testid="stAppViewContainer"][style*="color: rgb(0"] {
+    --bo-bg: #ffffff;
+    --bo-bg-secondary: #f8f9fa;
+    --bo-bg-hover: #f3f4f6;
+    --bo-text: #111827;
+    --bo-text-secondary: #6b7280;
+    --bo-text-muted: #9ca3af;
+    --bo-border: #e5e7eb;
+    --bo-border-light: #f3f4f6;
+    --bo-green: #059669;
+    --bo-green-bg: #ecfdf5;
+    --bo-green-text: #065f46;
+    --bo-green-badge: #d1fae5;
+    --bo-red: #dc2626;
+    --bo-warn: #d97706;
+    --bo-blue-link: #2563eb;
+    --bo-walmart-bg: #dbeafe;
+    --bo-walmart-text: #1e40af;
+    --bo-target-bg: #fee2e2;
+    --bo-target-text: #991b1b;
+    --bo-amazon-bg: #fef3c7;
+    --bo-amazon-text: #92400e;
 }
 
-.card {
-  background-color: #ffffff;
-  color: #212529;
-  border-radius: 12px;
+/* ── Global ── */
+.stApp {
+    font-family: 'DM Sans', sans-serif;
+}
+[data-testid="stHeader"],
+[data-testid="stFooter"] {
+    display: none;
+}
+section[data-testid="stSidebar"] {
+    display: none;
+}
+.block-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    max-width: 1100px;
 }
 
-.best-deal {
-  border: 3px solid var(--accent-gold);
-  background: linear-gradient(145deg, #fff7d3, #ffffff);
+/* ── Header ── */
+.app-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 0.25rem;
+}
+.app-header h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.02em;
+    color: var(--bo-text);
+}
+.app-subtitle {
+    color: var(--bo-text-secondary);
+    font-size: 0.92rem;
+    margin: 0 0 1.5rem 0;
 }
 
+/* ── Metric Cards ── */
+.metric-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 1.5rem;
+}
+.metric-card {
+    background: var(--bo-bg-secondary);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    border: 1px solid var(--bo-border);
+}
+.metric-label {
+    font-size: 0.78rem;
+    color: var(--bo-text-secondary);
+    margin: 0 0 4px 0;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.metric-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--bo-text);
+}
+.metric-value.green {
+    color: var(--bo-green);
+}
+
+/* ── Best Deal Card ── */
+.best-deal-card {
+    border: 2px solid var(--bo-green);
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    background: var(--bo-bg);
+}
+.best-deal-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.best-deal-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: var(--bo-green-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--bo-green-text);
+    flex-shrink: 0;
+}
 .best-badge {
-  background-color: var(--accent-gold);
-  color: #000;
-  font-size: 0.75rem;
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--bo-green-text);
+    background: var(--bo-green-badge);
+    padding: 2px 10px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+.best-deal-name {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 2px 0 0 0;
+    color: var(--bo-text);
+}
+.best-deal-sub {
+    font-size: 0.82rem;
+    color: var(--bo-text-secondary);
+    margin: 2px 0 0 0;
+}
+.best-deal-price {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--bo-green);
+    margin: 0;
+    text-align: right;
+}
+.best-deal-unit {
+    font-size: 0.82rem;
+    color: var(--bo-text-secondary);
+    margin: 0;
+    text-align: right;
+}
+
+/* ── Ranking Table ── */
+.rank-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.88rem;
+    border: 1px solid var(--bo-border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+.rank-table thead th {
+    background: var(--bo-bg-secondary);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--bo-text-secondary);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--bo-border);
+}
+.rank-table thead th.right {
+    text-align: right;
+}
+.rank-table tbody tr {
+    border-bottom: 1px solid var(--bo-border-light);
+}
+.rank-table tbody tr:last-child {
+    border-bottom: none;
+}
+.rank-table tbody td {
+    padding: 12px 14px;
+    vertical-align: middle;
+    color: var(--bo-text);
+}
+.rank-table tbody td.right {
+    text-align: right;
+}
+.rank-table .rank-num {
+    font-weight: 700;
+    width: 36px;
+}
+.rank-table .rank-num.best {
+    color: var(--bo-green);
+}
+.rank-table .store-pill {
+    display: inline-block;
+    font-size: 0.76rem;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 6px;
+    background: var(--bo-bg-hover);
+    color: var(--bo-text);
+}
+.store-walmart {
+    background: var(--bo-walmart-bg);
+    color: var(--bo-walmart-text);
+}
+.store-target {
+    background: var(--bo-target-bg);
+    color: var(--bo-target-text);
+}
+.store-amazon {
+    background: var(--bo-amazon-bg);
+    color: var(--bo-amazon-text);
+}
+.rank-table .price-best {
+    font-weight: 700;
+    color: var(--bo-green);
+}
+.rank-table .price-worst {
+    color: var(--bo-red);
+}
+.rank-table .vs-best {
+    font-size: 0.8rem;
+}
+.rank-table .vs-best.neutral {
+    color: var(--bo-text-muted);
+}
+.rank-table .vs-best.warn {
+    color: var(--bo-warn);
+}
+.rank-table .vs-best.bad {
+    color: var(--bo-red);
+}
+.rank-table .link-cell a {
+    color: var(--bo-blue-link);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 500;
+}
+.rank-table .link-cell a:hover {
+    text-decoration: underline;
+}
+.product-name-cell {
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Section Titles ── */
+.section-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--bo-text);
+    margin: 0 0 12px 0;
+}
+
+/* ── Trend Placeholder ── */
+.trend-placeholder {
+    background: var(--bo-bg-secondary);
+    border-radius: 10px;
+    padding: 3rem 2rem;
+    text-align: center;
+    color: var(--bo-text-muted);
+    font-size: 0.92rem;
+    border: 1px dashed var(--bo-border);
+}
+
+/* ── Footer ── */
+.app-footer {
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--bo-text-muted);
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--bo-border-light);
+}
+
+/* ── Streamlit Overrides ── */
+
+.stSelectbox label {
+    display: none;
+}
+
+/* Tabs — force visible text in both themes */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 0;
+    border-bottom: 1px solid var(--bo-border);
+}
+.stTabs [data-baseweb="tab"] {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 0.88rem;
+    padding: 0.6rem 1.2rem;
+    color: var(--bo-text-secondary) !important;
+    border-bottom: 2px solid transparent;
+}
+.stTabs [aria-selected="true"] {
+    color: var(--bo-text) !important;
+    border-bottom: 2px solid var(--bo-green) !important;
+}
+
+.stSelectbox > div > div {
+    border-radius: 8px;
 }
