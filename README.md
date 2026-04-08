@@ -1,122 +1,96 @@
-## Basket Optimiser 🛒
-**A smart price comparison dashboard for everyday essentials.
-Automatically scrapes product prices from Amazon, Target, and Walmart, normalizes units (e.g., oz, count), and calculates per-unit cost.
-Visualizes weekly price trends and helps users build optimized shopping lists across platforms.**
+# SmartCart Frontend
 
-This project, **Basket Optimiser**, addresses this transparency issue by building an automated Data Science and Engineering solution to standardize and visualize grocery prices.
+Grocery price comparison app — compare prices across Amazon, Target, Walmart & more.
 
-The goal of project is to create a reliable, reproducible system that:
+## Quick Start
 
-- **Standardizes Pricing:** Converts all disparate units of measure (weight, volume, count) into a single, comparable metric (e.g., price per 100g, price per sheet).
-- **Automates Data Collection:** Utilizes scheduled web scraping pipelines to collect up-to-date pricing data from major U.S. retailers (Target, Walmart, Amazon).
-- **Provides Actionable Insights:** Presents the unit-standardized prices and historical trends on a clean, accessible dashboard, empowering consumers to make the most informed purchasing decisions and combat inflation effectively.
+```bash
+# 1. Install dependencies
+npm install
 
-
-### Background
-The modern consumer faces a significant challenge when attempting to make cost-effective purchasing decisions for common household goods. Due to the proliferation of e-commerce platforms like Amazon, Target, and Walmart, the sheer volume of choices is overwhelming.
-
-The core problem, known as price opacity, stems from the lack of standardization in product units:
-
-1. **Inconsistent Units:** A common product, such as paper towels or chicken breast, may be priced per unit (e.g., "12 rolls"), by weight (e.g., "32 oz"), or by count (e.g., "100 sheets") across different retailers and brands.
-
-2. **Difficult Comparison:** Manually calculating the true unit price (e.g., price per sheet, price per ounce) across multiple websites is tedious, time-consuming, and prone to human error.
-
-This lack of standardization creates an information asymmetry, preventing shoppers from efficiently identifying the most cost-effective option and hindering optimal spending habits.
-
-### Project Structure
+# 2. Start development server
+npm start
 ```
-Basket-Optimiser/
-│
-├── dataset/                 # Raw or preprocessed scraped data
-│
-├── db/                      # Database layer (SQLAlchemy)
-│   ├── __init__.py
-│   ├── models.py            # Product ORM model
-│   ├── repository.py        # Query & insert logic
-│   └── session.py           # DB session management
-│
-├── scripts/
-│   └── run_ingest_pipeline.py
-│                             # Orchestrates data cleaning → DB insertion
-│
-├── transformers/            # Data transformation logic
-│   ├── cleaner.py           # Cleans raw product fields
-│   └── unit_converter.py    # Unit normalization & price-per-unit logic
-│
-├── web/
-│   ├── css/                 # (Future) Custom dashboard styles
-│   └── ui_mock/             # UI mockups / design drafts
-│
-├── app.py                   # Streamlit dashboard application
-├── basket.db                # SQLite database (development)
-├── README.md
-└── .gitignore
+
+The app will open at `http://localhost:3000`.
+
+**No backend needed!** The app runs entirely on mock data. When your backend team is ready, change one line to switch to real API.
+
+## Switch to Real API
+
+Open `src/api/index.js` and change:
+
+```javascript
+const USE_MOCK = true;   // ← change to false
+```
+
+That's it. All pages will start calling the Flask backend at `http://localhost:5000/api`.
+
+## Project Structure
 
 ```
-### Implementation:
-     .venv/bin/streamlit run app.py
+smartcart-frontend/
+├── public/
+│   └── index.html
+├── src/
+│   ├── api/
+│   │   └── index.js          # API layer (mock ↔ real toggle)
+│   ├── components/
+│   │   ├── Icons.js           # Shared SVG icons
+│   │   └── Nav.js             # Navigation with Shopping dropdown
+│   ├── data/
+│   │   └── mockData.js        # All mock datasets
+│   ├── pages/
+│   │   ├── Landing.js         # Landing page
+│   │   ├── Select.js          # Favorite product selection
+│   │   ├── Login.js           # Login / Register (UC7)
+│   │   ├── Dashboard.js       # Dashboard Home (guest/logged in)
+│   │   ├── Compare.js         # Price Comparison (UC1)
+│   │   ├── Trends.js          # Price Trends with chart (UC8)
+│   │   ├── ShoppingLists.js   # Shopping Lists + Receipt OCR (UC2)
+│   │   ├── Inventory.js       # Household Inventory (UC6)
+│   │   ├── Alerts.js          # Price Alerts + Smart Alerts (UC3+UC4)
+│   │   └── Insight.js         # Spending Analytics (UC5)
+│   ├── styles/
+│   │   └── global.css         # All styles
+│   ├── App.js                 # Main app with routing
+│   └── index.js               # React entry point
+├── package.json
+└── README.md
+```
 
-### Status Update
-✅ Fixed
+## Pages & Use Cases
 
-Resolved pricing sort issue where items with $0 unit price were incorrectly ranked at the top.
+| Page           | Use Case | Description                              |
+|----------------|----------|------------------------------------------|
+| Landing        | —        | Welcome page, CTA to start               |
+| Select         | —        | Pick favorite products                   |
+| Login/Register | UC7      | Email + password auth                    |
+| Dashboard      | —        | Hub with KPIs, favorites, quick actions  |
+| Compare        | UC1      | Cross-retailer price comparison          |
+| Trends         | UC8      | Historical price charts + predictions    |
+| Shopping Lists | UC2+UC9  | Lists + store comparison + Receipt OCR   |
+| Inventory      | UC6      | Track items at home, depletion alerts    |
+| Alerts         | UC3+UC4  | User alerts + system smart alerts        |
+| Insight        | UC5      | Monthly spending, categories, insights   |
 
-Improved unit price normalization logic to prevent invalid or incomplete price data from affecting ranking.
+## Nav Structure
 
-🚀 Enhancement
+- **Logged out:** Dashboard · Shopping ▾ (Compare, Trends) · Sign In
+- **Logged in:** Dashboard · Shopping ▾ (Compare, Trends, Lists, Inventory, Alerts) · Insight · Profile
 
-Expanded advanced unit parsing & pricing engine to support more complex formats, including:
+## Color Palette
 
-12 x 1000 sheets
+| Color       | Hex       | Usage                        |
+|-------------|-----------|------------------------------|
+| Deep Green  | `#204035` | Nav, footer                  |
+| Green       | `#4A7169` | CTA buttons, active states   |
+| Sand        | `#BEB59C` | Borders, hover states        |
+| Brown       | `#735231` | Headings, KPI numbers        |
+| Deep Brown  | `#49271B` | Body text                    |
+| Background  | `#FFFDF5` | Page background              |
+| Card        | `#FFFFFF` | Card backgrounds             |
 
-24 x 2 oz
+## For Backend Team
 
-40 pack of 16.9 oz
-
-Improved multi-pack and compound quantity detection for more accurate unit price calculation.
-
-Strengthened fallback handling for irregular product descriptions.
-
-🔜 Next Steps
-
-Redesign and simplify the dashboard UI to improve clarity and usability.
-
-Make ranking insights more visually intuitive.
-
-Reduce cognitive load and highlight the “Best Deal” more effectively.
-
-🎨 Recommended Tools for Dashboard Improvement
-
-- [x] Streamlit – rapid interactive dashboard prototyping
-
-- [x] Tailwind CSS (if moving toward web frontend)
-
-- [ ] Plotly – interactive visualizations
-
-- [ ] shadcn/ui (clean modern component system)
-
-- [ ] Figma – quick layout prototyping before implementation
-
-### Tech Stack
-**Backend & Scraping:** Apify actors, JSON API ingestion, Python (requests, BeautifulSoup/Selenium), pandas \
-**Data Normalization:** Python (pandas, custom unit converter) \
-**Data Storage:** PostgreSQL or SQLite (for development) \
-**Scheduling:** Cron jobs, optional Airflow integration \
-**Frontend:** Streamlit (MVP), Next.js (for production) \
-**Deployment:** Docker & docker-compose
-
-### Indexed Data Samples
-- toilet paper 
-- protein bar 
-- paper towel 
-- chicken breast
-- extension: vitamin C, laundry detergent
-
-
-### Future Roadmap
-
-- [ ] User-defined grocery tracking list
-- [ ] Add more online stores (e.g., Amazon, Costco, iHerb)
-- [ ] Historical price forecasting with time-series models
-- [ ] Email or push notifications for price drops
-- [ ] Chrome extension for on-page unit price comparison
+See `API_SPEC_v2.md` for the complete API documentation (24 endpoints).
