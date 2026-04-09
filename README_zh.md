@@ -108,33 +108,176 @@ curl http://localhost:5001/api/user/favorites \
 
 ```
 Basket-Optimiser/
-├── front-end/              # React 前端
+├── front-end/                  # React 前端（前端同學負責）
 │   ├── src/
-│   │   ├── pages/          # 10 個頁面元件
-│   │   ├── components/     # 共用元件（Nav, Icons）
-│   │   ├── api/index.js    # API 層（USE_MOCK 開關在這裡）
-│   │   └── data/           # Mock 資料
+│   │   ├── pages/              # 10 個頁面元件
+│   │   ├── components/         # 共用元件（Nav, Icons）
+│   │   ├── api/index.js        # API 層（USE_MOCK 開關在這裡）
+│   │   └── data/               # Mock 資料
 │   └── package.json
 │
-├── backend/                # Flask 後端
-│   ├── app.py              # 進入點，註冊 10 個 blueprint
-│   ├── config.py           # 讀 .env（DB 連線、JWT、port）
-│   ├── db.py               # PyMySQL 連線
-│   ├── auth.py             # bcrypt + JWT + @require_auth
-│   ├── .env                # 機密設定（不進 git）
-│   ├── routes/             # 10 個路由檔，對應 23 個 endpoint
-│   └── tests/              # Unit + Integration 測試（52 個）
+├── backend/                    # Flask 後端（後端同學負責）
+│   ├── app.py                  # 進入點，註冊 10 個 blueprint
+│   ├── config.py               # 讀 .env（DB 連線、JWT、port）
+│   ├── db.py                   # PyMySQL 連線
+│   ├── auth.py                 # bcrypt + JWT + @require_auth
+│   ├── sql_loader.py           # 讀取 db/queries/*.sql 的 loader
+│   ├── .env                    # 機密設定（不進 git）
+│   ├── routes/                 # 10 個路由檔，對應 23 個 endpoint
+│   └── tests/                  # Unit + Integration 測試（52 個）
 │
-├── db/                     # 資料庫 schema（原始 DDL）
-└── docs/                   # API 規格、Use Cases、Table 屬性
+├── db/                         # 資料庫相關（DB 同學負責）
+│   ├── schema.sql              # CREATE TABLE（15 張表 + 2 個 VIEW）
+│   ├── migration.sql           # ALTER TABLE 補欄位 + user_favorites 表
+│   ├── seed_data.sql           # placeholder — 由 DB 同學補完整 INSERT
+│   └── queries/                # 所有 SQL query（後端 + DB 同學共同維護）
+│       ├── retailers.sql       # 1 query
+│       ├── products.sql        # 1 query
+│       ├── compare.sql         # 1 query（核心比價）
+│       ├── trends.sql          # 2 queries
+│       ├── auth.sql            # 3 queries
+│       ├── favorites.sql       # 3 queries
+│       ├── lists.sql           # 11 queries（含 Transaction）
+│       ├── inventory.sql       # 6 queries
+│       ├── alerts.sql          # 12 queries（含 smart alert Transaction）
+│       ├── insight.sql         # 5 queries（含 spending_cte 子查詢）
+│       └── scrape.sql          # 6 queries — 全部 TODO，等爬蟲功能實作
+│
+└── docs/                       # API 規格、Use Cases、Table 屬性
 ```
 
 ## 資料庫
 
 - Host: `167.71.90.83` / Database: `smartcart` / User: `joj161`
 - 密碼在 `backend/.env`，不要 commit 到 git
-- Schema: 15 張表，定義在 `backend/docs/schema.sql`
-- Migration: `backend/docs/migration.sql`（新增 color、icon、user_favorites、dismissed）
+- Schema: 15 張表，定義在 `db/schema.sql`
+- Migration: `db/migration.sql`（新增 color、icon、user_favorites、dismissed）
+
+---
+
+## 三方分工總覽
+
+### 資料流
+
+```
+使用者操作前端 → Frontend 呼叫 API → Backend 讀取 db/queries/*.sql 執行 → MySQL 回傳結果
+```
+
+### 各角色負責範圍
+
+| 角色 | 負責資料夾 | 主要工作 |
+|------|-----------|---------|
+| **Frontend** | `front-end/` | React 頁面、API 呼叫、UI 渲染 |
+| **Backend** | `backend/` | Flask 路由、JWT 認證、呼叫 SQL、回傳 JSON |
+| **DB** | `db/` | schema 設計、SQL query 撰寫、seed data、爬蟲 script |
+
+---
+
+## Backend Endpoint × DB Query 完整對照表
+
+下表列出每個 endpoint 對應呼叫了哪些 SQL query（檔案.查詢名），以及讀寫了哪些 DB 表。
+
+### 公開 Endpoint（不需登入）
+
+| # | Endpoint | SQL query (db/queries/) | 讀取的表 | 寫入的表 |
+|---|----------|------------------------|---------|---------|
+| 1 | `GET /api/retailers` | `retailers.get_all` | retailers | — |
+| 2 | `GET /api/products` | `products.get_all_with_category` | products, categories | — |
+| 3 | `GET /api/compare/{id}` | `compare.get_top5_cheapest` | price_records, product_variants, products, retailers, units, brands | — |
+| 4 | `POST /api/compare/summary` | `compare.get_top5_cheapest` ×N | 同上 | — |
+| 5 | `GET /api/trends/{id}` | `trends.get_monthly_avg_by_retailer`, `trends.get_seasonal_patterns` | price_records, product_variants, retailers, seasonal_patterns | — |
+| 6 | `POST /api/auth/register` | `auth.check_email_exists`, `auth.insert_user` | users | users |
+| 7 | `POST /api/auth/login` | `auth.get_user_by_email` | users | — |
+
+### 需登入 Endpoint（JWT 認證）
+
+| # | Endpoint | SQL query (db/queries/) | 讀取的表 | 寫入的表 | Transaction |
+|---|----------|------------------------|---------|---------|-------------|
+| 8 | `GET /api/user/favorites` | `favorites.get_by_user` | user_favorites | — | — |
+| 9 | `PUT /api/user/favorites` | `favorites.delete_all_by_user`, `favorites.insert_one` ×N | — | user_favorites | — |
+| 10 | `GET /api/lists` | `lists.get_user_lists` | shopping_lists, list_items | — | — |
+| 11 | `GET /api/lists/{id}` | `lists.verify_ownership`, `lists.get_items_with_product_info`, `lists.get_best_prices_for_products`, `lists.get_store_prices_for_products` | shopping_lists, list_items, product_variants, products, price_records, retailers, units | — | — |
+| 12 | `POST /api/lists` | `lists.insert_list` | — | shopping_lists | — |
+| 13 | `POST /api/lists/{id}/items` | `lists.verify_ownership`, `lists.insert_item`, `lists.update_estimated_total`, `lists.get_estimated_total` | price_records | list_items, shopping_lists | **YES** |
+| 14 | `PATCH /api/lists/{id}/items/{id}` | `lists.verify_item_ownership`, (動態 UPDATE), `lists.get_item_after_update` | list_items, shopping_lists | list_items | — |
+| 15 | `GET /api/inventory` | `inventory.get_user_inventory`, `inventory.get_unit_abbreviation` | inventory_items, products, product_variants, units | — | — |
+| 16 | `POST /api/inventory` | `inventory.check_existing`, `inventory.update_existing` 或 `inventory.insert_new` | inventory_items | inventory_items | — |
+| 17 | `PATCH /api/inventory/{id}/dismiss` | `inventory.dismiss` | — | inventory_items | — |
+| 18 | `GET /api/alerts` | `alerts.get_user_alerts`, `alerts.get_cheapest_current_price`, `alerts.get_tracked_product_ids`, `alerts.get_latest_cheapest_with_date`, `alerts.get_avg_price`, `alerts.check_existing_todo`, `alerts.get_variant_for_product`, `alerts.insert_smart_todo`, `alerts.get_product_name_icon` | price_alerts, products, price_records, product_variants, retailers, user_favorites, todos | todos | **YES** |
+| 19 | `POST /api/alerts` | `alerts.check_product_exists`, `alerts.insert_alert` | products | price_alerts | — |
+| 20 | `DELETE /api/alerts/{id}` | `alerts.delete_alert` | — | price_alerts | — |
+| 22 | `GET /api/insight/monthly` | `insight.spending_cte` + `insight.get_monthly` | list_items, shopping_lists, product_variants, products, categories, price_records | — | — |
+| 23 | `GET /api/insight/categories` | `insight.spending_cte` + `insight.get_by_category` | 同上 | — | — |
+| 24 | `GET /api/insight/summary` | `insight.spending_cte` + `insight.get_summary_months`, `insight.spending_cte` + `insight.get_top_category` | 同上 | — | — |
+
+### 尚未實作（placeholder in `db/queries/scrape.sql`）
+
+| 功能 | SQL query | 狀態 |
+|------|-----------|------|
+| 新增爬蟲 job | `scrape.insert_job` | TODO |
+| 更新 job 為成功 | `scrape.update_job_success` | TODO |
+| 更新 job 為失敗 | `scrape.update_job_failed` | TODO |
+| 插入新價格記錄 | `scrape.insert_price_record` | TODO |
+| 檢查觸發的警報 | `scrape.check_triggered_alerts` | TODO |
+| 標記警報已觸發 | `scrape.trigger_alert` | TODO |
+
+---
+
+## 給 DB 同學的指引
+
+### 你的檔案在哪裡
+
+所有 DB 相關的檔案都在 `db/` 資料夾：
+
+| 檔案 | 用途 | 狀態 |
+|------|------|------|
+| `db/schema.sql` | CREATE TABLE（15 張表 + 2 個 VIEW） | 已完成 |
+| `db/migration.sql` | ALTER TABLE 補欄位 + user_favorites | 已完成 |
+| `db/seed_data.sql` | INSERT 測試資料 | **placeholder — 需要你補上** |
+| `db/queries/*.sql` | 所有 SQL query | 45 個已完成，6 個 TODO |
+
+### 如何新增或修改 SQL query
+
+每個 `.sql` 檔案用 `-- name: 查詢名` 來標記不同的 query：
+
+```sql
+-- name: get_all
+SELECT retailer_id AS id, name, color, logo_url, base_url
+FROM retailers
+ORDER BY retailer_id;
+```
+
+Backend 透過 `sql_loader.py` 自動讀取這些檔案，用法是：
+```python
+from sql_loader import get_query
+cur.execute(get_query("retailers", "get_all"))
+#                      ↑ 檔名       ↑ -- name: 後面的名字
+```
+
+### 需要你做的事
+
+1. **`db/seed_data.sql`** — 把完整的 INSERT 語句補上（或放你的 mock data script）
+2. **`db/queries/scrape.sql`** — 6 個 TODO query，等爬蟲功能設計好後把註解取消並修改
+3. 如果需要新增 query，直接在對應的 `.sql` 檔案加一個 `-- name: 新名字` 區塊即可
+4. 如果需要修改現有 query，直接改 `.sql` 檔案裡的 SQL，Backend 不用改任何 Python code
+
+---
+
+## 給前端同學的指引
+
+### API 切換
+
+在 `front-end/src/api/index.js` 第 15 行：
+- `USE_MOCK = true` → 使用 `src/data/mockData.js` 裡的假資料
+- `USE_MOCK = false` → 呼叫 Backend API，資料來自真實 DB
+
+### product_id 是整數
+
+Mock data 和 Backend API 都使用整數 `product_id`（如 `1`, `2`, `3`），不是字串。
+
+### 商品列表是動態的
+
+前端呼叫 `GET /api/products` 取得商品列表，不要 hardcode。Backend 爬到新商品時前端會自動顯示。
 
 ## 功能介紹與使用指南
 

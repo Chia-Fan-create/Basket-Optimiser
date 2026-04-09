@@ -108,33 +108,176 @@ curl http://localhost:5001/api/user/favorites \
 
 ```
 Basket-Optimiser/
-├── front-end/              # React 프론트엔드
+├── front-end/                  # React 프론트엔드 (프론트엔드 담당)
 │   ├── src/
-│   │   ├── pages/          # 10개 페이지 컴포넌트
-│   │   ├── components/     # 공용 컴포넌트 (Nav, Icons)
-│   │   ├── api/index.js    # API 레이어 (USE_MOCK 스위치)
-│   │   └── data/           # Mock 데이터
+│   │   ├── pages/              # 10개 페이지 컴포넌트
+│   │   ├── components/         # 공용 컴포넌트 (Nav, Icons)
+│   │   ├── api/index.js        # API 레이어 (USE_MOCK 스위치)
+│   │   └── data/               # Mock 데이터
 │   └── package.json
 │
-├── backend/                # Flask 백엔드
-│   ├── app.py              # 진입점, 10개 blueprint 등록
-│   ├── config.py           # .env 읽기 (DB 연결, JWT, port)
-│   ├── db.py               # PyMySQL 연결
-│   ├── auth.py             # bcrypt + JWT + @require_auth
-│   ├── .env                # 민감 설정 (git에 포함 안 됨)
-│   ├── routes/             # 10개 라우트 파일, 23개 endpoint
-│   └── tests/              # Unit + Integration 테스트 (52개)
+├── backend/                    # Flask 백엔드 (백엔드 담당)
+│   ├── app.py                  # 진입점, 10개 blueprint 등록
+│   ├── config.py               # .env 읽기 (DB 연결, JWT, port)
+│   ├── db.py                   # PyMySQL 연결
+│   ├── auth.py                 # bcrypt + JWT + @require_auth
+│   ├── sql_loader.py           # db/queries/*.sql 읽기 로더
+│   ├── .env                    # 민감 설정 (git에 포함 안 됨)
+│   ├── routes/                 # 10개 라우트 파일, 23개 endpoint
+│   └── tests/                  # Unit + Integration 테스트 (52개)
 │
-├── db/                     # 데이터베이스 스키마 (원본 DDL)
-└── docs/                   # API 스펙, Use Cases, 테이블 속성
+├── db/                         # 데이터베이스 관련 (DB 담당)
+│   ├── schema.sql              # CREATE TABLE (15개 테이블 + 2개 VIEW)
+│   ├── migration.sql           # ALTER TABLE 컬럼 추가 + user_favorites 테이블
+│   ├── seed_data.sql           # placeholder — DB 담당이 INSERT 완성
+│   └── queries/                # 모든 SQL 쿼리 (백엔드 + DB 공동 관리)
+│       ├── retailers.sql       # 1 query
+│       ├── products.sql        # 1 query
+│       ├── compare.sql         # 1 query (핵심 가격 비교)
+│       ├── trends.sql          # 2 queries
+│       ├── auth.sql            # 3 queries
+│       ├── favorites.sql       # 3 queries
+│       ├── lists.sql           # 11 queries (Transaction 포함)
+│       ├── inventory.sql       # 6 queries
+│       ├── alerts.sql          # 12 queries (smart alert Transaction 포함)
+│       ├── insight.sql         # 5 queries (spending_cte 서브쿼리 포함)
+│       └── scrape.sql          # 6 queries — 전부 TODO, 크롤링 기능 구현 대기
+│
+└── docs/                       # API 스펙, Use Cases, 테이블 속성
 ```
 
 ## 데이터베이스
 
 - Host: `167.71.90.83` / Database: `smartcart` / User: `joj161`
 - 비밀번호는 `backend/.env`에 저장, git에 commit하지 마세요
-- Schema: 15개 테이블, `backend/docs/schema.sql`에 정의
-- Migration: `backend/docs/migration.sql` (color, icon, user_favorites, dismissed 추가)
+- Schema: 15개 테이블, `db/schema.sql`에 정의
+- Migration: `db/migration.sql` (color, icon, user_favorites, dismissed 추가)
+
+---
+
+## 3인 역할 분담 개요
+
+### 데이터 흐름
+
+```
+사용자가 프론트엔드 조작 → Frontend가 API 호출 → Backend가 db/queries/*.sql 읽어 실행 → MySQL 결과 반환
+```
+
+### 각 역할 담당 범위
+
+| 역할 | 담당 폴더 | 주요 작업 |
+|------|----------|----------|
+| **Frontend** | `front-end/` | React 페이지, API 호출, UI 렌더링 |
+| **Backend** | `backend/` | Flask 라우트, JWT 인증, SQL 호출, JSON 반환 |
+| **DB** | `db/` | 스키마 설계, SQL 쿼리 작성, seed data, 크롤링 스크립트 |
+
+---
+
+## Backend Endpoint × DB Query 완전 대조표
+
+각 endpoint가 어떤 SQL 쿼리(파일.쿼리명)를 호출하고, 어떤 DB 테이블을 읽고 쓰는지 정리합니다.
+
+### 공개 Endpoint (로그인 불필요)
+
+| # | Endpoint | SQL query (db/queries/) | 읽는 테이블 | 쓰는 테이블 |
+|---|----------|------------------------|-----------|-----------|
+| 1 | `GET /api/retailers` | `retailers.get_all` | retailers | — |
+| 2 | `GET /api/products` | `products.get_all_with_category` | products, categories | — |
+| 3 | `GET /api/compare/{id}` | `compare.get_top5_cheapest` | price_records, product_variants, products, retailers, units, brands | — |
+| 4 | `POST /api/compare/summary` | `compare.get_top5_cheapest` ×N | 위와 동일 | — |
+| 5 | `GET /api/trends/{id}` | `trends.get_monthly_avg_by_retailer`, `trends.get_seasonal_patterns` | price_records, product_variants, retailers, seasonal_patterns | — |
+| 6 | `POST /api/auth/register` | `auth.check_email_exists`, `auth.insert_user` | users | users |
+| 7 | `POST /api/auth/login` | `auth.get_user_by_email` | users | — |
+
+### 인증 필요 Endpoint (JWT)
+
+| # | Endpoint | SQL query (db/queries/) | 읽는 테이블 | 쓰는 테이블 | Transaction |
+|---|----------|------------------------|-----------|-----------|-------------|
+| 8 | `GET /api/user/favorites` | `favorites.get_by_user` | user_favorites | — | — |
+| 9 | `PUT /api/user/favorites` | `favorites.delete_all_by_user`, `favorites.insert_one` ×N | — | user_favorites | — |
+| 10 | `GET /api/lists` | `lists.get_user_lists` | shopping_lists, list_items | — | — |
+| 11 | `GET /api/lists/{id}` | `lists.verify_ownership`, `lists.get_items_with_product_info`, `lists.get_best_prices_for_products`, `lists.get_store_prices_for_products` | shopping_lists, list_items, product_variants, products, price_records, retailers, units | — | — |
+| 12 | `POST /api/lists` | `lists.insert_list` | — | shopping_lists | — |
+| 13 | `POST /api/lists/{id}/items` | `lists.verify_ownership`, `lists.insert_item`, `lists.update_estimated_total`, `lists.get_estimated_total` | price_records | list_items, shopping_lists | **YES** |
+| 14 | `PATCH /api/lists/{id}/items/{id}` | `lists.verify_item_ownership`, (동적 UPDATE), `lists.get_item_after_update` | list_items, shopping_lists | list_items | — |
+| 15 | `GET /api/inventory` | `inventory.get_user_inventory`, `inventory.get_unit_abbreviation` | inventory_items, products, product_variants, units | — | — |
+| 16 | `POST /api/inventory` | `inventory.check_existing`, `inventory.update_existing` 또는 `inventory.insert_new` | inventory_items | inventory_items | — |
+| 17 | `PATCH /api/inventory/{id}/dismiss` | `inventory.dismiss` | — | inventory_items | — |
+| 18 | `GET /api/alerts` | `alerts.get_user_alerts`, `alerts.get_cheapest_current_price`, `alerts.get_tracked_product_ids`, `alerts.get_latest_cheapest_with_date`, `alerts.get_avg_price`, `alerts.check_existing_todo`, `alerts.get_variant_for_product`, `alerts.insert_smart_todo`, `alerts.get_product_name_icon` | price_alerts, products, price_records, product_variants, retailers, user_favorites, todos | todos | **YES** |
+| 19 | `POST /api/alerts` | `alerts.check_product_exists`, `alerts.insert_alert` | products | price_alerts | — |
+| 20 | `DELETE /api/alerts/{id}` | `alerts.delete_alert` | — | price_alerts | — |
+| 22 | `GET /api/insight/monthly` | `insight.spending_cte` + `insight.get_monthly` | list_items, shopping_lists, product_variants, products, categories, price_records | — | — |
+| 23 | `GET /api/insight/categories` | `insight.spending_cte` + `insight.get_by_category` | 위와 동일 | — | — |
+| 24 | `GET /api/insight/summary` | `insight.spending_cte` + `insight.get_summary_months`, `insight.spending_cte` + `insight.get_top_category` | 위와 동일 | — | — |
+
+### 미구현 (placeholder: `db/queries/scrape.sql`)
+
+| 기능 | SQL query | 상태 |
+|------|-----------|------|
+| 크롤링 job 생성 | `scrape.insert_job` | TODO |
+| job 성공 업데이트 | `scrape.update_job_success` | TODO |
+| job 실패 업데이트 | `scrape.update_job_failed` | TODO |
+| 새 가격 기록 삽입 | `scrape.insert_price_record` | TODO |
+| 트리거된 알림 확인 | `scrape.check_triggered_alerts` | TODO |
+| 알림 트리거 표시 | `scrape.trigger_alert` | TODO |
+
+---
+
+## DB 담당 가이드
+
+### 파일 위치
+
+모든 DB 관련 파일은 `db/` 폴더에 있습니다:
+
+| 파일 | 용도 | 상태 |
+|------|------|------|
+| `db/schema.sql` | CREATE TABLE (15개 테이블 + 2개 VIEW) | 완료 |
+| `db/migration.sql` | ALTER TABLE 컬럼 추가 + user_favorites | 완료 |
+| `db/seed_data.sql` | INSERT 테스트 데이터 | **placeholder — 완성 필요** |
+| `db/queries/*.sql` | 모든 SQL 쿼리 | 45개 완료, 6개 TODO |
+
+### SQL 쿼리 추가/수정 방법
+
+각 `.sql` 파일은 `-- name: 쿼리명`으로 구분합니다:
+
+```sql
+-- name: get_all
+SELECT retailer_id AS id, name, color, logo_url, base_url
+FROM retailers
+ORDER BY retailer_id;
+```
+
+Backend는 `sql_loader.py`로 자동 읽습니다:
+```python
+from sql_loader import get_query
+cur.execute(get_query("retailers", "get_all"))
+#                      ↑ 파일명      ↑ -- name: 뒤의 이름
+```
+
+### DB 담당이 해야 할 일
+
+1. **`db/seed_data.sql`** — 전체 INSERT 문 완성 (또는 mock data 스크립트 배치)
+2. **`db/queries/scrape.sql`** — 6개 TODO 쿼리, 크롤링 기능 설계 후 주석 해제 및 수정
+3. 새 쿼리 추가 시 해당 `.sql` 파일에 `-- name: 새이름` 블록 추가
+4. 기존 쿼리 수정 시 `.sql` 파일의 SQL만 변경 — Backend Python 코드 수정 불필요
+
+---
+
+## 프론트엔드 담당 가이드
+
+### API 전환
+
+`front-end/src/api/index.js` 15번째 줄:
+- `USE_MOCK = true` → `src/data/mockData.js`의 가짜 데이터 사용
+- `USE_MOCK = false` → Backend API 호출, 실제 DB 데이터 사용
+
+### product_id는 정수
+
+Mock data와 Backend API 모두 정수 `product_id` 사용 (예: `1`, `2`, `3`), 문자열 아님.
+
+### 상품 목록은 동적
+
+프론트엔드는 `GET /api/products`로 상품 목록을 가져옵니다. 하드코딩하지 마세요. Backend가 새 상품을 크롤링하면 프론트엔드에 자동 표시됩니다.
 
 ---
 
