@@ -1,6 +1,18 @@
 # .gitignore
+
+# Python
 .venv/
+venv/
 __pycache__/
 *.pyc
-.DS_Store
 .env
+.pytest_cache/
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+
+# 不推上去的檔案
+backend/docs/
