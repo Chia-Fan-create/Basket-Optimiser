@@ -1,0 +1,12 @@
+-- ============================================================
+-- SmartCart — Seed Data (Mock Data)
+-- ============================================================
+-- 由 DB 團隊維護，完整的 INSERT 語句在 backend/docs/insert_mockdata.sql
+-- 包含：retailers (3), categories (8), brands (17), units (6),
+--       products (17), product_variants (51), price_records (408),
+--       scrape_jobs (24), users (5), shopping_lists (8),
+--       list_items (40), price_alerts (8), todos (6),
+--       inventory_items (32), seasonal_patterns (7)
+-- ============================================================
+
+-- TODO: 由 DB 同學提供完整的 seed data script
