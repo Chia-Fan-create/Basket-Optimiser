@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify
 from db import get_connection
+from sql_loader import get_query
 
 retailers_bp = Blueprint("retailers", __name__)
 
@@ -9,10 +10,7 @@ def get_retailers():
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            cur.execute(
-                "SELECT retailer_id AS id, name, color, logo_url, base_url "
-                "FROM retailers ORDER BY retailer_id"
-            )
+            cur.execute(get_query("retailers", "get_all"))
             rows = cur.fetchall()
         return jsonify(rows)
     finally:

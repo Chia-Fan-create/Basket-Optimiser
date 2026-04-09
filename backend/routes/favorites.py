@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request, g
 from db import get_connection
 from auth import require_auth
+from sql_loader import get_query
 
 favorites_bp = Blueprint("favorites", __name__)
 
@@ -11,10 +12,7 @@ def get_favorites():
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            cur.execute(
-                "SELECT product_id FROM user_favorites WHERE user_id = %s",
-                (g.user_id,),
-            )
+            cur.execute(get_query("favorites", "get_by_user"), (g.user_id,))
             ids = [row["product_id"] for row in cur.fetchall()]
         return jsonify({"product_ids": ids})
     finally:
@@ -32,12 +30,9 @@ def update_favorites():
         conn.autocommit(False)
         try:
             with conn.cursor() as cur:
-                cur.execute("DELETE FROM user_favorites WHERE user_id = %s", (g.user_id,))
+                cur.execute(get_query("favorites", "delete_all_by_user"), (g.user_id,))
                 for pid in product_ids:
-                    cur.execute(
-                        "INSERT INTO user_favorites (user_id, product_id) VALUES (%s, %s)",
-                        (g.user_id, int(pid)),
-                    )
+                    cur.execute(get_query("favorites", "insert_one"), (g.user_id, int(pid)))
             conn.commit()
         except Exception:
             conn.rollback()

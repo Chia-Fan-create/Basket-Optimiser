@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from db import get_connection
 from auth import hash_password, check_password, generate_token
+from sql_loader import get_query
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -18,15 +19,12 @@ def register():
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT user_id FROM users WHERE email = %s", (email,))
+            cur.execute(get_query("auth", "check_email_exists"), (email,))
             if cur.fetchone():
                 return jsonify({"error": True, "message": "Email already registered"}), 400
 
             hashed = hash_password(password)
-            cur.execute(
-                "INSERT INTO users (email, password_hash, display_name) VALUES (%s, %s, %s)",
-                (email, hashed, display_name),
-            )
+            cur.execute(get_query("auth", "insert_user"), (email, hashed, display_name))
             user_id = cur.lastrowid
 
         user = {"user_id": user_id, "email": email, "display_name": display_name}
@@ -48,10 +46,7 @@ def login():
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            cur.execute(
-                "SELECT user_id, email, password_hash, display_name FROM users WHERE email = %s",
-                (email,),
-            )
+            cur.execute(get_query("auth", "get_user_by_email"), (email,))
             user = cur.fetchone()
 
         if not user or not check_password(password, user["password_hash"]):

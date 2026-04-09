@@ -1,34 +1,16 @@
 from flask import Blueprint, jsonify, request, g
 from db import get_connection
 from auth import require_auth
+from sql_loader import get_query
 
 insight_bp = Blueprint("insight", __name__)
 
-# Inline the v_monthly_spending_by_category view since it may not exist on the server.
-# This matches the view definition from schema.sql.
-SPENDING_CTE = """
-    SELECT
-        sl.user_id,
-        YEAR(li.purchased_at)  AS purchase_year,
-        MONTH(li.purchased_at) AS purchase_month,
-        c.name AS category_name,
-        COUNT(li.list_item_id) AS items_bought,
-        SUM(pr.price * li.quantity) AS total_spent
-    FROM list_items li
-    INNER JOIN shopping_lists sl ON li.list_id = sl.list_id
-    INNER JOIN product_variants pv ON li.variant_id = pv.variant_id
-    INNER JOIN products p ON pv.product_id = p.product_id
-    LEFT JOIN categories c ON p.category_id = c.category_id
-    INNER JOIN (
-        SELECT variant_id, MAX(record_id) AS latest_record_id
-        FROM price_records
-        GROUP BY variant_id
-    ) latest ON pv.variant_id = latest.variant_id
-    INNER JOIN price_records pr ON pr.record_id = latest.latest_record_id
-    WHERE li.is_purchased = TRUE
-      AND li.purchased_at IS NOT NULL
-    GROUP BY sl.user_id, purchase_year, purchase_month, c.name
-"""
+
+def _build_insight_sql(name):
+    """Load an insight query and inject the spending_cte subquery."""
+    cte = get_query("insight", "spending_cte")
+    sql = get_query("insight", name)
+    return sql.replace("{spending_cte}", cte)
 
 
 @insight_bp.route("/api/insight/monthly")
@@ -38,22 +20,13 @@ def get_monthly():
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            cur.execute(
-                f"SELECT purchase_month AS mo, purchase_year AS yr, "
-                f"       SUM(total_spent) AS amount "
-                f"FROM ({SPENDING_CTE}) AS spending "
-                f"WHERE user_id = %s "
-                f"GROUP BY purchase_year, purchase_month "
-                f"ORDER BY purchase_year DESC, purchase_month DESC "
-                f"LIMIT %s",
-                (g.user_id, months),
-            )
+            cur.execute(_build_insight_sql("get_monthly"), (g.user_id, months))
             rows = cur.fetchall()
 
         month_names = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
                        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
         result = []
-        for r in reversed(rows):  # chronological order
+        for r in reversed(rows):
             result.append({
                 "month": month_names[r["mo"]],
                 "year": r["yr"],
@@ -71,18 +44,7 @@ def get_categories():
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            cur.execute(
-                f"SELECT category_name AS category, SUM(total_spent) AS amount "
-                f"FROM ({SPENDING_CTE}) AS spending "
-                f"WHERE user_id = %s "
-                f"  AND (purchase_year * 100 + purchase_month) >= ( "
-                f"      SELECT MAX(s2.purchase_year * 100 + s2.purchase_month) - %s "
-                f"      FROM ({SPENDING_CTE}) AS s2 WHERE s2.user_id = %s "
-                f"  ) "
-                f"GROUP BY category_name "
-                f"ORDER BY amount DESC",
-                (g.user_id, months, g.user_id),
-            )
+            cur.execute(_build_insight_sql("get_by_category"), (g.user_id, months, g.user_id))
             rows = cur.fetchall()
 
         grand_total = sum(float(r["amount"]) for r in rows) if rows else 1
@@ -105,17 +67,7 @@ def get_summary():
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            # Last 6 months spending
-            cur.execute(
-                f"SELECT purchase_year AS yr, purchase_month AS mo, "
-                f"       SUM(total_spent) AS amount "
-                f"FROM ({SPENDING_CTE}) AS spending "
-                f"WHERE user_id = %s "
-                f"GROUP BY purchase_year, purchase_month "
-                f"ORDER BY purchase_year DESC, purchase_month DESC "
-                f"LIMIT 6",
-                (g.user_id,),
-            )
+            cur.execute(_build_insight_sql("get_summary_months"), (g.user_id,))
             rows = cur.fetchall()
 
             if not rows:
@@ -148,15 +100,7 @@ def get_summary():
                     "value": change_pct,
                 })
 
-            # Top category
-            cur.execute(
-                f"SELECT category_name, SUM(total_spent) AS amount "
-                f"FROM ({SPENDING_CTE}) AS spending "
-                f"WHERE user_id = %s "
-                f"GROUP BY category_name "
-                f"ORDER BY amount DESC LIMIT 1",
-                (g.user_id,),
-            )
+            cur.execute(_build_insight_sql("get_top_category"), (g.user_id,))
             top_cat = cur.fetchone()
             if top_cat:
                 cat_amt = round(float(top_cat["amount"]) / max(len(amounts), 1), 2)

@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request, g
 from db import get_connection
 from auth import require_auth
+from sql_loader import get_query
 
 lists_bp = Blueprint("lists", __name__)
 
@@ -11,17 +12,7 @@ def get_lists():
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            cur.execute(
-                "SELECT sl.list_id, sl.name, sl.estimated_total, "
-                "       COUNT(li.list_item_id) AS items_count, "
-                "       sl.created_at, sl.updated_at "
-                "FROM shopping_lists sl "
-                "LEFT JOIN list_items li ON sl.list_id = li.list_id "
-                "WHERE sl.user_id = %s "
-                "GROUP BY sl.list_id "
-                "ORDER BY sl.updated_at DESC",
-                (g.user_id,),
-            )
+            cur.execute(get_query("lists", "get_user_lists"), (g.user_id,))
             rows = cur.fetchall()
             for r in rows:
                 r["estimated_total"] = float(r["estimated_total"])
@@ -38,29 +29,14 @@ def get_list_detail(list_id):
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            # Verify ownership
-            cur.execute(
-                "SELECT list_id, name FROM shopping_lists WHERE list_id = %s AND user_id = %s",
-                (list_id, g.user_id),
-            )
+            cur.execute(get_query("lists", "verify_ownership"), (list_id, g.user_id))
             sl = cur.fetchone()
             if not sl:
                 return jsonify({"error": True, "message": "List not found"}), 404
 
-            # Get items with product info and best price
-            cur.execute(
-                "SELECT li.list_item_id, pv.product_id, p.name AS product_name, "
-                "       p.icon, li.variant_id, li.quantity, "
-                "       li.is_purchased, li.purchased_at "
-                "FROM list_items li "
-                "INNER JOIN product_variants pv ON li.variant_id = pv.variant_id "
-                "INNER JOIN products p ON pv.product_id = p.product_id "
-                "WHERE li.list_id = %s",
-                (list_id,),
-            )
+            cur.execute(get_query("lists", "get_items_with_product_info"), (list_id,))
             items_raw = cur.fetchall()
 
-            # For each item, find best current price across all stores
             items = []
             product_ids = set()
             for item in items_raw:
@@ -69,34 +45,18 @@ def get_list_detail(list_id):
                 item["purchased_at"] = item["purchased_at"].isoformat() if item["purchased_at"] else None
                 items.append(item)
 
-            # Get best prices for each product in the list
             if product_ids:
                 placeholders = ",".join(["%s"] * len(product_ids))
-                cur.execute(
-                    f"SELECT pv.product_id, r.name AS store, r.color AS store_color, "
-                    f"       pr.unit_price, CONCAT('per ', u.name) AS unit "
-                    f"FROM price_records pr "
-                    f"INNER JOIN ( "
-                    f"    SELECT variant_id, MAX(record_id) AS latest_record_id "
-                    f"    FROM price_records GROUP BY variant_id "
-                    f") latest ON pr.record_id = latest.latest_record_id "
-                    f"INNER JOIN product_variants pv ON pr.variant_id = pv.variant_id "
-                    f"INNER JOIN retailers r ON pv.retailer_id = r.retailer_id "
-                    f"INNER JOIN units u ON pv.unit_id = u.unit_id "
-                    f"WHERE pv.product_id IN ({placeholders}) "
-                    f"ORDER BY pv.product_id, pr.unit_price ASC",
-                    tuple(product_ids),
-                )
+                sql = get_query("lists", "get_best_prices_for_products").format(placeholders=placeholders)
+                cur.execute(sql, tuple(product_ids))
                 price_rows = cur.fetchall()
 
-                # Build best-price lookup: product_id -> cheapest row
                 best_prices = {}
                 for pr in price_rows:
                     pid = pr["product_id"]
                     if pid not in best_prices:
                         best_prices[pid] = pr
 
-                # Attach best price info to each item
                 for item in items:
                     bp = best_prices.get(item["product_id"], {})
                     item["best_store"] = bp.get("store")
@@ -104,25 +64,11 @@ def get_list_detail(list_id):
                     item["best_price"] = float(bp["unit_price"]) if bp.get("unit_price") else None
                     item["unit"] = bp.get("unit")
 
-            # Calculate store_totals: what would the ENTIRE list cost at each store?
             if product_ids:
-                # Get latest prices for all variants of products in this list
-                cur.execute(
-                    f"SELECT pv.product_id, r.name AS store, pr.price "
-                    f"FROM price_records pr "
-                    f"INNER JOIN ( "
-                    f"    SELECT variant_id, MAX(record_id) AS latest_record_id "
-                    f"    FROM price_records GROUP BY variant_id "
-                    f") latest ON pr.record_id = latest.latest_record_id "
-                    f"INNER JOIN product_variants pv ON pr.variant_id = pv.variant_id "
-                    f"INNER JOIN retailers r ON pv.retailer_id = r.retailer_id "
-                    f"WHERE pv.product_id IN ({placeholders})",
-                    tuple(product_ids),
-                )
+                sql = get_query("lists", "get_store_prices_for_products").format(placeholders=placeholders)
+                cur.execute(sql, tuple(product_ids))
                 all_prices = cur.fetchall()
 
-                # For each store, pick cheapest variant per product, then multiply by quantity
-                # Build: store -> product_id -> cheapest price
                 store_product_prices = {}
                 for row in all_prices:
                     store = row["store"]
@@ -133,7 +79,6 @@ def get_list_detail(list_id):
                     if pid not in store_product_prices[store] or price < store_product_prices[store][pid]:
                         store_product_prices[store][pid] = price
 
-                # Build quantity map from list items
                 qty_map = {}
                 for item in items:
                     pid = item["product_id"]
@@ -179,10 +124,7 @@ def create_list():
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            cur.execute(
-                "INSERT INTO shopping_lists (user_id, name) VALUES (%s, %s)",
-                (g.user_id, name),
-            )
+            cur.execute(get_query("lists", "insert_list"), (g.user_id, name))
             list_id = cur.lastrowid
         return jsonify({"success": True, "list_id": list_id, "name": name}), 201
     finally:
@@ -205,44 +147,17 @@ def add_list_item(list_id):
         conn.autocommit(False)
         try:
             with conn.cursor() as cur:
-                # Verify list ownership
-                cur.execute(
-                    "SELECT list_id FROM shopping_lists WHERE list_id = %s AND user_id = %s",
-                    (list_id, g.user_id),
-                )
+                cur.execute(get_query("lists", "verify_ownership"), (list_id, g.user_id))
                 if not cur.fetchone():
                     conn.rollback()
                     return jsonify({"error": True, "message": "List not found"}), 404
 
-                # Step 1: Insert the list item
-                cur.execute(
-                    "INSERT INTO list_items (list_id, variant_id, quantity) VALUES (%s, %s, %s)",
-                    (list_id, variant_id, quantity),
-                )
+                cur.execute(get_query("lists", "insert_item"), (list_id, variant_id, quantity))
                 list_item_id = cur.lastrowid
 
-                # Step 2: Update estimated_total atomically
-                cur.execute(
-                    "UPDATE shopping_lists "
-                    "SET estimated_total = estimated_total + ( "
-                    "    SELECT pr.price * %s "
-                    "    FROM price_records pr "
-                    "    INNER JOIN ( "
-                    "        SELECT variant_id, MAX(record_id) AS latest_record_id "
-                    "        FROM price_records "
-                    "        WHERE variant_id = %s "
-                    "        GROUP BY variant_id "
-                    "    ) latest ON pr.record_id = latest.latest_record_id "
-                    ") "
-                    "WHERE list_id = %s",
-                    (quantity, variant_id, list_id),
-                )
+                cur.execute(get_query("lists", "update_estimated_total"), (quantity, variant_id, list_id))
 
-                # Get updated total
-                cur.execute(
-                    "SELECT estimated_total FROM shopping_lists WHERE list_id = %s",
-                    (list_id,),
-                )
+                cur.execute(get_query("lists", "get_estimated_total"), (list_id,))
                 new_total = float(cur.fetchone()["estimated_total"])
 
             conn.commit()
@@ -267,14 +182,7 @@ def update_list_item(list_id, item_id):
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            # Verify ownership via join
-            cur.execute(
-                "SELECT li.list_item_id "
-                "FROM list_items li "
-                "INNER JOIN shopping_lists sl ON li.list_id = sl.list_id "
-                "WHERE li.list_item_id = %s AND li.list_id = %s AND sl.user_id = %s",
-                (item_id, list_id, g.user_id),
-            )
+            cur.execute(get_query("lists", "verify_item_ownership"), (item_id, list_id, g.user_id))
             if not cur.fetchone():
                 return jsonify({"error": True, "message": "Item not found"}), 404
 
@@ -295,11 +203,7 @@ def update_list_item(list_id, item_id):
             params.append(item_id)
             cur.execute(f"UPDATE list_items SET {', '.join(sets)} WHERE list_item_id = %s", params)
 
-            # Fetch updated row
-            cur.execute(
-                "SELECT list_item_id, is_purchased, purchased_at FROM list_items WHERE list_item_id = %s",
-                (item_id,),
-            )
+            cur.execute(get_query("lists", "get_item_after_update"), (item_id,))
             row = cur.fetchone()
 
         return jsonify({

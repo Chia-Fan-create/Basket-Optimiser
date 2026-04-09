@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request, g
 from db import get_connection
 from auth import require_auth
+from sql_loader import get_query
 
 alerts_bp = Blueprint("alerts", __name__)
 
@@ -14,34 +15,13 @@ def get_alerts():
         try:
             with conn.cursor() as cur:
                 # --- User alerts ---
-                cur.execute(
-                    "SELECT pa.alert_id, pa.product_id, p.name AS product_name, p.icon, "
-                    "       pa.target_price, pa.is_active, pa.triggered_at "
-                    "FROM price_alerts pa "
-                    "INNER JOIN products p ON pa.product_id = p.product_id "
-                    "WHERE pa.user_id = %s "
-                    "ORDER BY pa.created_at DESC",
-                    (g.user_id,),
-                )
+                cur.execute(get_query("alerts", "get_user_alerts"), (g.user_id,))
                 alert_rows = cur.fetchall()
 
                 user_alerts = []
                 for a in alert_rows:
                     pid = a["product_id"]
-                    # Get current cheapest price for this product
-                    cur.execute(
-                        "SELECT pr.unit_price, r.name AS store, r.color AS store_color "
-                        "FROM price_records pr "
-                        "INNER JOIN ( "
-                        "    SELECT variant_id, MAX(record_id) AS latest_record_id "
-                        "    FROM price_records GROUP BY variant_id "
-                        ") latest ON pr.record_id = latest.latest_record_id "
-                        "INNER JOIN product_variants pv ON pr.variant_id = pv.variant_id "
-                        "INNER JOIN retailers r ON pv.retailer_id = r.retailer_id "
-                        "WHERE pv.product_id = %s "
-                        "ORDER BY pr.unit_price ASC LIMIT 1",
-                        (pid,),
-                    )
+                    cur.execute(get_query("alerts", "get_cheapest_current_price"), (pid,))
                     cheapest = cur.fetchone()
                     current_price = float(cheapest["unit_price"]) if cheapest else None
                     target = float(a["target_price"])
@@ -62,44 +42,18 @@ def get_alerts():
                         alert_obj["triggered_store_color"] = cheapest["store_color"]
                     user_alerts.append(alert_obj)
 
-                # --- Smart alerts (TRANSACTION: detect + insert into todos) ---
-                # Find products the user tracks (via favorites or alerts)
-                cur.execute(
-                    "SELECT DISTINCT product_id FROM user_favorites WHERE user_id = %s "
-                    "UNION "
-                    "SELECT DISTINCT product_id FROM price_alerts WHERE user_id = %s",
-                    (g.user_id, g.user_id),
-                )
+                # --- Smart alerts (TRANSACTION) ---
+                cur.execute(get_query("alerts", "get_tracked_product_ids"), (g.user_id, g.user_id))
                 tracked_pids = [r["product_id"] for r in cur.fetchall()]
 
                 smart_alerts = []
                 for pid in tracked_pids:
-                    # Latest price vs average of previous prices
-                    cur.execute(
-                        "SELECT pr.unit_price AS latest_price, r.name AS store, r.color AS store_color, "
-                        "       pr.scraped_at "
-                        "FROM price_records pr "
-                        "INNER JOIN ( "
-                        "    SELECT variant_id, MAX(record_id) AS latest_record_id "
-                        "    FROM price_records GROUP BY variant_id "
-                        ") latest ON pr.record_id = latest.latest_record_id "
-                        "INNER JOIN product_variants pv ON pr.variant_id = pv.variant_id "
-                        "INNER JOIN retailers r ON pv.retailer_id = r.retailer_id "
-                        "WHERE pv.product_id = %s "
-                        "ORDER BY pr.unit_price ASC LIMIT 1",
-                        (pid,),
-                    )
+                    cur.execute(get_query("alerts", "get_latest_cheapest_with_date"), (pid,))
                     cheapest = cur.fetchone()
                     if not cheapest:
                         continue
 
-                    cur.execute(
-                        "SELECT AVG(pr.unit_price) AS avg_price "
-                        "FROM price_records pr "
-                        "INNER JOIN product_variants pv ON pr.variant_id = pv.variant_id "
-                        "WHERE pv.product_id = %s",
-                        (pid,),
-                    )
+                    cur.execute(get_query("alerts", "get_avg_price"), (pid,))
                     avg_row = cur.fetchone()
                     if not avg_row or not avg_row["avg_price"]:
                         continue
@@ -113,27 +67,15 @@ def get_alerts():
                     if drop_pct < 20:
                         continue
 
-                    # Check if todo already exists for this product
-                    cur.execute(
-                        "SELECT todo_id FROM todos "
-                        "WHERE user_id = %s AND variant_id IN ( "
-                        "    SELECT variant_id FROM product_variants WHERE product_id = %s "
-                        ") AND todo_type = 'buy_now' AND is_done = FALSE",
-                        (g.user_id, pid),
-                    )
+                    cur.execute(get_query("alerts", "check_existing_todo"), (g.user_id, pid))
                     existing = cur.fetchone()
 
                     if not existing:
-                        # Get a variant_id for this product to satisfy FK
-                        cur.execute(
-                            "SELECT variant_id FROM product_variants WHERE product_id = %s LIMIT 1",
-                            (pid,),
-                        )
+                        cur.execute(get_query("alerts", "get_variant_for_product"), (pid,))
                         variant = cur.fetchone()
                         if variant:
                             cur.execute(
-                                "INSERT INTO todos (user_id, variant_id, todo_type, message) "
-                                "VALUES (%s, %s, 'buy_now', %s)",
+                                get_query("alerts", "insert_smart_todo"),
                                 (g.user_id, variant["variant_id"],
                                  f"Price dropped {drop_pct}%% — consider buying now"),
                             )
@@ -141,10 +83,7 @@ def get_alerts():
                     else:
                         todo_id = existing["todo_id"]
 
-                    cur.execute(
-                        "SELECT p.name AS product_name, p.icon FROM products p WHERE p.product_id = %s",
-                        (pid,),
-                    )
+                    cur.execute(get_query("alerts", "get_product_name_icon"), (pid,))
                     prod = cur.fetchone()
 
                     smart_alerts.append({
@@ -184,17 +123,12 @@ def create_alert():
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            cur.execute(
-                "SELECT name FROM products WHERE product_id = %s", (int(product_id),)
-            )
+            cur.execute(get_query("alerts", "check_product_exists"), (int(product_id),))
             prod = cur.fetchone()
             if not prod:
                 return jsonify({"error": True, "message": "Product not found"}), 404
 
-            cur.execute(
-                "INSERT INTO price_alerts (user_id, product_id, target_price) VALUES (%s, %s, %s)",
-                (g.user_id, int(product_id), target_price),
-            )
+            cur.execute(get_query("alerts", "insert_alert"), (g.user_id, int(product_id), target_price))
             alert_id = cur.lastrowid
         return jsonify({
             "success": True,
@@ -211,10 +145,7 @@ def delete_alert(alert_id):
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            cur.execute(
-                "DELETE FROM price_alerts WHERE alert_id = %s AND user_id = %s",
-                (alert_id, g.user_id),
-            )
+            cur.execute(get_query("alerts", "delete_alert"), (alert_id, g.user_id))
             if cur.rowcount == 0:
                 return jsonify({"error": True, "message": "Alert not found"}), 404
         return jsonify({"success": True, "deleted": True})
