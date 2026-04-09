@@ -4,16 +4,16 @@
 // ============================================================
 
 export const PRODUCT_CATALOG = [
-  { id: "milk", name: "Milk", icon: "🥛", category: "Dairy" },
-  { id: "chicken", name: "Chicken Breast", icon: "🍗", category: "Meat" },
-  { id: "protein_bar", name: "Protein Bar", icon: "💪", category: "Snacks" },
-  { id: "trash_bag", name: "Trash Bags", icon: "🗑️", category: "Household" },
-  { id: "bedsheet", name: "Bed Sheets", icon: "🛏️", category: "Home" },
-  { id: "toilet_paper", name: "Toilet Paper", icon: "🧻", category: "Household" },
-  { id: "paper_towel", name: "Paper Towels", icon: "🧾", category: "Household" },
-  { id: "eggs", name: "Eggs", icon: "🥚", category: "Dairy" },
-  { id: "water", name: "Bottled Water", icon: "💧", category: "Beverages" },
-  { id: "detergent", name: "Detergent", icon: "🧴", category: "Household" },
+  { id: 1, name: "Milk", icon: "🥛", category: "Dairy" },
+  { id: 2, name: "Chicken Breast", icon: "🍗", category: "Meat" },
+  { id: 3, name: "Protein Bar", icon: "💪", category: "Snacks" },
+  { id: 4, name: "Trash Bags", icon: "🗑️", category: "Household" },
+  { id: 5, name: "Bed Sheets", icon: "🛏️", category: "Home" },
+  { id: 6, name: "Toilet Paper", icon: "🧻", category: "Household" },
+  { id: 7, name: "Paper Towels", icon: "🧾", category: "Household" },
+  { id: 8, name: "Eggs", icon: "🥚", category: "Dairy" },
+  { id: 9, name: "Bottled Water", icon: "💧", category: "Beverages" },
+  { id: 10, name: "Detergent", icon: "🧴", category: "Household" },
 ];
 
 export const MOCK_RETAILERS = [
@@ -25,52 +25,52 @@ export const MOCK_RETAILERS = [
 export const STORE_COLORS = { Amazon: "#FF9900", Target: "#CC0000", Walmart: "#0071DC" };
 
 export const MOCK_COMPARISONS = {
-  milk: [
+  1: [
     { rank: 1, product: "Great Value Whole Milk 1 Gal", store: "Walmart", storeColor: "#0071DC", unitPrice: 3.42, unit: "per gallon", totalPrice: 3.42, originalPack: "1 gal", url: "#" },
     { rank: 2, product: "Good & Gather Whole Milk", store: "Target", storeColor: "#CC0000", unitPrice: 3.89, unit: "per gallon", totalPrice: 3.89, originalPack: "1 gal", url: "#" },
     { rank: 3, product: "365 Organic Whole Milk", store: "Amazon", storeColor: "#FF9900", unitPrice: 5.49, unit: "per gallon", totalPrice: 5.49, originalPack: "1 gal", url: "#" },
   ],
-  chicken: [
+  2: [
     { rank: 1, product: "Walmart Boneless Breast", store: "Walmart", storeColor: "#0071DC", unitPrice: 3.22, unit: "per lb", totalPrice: 8.37, originalPack: "2.6 lb", url: "#" },
     { rank: 2, product: "Good & Gather Chicken Breast", store: "Target", storeColor: "#CC0000", unitPrice: 3.99, unit: "per lb", totalPrice: 9.98, originalPack: "2.5 lb", url: "#" },
     { rank: 3, product: "Amazon Fresh Chicken Breast", store: "Amazon", storeColor: "#FF9900", unitPrice: 4.16, unit: "per lb", totalPrice: 12.49, originalPack: "3 lb", url: "#" },
   ],
-  eggs: [
+  8: [
     { rank: 1, product: "Great Value Large Eggs 18ct", store: "Walmart", storeColor: "#0071DC", unitPrice: 0.27, unit: "per egg", totalPrice: 4.87, originalPack: "18 ct", url: "#" },
     { rank: 2, product: "Good & Gather Cage-Free 12ct", store: "Target", storeColor: "#CC0000", unitPrice: 0.37, unit: "per egg", totalPrice: 4.49, originalPack: "12 ct", url: "#" },
     { rank: 3, product: "Happy Egg Co Free Range 12ct", store: "Amazon", storeColor: "#FF9900", unitPrice: 0.50, unit: "per egg", totalPrice: 5.99, originalPack: "12 ct", url: "#" },
   ],
-  toilet_paper: [
+  6: [
     { rank: 1, product: "Great Value 1000 Sheets 24pk", store: "Walmart", storeColor: "#0071DC", unitPrice: 0.62, unit: "per roll", totalPrice: 14.97, originalPack: "24 rolls", url: "#" },
     { rank: 2, product: "Up&Up Soft & Strong 18pk", store: "Target", storeColor: "#CC0000", unitPrice: 0.78, unit: "per roll", totalPrice: 13.99, originalPack: "18 mega rolls", url: "#" },
     { rank: 3, product: "Charmin Ultra Soft 12pk", store: "Amazon", storeColor: "#FF9900", unitPrice: 1.25, unit: "per roll", totalPrice: 14.99, originalPack: "12 mega rolls", url: "#" },
   ],
-  paper_towel: [
+  7: [
     { rank: 1, product: "Up&Up Make-A-Size 12pk", store: "Target", storeColor: "#CC0000", unitPrice: 1.42, unit: "per roll", totalPrice: 16.99, originalPack: "12 rolls", url: "#" },
     { rank: 2, product: "Amazon Basics 2-Ply 12pk", store: "Amazon", storeColor: "#FF9900", unitPrice: 1.58, unit: "per roll", totalPrice: 18.99, originalPack: "12 rolls", url: "#" },
     { rank: 3, product: "Bounty Select-A-Size 12pk", store: "Walmart", storeColor: "#0071DC", unitPrice: 1.91, unit: "per roll", totalPrice: 22.97, originalPack: "12 rolls", url: "#" },
   ],
-  protein_bar: [
+  3: [
     { rank: 1, product: "Kirkland Protein Bar 20pk", store: "Amazon", storeColor: "#FF9900", unitPrice: 1.10, unit: "per bar", totalPrice: 21.99, originalPack: "20 bars", url: "#" },
     { rank: 2, product: "Clif Bar Variety 12pk", store: "Walmart", storeColor: "#0071DC", unitPrice: 1.33, unit: "per bar", totalPrice: 15.99, originalPack: "12 bars", url: "#" },
     { rank: 3, product: "Quest Protein Bar 12pk", store: "Target", storeColor: "#CC0000", unitPrice: 1.92, unit: "per bar", totalPrice: 22.99, originalPack: "12 bars", url: "#" },
   ],
-  trash_bag: [
+  4: [
     { rank: 1, product: "Great Value 13 Gal 80ct", store: "Walmart", storeColor: "#0071DC", unitPrice: 0.10, unit: "per bag", totalPrice: 7.97, originalPack: "80 bags", url: "#" },
     { rank: 2, product: "Up&Up 13 Gal 70ct", store: "Target", storeColor: "#CC0000", unitPrice: 0.13, unit: "per bag", totalPrice: 8.99, originalPack: "70 bags", url: "#" },
     { rank: 3, product: "Glad ForceFlex 40ct", store: "Amazon", storeColor: "#FF9900", unitPrice: 0.25, unit: "per bag", totalPrice: 9.99, originalPack: "40 bags", url: "#" },
   ],
-  bedsheet: [
+  5: [
     { rank: 1, product: "Mainstays Microfiber Set", store: "Walmart", storeColor: "#0071DC", unitPrice: 12.97, unit: "per set", totalPrice: 12.97, originalPack: "Queen", url: "#" },
     { rank: 2, product: "Amazon Basics Microfiber", store: "Amazon", storeColor: "#FF9900", unitPrice: 15.99, unit: "per set", totalPrice: 15.99, originalPack: "Queen", url: "#" },
     { rank: 3, product: "Threshold 300TC Set", store: "Target", storeColor: "#CC0000", unitPrice: 24.99, unit: "per set", totalPrice: 24.99, originalPack: "Queen", url: "#" },
   ],
-  water: [
+  9: [
     { rank: 1, product: "Great Value Purified 40pk", store: "Walmart", storeColor: "#0071DC", unitPrice: 0.009, unit: "per oz", totalPrice: 3.98, originalPack: "40×16.9oz", url: "#" },
     { rank: 2, product: "Aquafina 32pk", store: "Amazon", storeColor: "#FF9900", unitPrice: 0.012, unit: "per oz", totalPrice: 6.49, originalPack: "32×16.9oz", url: "#" },
     { rank: 3, product: "Dasani 24pk", store: "Target", storeColor: "#CC0000", unitPrice: 0.013, unit: "per oz", totalPrice: 5.29, originalPack: "24×16.9oz", url: "#" },
   ],
-  detergent: [
+  10: [
     { rank: 1, product: "All Free Clear 58 Loads", store: "Walmart", storeColor: "#0071DC", unitPrice: 0.17, unit: "per load", totalPrice: 9.97, originalPack: "58 loads", url: "#" },
     { rank: 2, product: "Arm & Hammer 50 Loads", store: "Target", storeColor: "#CC0000", unitPrice: 0.20, unit: "per load", totalPrice: 9.99, originalPack: "50 loads", url: "#" },
     { rank: 3, product: "Tide Original 64 Loads", store: "Amazon", storeColor: "#FF9900", unitPrice: 0.22, unit: "per load", totalPrice: 13.97, originalPack: "64 loads", url: "#" },

@@ -3,7 +3,7 @@ import { PRODUCT_CATALOG, MOCK_COMPARISONS, generateTrendData } from '../data/mo
 
 export default function TrendsPage({ selectedIds }) {
   const [show, setShow] = useState(false);
-  const [active, setActive] = useState(selectedIds[0] || 'milk');
+  const [active, setActive] = useState(selectedIds[0] || 1);
   const canvasRef = useRef(null);
   const [tooltip, setTooltip] = useState(null);
   useEffect(() => { setTimeout(() => setShow(true), 50); }, []);
