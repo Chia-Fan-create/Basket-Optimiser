@@ -173,6 +173,57 @@ Basket-Optimiser/
 
 ---
 
+## SQL Query 관리 구조
+
+### SQL을 왜 Python 안에 안 쓰나요?
+
+모든 SQL 쿼리는 `db/queries/`의 `.sql` 파일에 있고, Backend Python 코드는 `sql_loader.py`로 읽어서 실행합니다. 장점:
+
+- **역할 분리**: DB 담당은 SQL만 수정, Backend 담당은 Python만 수정
+- **평가 용이**: 교수님이 `.sql` 파일로 직접 SQL 품질 확인 가능
+- **집중 관리**: 같은 기능의 SQL이 한 파일에 모여 있어 찾고 수정하기 편함
+
+### 하나의 `.sql` 파일에 여러 쿼리를 어떻게 넣나요?
+
+각 쿼리를 `-- name: 쿼리명`으로 표시하면, `sql_loader.py`가 이 표시를 기준으로 파일을 여러 조각으로 분리합니다.
+
+`db/queries/auth.sql` 예시 (3개 쿼리):
+
+```sql
+-- name: check_email_exists
+SELECT user_id FROM users WHERE email = %s;
+
+-- name: insert_user
+INSERT INTO users (email, password_hash, display_name) VALUES (%s, %s, %s);
+
+-- name: get_user_by_email
+SELECT user_id, email, password_hash, display_name FROM users WHERE email = %s;
+```
+
+### Backend에서 특정 쿼리를 어떻게 호출하나요?
+
+`get_query("파일명", "name 표시")`를 사용합니다:
+
+```python
+from sql_loader import get_query
+
+# get_query("auth", "check_email_exists") → 위의 SELECT user_id ... 반환
+cur.execute(get_query("auth", "check_email_exists"), (email,))
+cur.execute(get_query("auth", "insert_user"), (email, hashed, display_name))
+```
+
+### 새 쿼리를 추가하려면?
+
+해당 `.sql` 파일에 `-- name: 새이름` 블록을 추가하고, Python 코드에서 `get_query("파일명", "새이름")`으로 호출하면 됩니다.
+
+### 현재 상태
+
+- **45개 쿼리 구현 완료**, 52개 테스트 전부 통과
+- **6개 쿼리 TODO** (`db/queries/scrape.sql`), 크롤링 기능 구현 시 완성 예정
+- **1개 동적 UPDATE** (`lists.py`의 PATCH endpoint)는 SET 컬럼이 가변적이라 Python에 유지
+
+---
+
 ## Backend Endpoint × DB Query 완전 대조표
 
 각 endpoint가 어떤 SQL 쿼리(파일.쿼리명)를 호출하고, 어떤 DB 테이블을 읽고 쓰는지 정리합니다.

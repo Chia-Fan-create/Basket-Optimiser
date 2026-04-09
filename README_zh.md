@@ -173,6 +173,57 @@ Basket-Optimiser/
 
 ---
 
+## SQL Query 的管理機制
+
+### 為什麼 SQL 不寫在 Python 裡面？
+
+所有 SQL query 都放在 `db/queries/` 的 `.sql` 檔案裡，Backend 的 Python code 透過 `sql_loader.py` 載入執行。這樣做的好處：
+
+- **分工清楚**：DB 同學改 SQL 不需要動 Python code，Backend 同學改邏輯不需要動 SQL
+- **方便審閱**：教授可以直接看 `.sql` 檔評分 SQL 品質
+- **集中管理**：同一功能的 SQL 放在同一個檔案，好找好改
+
+### 一個 `.sql` 檔裡怎麼放多個 query？
+
+每個 query 用 `-- name: 查詢名` 來標記，`sql_loader.py` 會自動用這些標記把檔案切成多段。
+
+以 `db/queries/auth.sql` 為例，裡面有 3 個 query：
+
+```sql
+-- name: check_email_exists
+SELECT user_id FROM users WHERE email = %s;
+
+-- name: insert_user
+INSERT INTO users (email, password_hash, display_name) VALUES (%s, %s, %s);
+
+-- name: get_user_by_email
+SELECT user_id, email, password_hash, display_name FROM users WHERE email = %s;
+```
+
+### Backend 怎麼呼叫特定的 query？
+
+用 `get_query("檔名", "name 標記")`：
+
+```python
+from sql_loader import get_query
+
+# get_query("auth", "check_email_exists") → 回傳上面的 SELECT user_id ...
+cur.execute(get_query("auth", "check_email_exists"), (email,))
+cur.execute(get_query("auth", "insert_user"), (email, hashed, display_name))
+```
+
+### 如果要新增一個 query？
+
+直接在對應的 `.sql` 檔案裡加一個 `-- name: 新名字` 區塊，然後在 Python code 裡用 `get_query("檔名", "新名字")` 呼叫即可。
+
+### 目前的狀態
+
+- **45 個 query 已實作**，全部通過 52 個測試
+- **6 個 query 是 TODO**（在 `db/queries/scrape.sql`），等爬蟲功能實作時補上
+- **1 個動態 UPDATE**（`lists.py` 的 PATCH endpoint）因為 SET 欄位不固定，仍寫在 Python 裡
+
+---
+
 ## Backend Endpoint × DB Query 完整對照表
 
 下表列出每個 endpoint 對應呼叫了哪些 SQL query（檔案.查詢名），以及讀寫了哪些 DB 表。
