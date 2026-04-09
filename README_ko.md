@@ -2,6 +2,39 @@
 
 SmartCart는 Amazon, Target, Walmart 세 곳의 상품 가격을 비교할 수 있는 장보기 비교 웹사이트입니다. 프론트엔드는 React, 백엔드는 Flask + PyMySQL(raw SQL), 데이터베이스는 원격 MySQL을 사용합니다.
 
+## 환경 설치
+
+### 사전 요구사항
+
+- Python 3.10+
+- Node.js 16+
+- npm
+
+### 백엔드 설치
+
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+`.env` 파일 생성 (`.env.example` 참고):
+
+```bash
+cp .env.example .env
+# .env를 편집하여 DB_PASSWORD 입력
+```
+
+### 프론트엔드 설치
+
+```bash
+cd front-end
+npm install
+```
+
+---
+
 ## Demo 실행 (3단계)
 
 ### 1. 백엔드 실행

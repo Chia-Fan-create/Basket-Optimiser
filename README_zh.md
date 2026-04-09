@@ -2,6 +2,39 @@
 
 SmartCart 是一個比價購物網站，讓使用者比較 Amazon、Target、Walmart 三家零售商的商品價格。前端用 React，後端用 Flask + PyMySQL（raw SQL），資料庫是遠端 MySQL。
 
+## 環境安裝
+
+### 前置需求
+
+- Python 3.10+
+- Node.js 16+
+- npm
+
+### 後端安裝
+
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+然後建立 `.env` 檔（參考 `.env.example`）：
+
+```bash
+cp .env.example .env
+# 編輯 .env，填入 DB_PASSWORD
+```
+
+### 前端安裝
+
+```bash
+cd front-end
+npm install
+```
+
+---
+
 ## 啟動 Demo（三步驟）
 
 ### 1. 啟動後端
