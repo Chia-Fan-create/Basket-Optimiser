@@ -3,7 +3,7 @@
 -- ============================================================
 
 -- name: get_monthly_avg_by_retailer
--- 取得某商品各零售商每月平均單位價格
+-- Get monthly average unit price by retailer for a product
 SELECT DATE_FORMAT(pr.scraped_at, '%%b') AS month_label,
        YEAR(pr.scraped_at) AS yr,
        MONTH(pr.scraped_at) AS mo,
@@ -17,7 +17,7 @@ GROUP BY yr, mo, month_label, r.name
 ORDER BY yr, mo;
 
 -- name: get_seasonal_patterns
--- 取得某商品的季節性折扣模式
+-- Get seasonal discount patterns for a product
 SELECT sp.typical_month, r.name AS retailer,
        sp.avg_discount_pct
 FROM seasonal_patterns sp

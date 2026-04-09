@@ -11,7 +11,7 @@ WHERE pa.user_id = %s
 ORDER BY pa.created_at DESC;
 
 -- name: get_cheapest_current_price
--- 取得某商品目前最便宜的價格及零售商
+-- Get the cheapest current price and retailer for a product
 SELECT pr.unit_price, r.name AS store, r.color AS store_color
 FROM price_records pr
 INNER JOIN (
@@ -25,13 +25,13 @@ ORDER BY pr.unit_price ASC
 LIMIT 1;
 
 -- name: get_tracked_product_ids
--- 取得使用者追蹤的商品 ID（來自 favorites + alerts）
+-- Get tracked product IDs for a user (from favorites + alerts)
 SELECT DISTINCT product_id FROM user_favorites WHERE user_id = %s
 UNION
 SELECT DISTINCT product_id FROM price_alerts WHERE user_id = %s;
 
 -- name: get_latest_cheapest_with_date
--- Smart alert 用：取得最新最低價及爬取時間
+-- For smart alerts: get latest cheapest price with scrape timestamp
 SELECT pr.unit_price AS latest_price, r.name AS store,
        r.color AS store_color, pr.scraped_at
 FROM price_records pr
@@ -46,14 +46,14 @@ ORDER BY pr.unit_price ASC
 LIMIT 1;
 
 -- name: get_avg_price
--- 取得某商品所有歷史價格的平均值
+-- Get the historical average unit price for a product
 SELECT AVG(pr.unit_price) AS avg_price
 FROM price_records pr
 INNER JOIN product_variants pv ON pr.variant_id = pv.variant_id
 WHERE pv.product_id = %s;
 
 -- name: check_existing_todo
--- 檢查該商品是否已有未完成的 buy_now todo（避免重複）
+-- Check if an incomplete buy_now todo already exists (prevent duplicates)
 SELECT todo_id FROM todos
 WHERE user_id = %s
   AND variant_id IN (
@@ -68,7 +68,7 @@ WHERE product_id = %s
 LIMIT 1;
 
 -- name: insert_smart_todo
--- TRANSACTION：偵測到降價 > 20% 時自動產生 todo
+-- TRANSACTION: auto-generate todo when price drops > 20%
 INSERT INTO todos (user_id, variant_id, todo_type, message)
 VALUES (%s, %s, 'buy_now', %s);
 

@@ -3,8 +3,8 @@
 -- ============================================================
 
 -- name: get_top5_cheapest
--- 取得某商品在各零售商的最新價格，依單位價格排序，取前 5 筆
--- 用到的表：price_records, product_variants, products, retailers, units, brands
+-- Get top 5 cheapest variants for a product, sorted by unit price
+-- Tables: price_records, product_variants, products, retailers, units, brands
 SELECT
     pv.variant_id,
     CONCAT(b.name, ' ', p.name, ' ', pv.pack_size, ' ', u.abbreviation) AS product,

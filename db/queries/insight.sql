@@ -3,8 +3,8 @@
 -- ============================================================
 
 -- name: spending_cte
--- 消費分析的共用子查詢：按使用者、月份、分類彙總消費金額
--- 此區塊被 monthly、categories、summary 查詢引用
+-- Shared subquery for spending analytics: aggregate by user, month, category
+-- Referenced by monthly, categories, and summary queries
 SELECT
     sl.user_id,
     YEAR(li.purchased_at)  AS purchase_year,
@@ -28,7 +28,7 @@ WHERE li.is_purchased = TRUE
 GROUP BY sl.user_id, purchase_year, purchase_month, c.name;
 
 -- name: get_monthly
--- 注意：{spending_cte} 在 Python 中替換為上方的 spending_cte 內容
+-- Note: {spending_cte} is replaced by spending_cte content at runtime
 SELECT purchase_month AS mo, purchase_year AS yr,
        SUM(total_spent) AS amount
 FROM ({spending_cte}) AS spending
@@ -38,7 +38,7 @@ ORDER BY purchase_year DESC, purchase_month DESC
 LIMIT %s;
 
 -- name: get_by_category
--- 注意：{spending_cte} 在 Python 中替換為 spending_cte 內容
+-- Note: {spending_cte} is replaced by spending_cte content at runtime
 SELECT category_name AS category, SUM(total_spent) AS amount
 FROM ({spending_cte}) AS spending
 WHERE user_id = %s
@@ -50,7 +50,7 @@ GROUP BY category_name
 ORDER BY amount DESC;
 
 -- name: get_summary_months
--- 注意：{spending_cte} 在 Python 中替換為 spending_cte 內容
+-- Note: {spending_cte} is replaced by spending_cte content at runtime
 SELECT purchase_year AS yr, purchase_month AS mo,
        SUM(total_spent) AS amount
 FROM ({spending_cte}) AS spending
@@ -60,7 +60,7 @@ ORDER BY purchase_year DESC, purchase_month DESC
 LIMIT 6;
 
 -- name: get_top_category
--- 注意：{spending_cte} 在 Python 中替換為 spending_cte 內容
+-- Note: {spending_cte} is replaced by spending_cte content at runtime
 SELECT category_name, SUM(total_spent) AS amount
 FROM ({spending_cte}) AS spending
 WHERE user_id = %s

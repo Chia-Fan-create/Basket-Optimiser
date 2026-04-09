@@ -27,7 +27,7 @@ INNER JOIN products p ON pv.product_id = p.product_id
 WHERE li.list_id = %s;
 
 -- name: get_best_prices_for_products
--- 注意：{placeholders} 需要在 Python 中動態替換為 %s,%s,...
+-- Note: {placeholders} is dynamically replaced with %s,%s,... at runtime
 SELECT pv.product_id, r.name AS store, r.color AS store_color,
        pr.unit_price, CONCAT('per ', u.name) AS unit
 FROM price_records pr
@@ -42,7 +42,7 @@ WHERE pv.product_id IN ({placeholders})
 ORDER BY pv.product_id, pr.unit_price ASC;
 
 -- name: get_store_prices_for_products
--- 注意：{placeholders} 需要在 Python 中動態替換為 %s,%s,...
+-- Note: {placeholders} is dynamically replaced with %s,%s,... at runtime
 SELECT pv.product_id, r.name AS store, pr.price
 FROM price_records pr
 INNER JOIN (
@@ -57,12 +57,12 @@ WHERE pv.product_id IN ({placeholders});
 INSERT INTO shopping_lists (user_id, name) VALUES (%s, %s);
 
 -- name: insert_item
--- TRANSACTION 第一步：插入項目
+-- TRANSACTION step 1: insert item
 INSERT INTO list_items (list_id, variant_id, quantity)
 VALUES (%s, %s, %s);
 
 -- name: update_estimated_total
--- TRANSACTION 第二步：根據最新價格更新購物清單預估總額
+-- TRANSACTION step 2: update shopping list estimated_total using latest price
 UPDATE shopping_lists
 SET estimated_total = estimated_total + (
     SELECT pr.price * %s

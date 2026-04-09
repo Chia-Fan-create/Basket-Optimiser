@@ -14,5 +14,5 @@ node_modules/
 # OS
 .DS_Store
 
-# 不推上去的檔案
+# Internal docs (not pushed to remote)
 backend/docs/
