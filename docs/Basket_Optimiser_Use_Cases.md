@@ -1,7 +1,7 @@
 # Basket Optimiser — Use Cases (Team Reference)
 
 > Internal document for team discussion. Not a deliverable.
-> Last updated: 2026-03-20
+> Last updated: 2026-04-14
 
 ---
 
@@ -56,18 +56,17 @@
 ---
 
 ## UC4 — Deal Action Todos
-
 **Actor:** Authenticated user
-**Goal:** Act on significant price drops — either buy now or return-and-rebuy.
-
+**Goal:** Act on significant price drops by getting notified and taking action at the right time.
 **Flow:**
-1. System detects a significant price drop (e.g., >20% below recent average).
-2. System checks if the user recently purchased this item (from shopping list purchase history).
-3. If recently purchased at higher price → generate todo: "Consider returning and rebuying [product] at [retailer] — save $X."
-4. If not recently purchased → generate todo: "Great deal on [product] at [retailer] — $X (was $Y)."
-5. User views their todo list, can mark items as done or dismiss.
 
-**Tables involved:** `todos`, `products`, `price_records`, `list_items` (purchase history), `users`
+1. System detects a significant price drop (e.g., >20% below recent average) on a product.
+2. System checks if the product is on any of the user's active shopping lists.
+3. System generates a todo: "Great deal on [product] at [retailer] — $X (was $Y). Consider buying now."
+4. User views their todo list on the Alerts page, and can mark items as done or dismiss them.
+
+**Tables involved:** `todos`, `products`, `price_records`, `list_items`, `users`
+Note: The `return_rebuy` todo type was removed after team discussion. We determined that encouraging return-and-rebuy behavior could be unfair to retailers and potentially abusive of their return policies, so we chose to exclude this feature from the current scope.
 
 ---
 
@@ -158,14 +157,3 @@
 | 15 | `seasonal_patterns`| System-generated| UC8                 |
 
 **Count:** 15 tables (13 core + `list_items` junction + `scrape_jobs` log), well above the 10-table minimum.
-
----
-
-## Next Steps
-
-- [ ] Finalize table columns and data types
-- [ ] Design ER diagram with cardinality
-- [ ] Write 3NF normalization justification
-- [ ] Define indexes, views, and transaction scenarios
-- [ ] Plan MySQL DDL migration
-- [ ] Decide application framework (Streamlit + CRUD forms? or switch?)
