@@ -70,7 +70,7 @@ export default function DashboardPage({ selectedIds, isLoggedIn, onNavigate, onE
       {isLoggedIn && lowInventory.length > 0 && (
         <div className="low-inv-banner" onClick={() => onNavigate('inventory')}>
           <span className="lib-icon">⚠️</span>
-          <div className="lib-text"><strong>{lowInventory.length} item{lowInventory.length > 1 ? 's' : ''} running low</strong><p>{lowInventory.map(i => i.product).join(', ')} — tap to view inventory</p></div>
+          <div className="lib-text"><strong>{lowInventory.length} item{lowInventory.length > 1 ? 's' : ''} running low</strong><p>{lowInventory.map(i => i.product_name || i.product).join(', ')} — tap to view inventory</p></div>
           <ArrowR />
         </div>
       )}
