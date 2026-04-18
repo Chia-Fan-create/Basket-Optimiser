@@ -1,91 +1,55 @@
-# SmartCart — 專案快速上手指南
+# SmartCart — 前端 End-to-End 測試指南
 
-SmartCart 是一個比價購物網站，讓使用者比較 Amazon、Target、Walmart 三家零售商的商品價格。前端用 React，後端用 Flask + PyMySQL（raw SQL），資料庫是遠端 MySQL。
+SmartCart 是一個比價購物網站，讓使用者比較 Amazon、Target、Walmart 三家零售商的商品價格。前端用 React 18，後端用 Flask + PyMySQL（raw SQL），資料庫是遠端 MySQL。
 
-## 環境安裝
+---
+
+## 環境準備
 
 ### 前置需求
 
 - Python 3.10+
 - Node.js 16+
-- npm
-
-### 後端安裝
-
-```bash
-cd backend
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
-然後建立 `.env` 檔（參考 `.env.example`）：
-
-```bash
-cp .env.example .env
-# 編輯 .env，填入 DB_PASSWORD
-```
-
-### 前端安裝
-
-```bash
-cd front-end
-npm install
-```
-
----
-
-## 啟動 Demo（三步驟）
+- MySQL client（用來直接查資料庫驗證）
 
 ### 1. 啟動後端
 
 ```bash
 cd backend
 source venv/bin/activate
-python app.py            # 預設 port 5000
+python app.py
 ```
 
-**自訂 port（三種方式，擇一即可）：**
+後端 port 由 `backend/.env` 裡的 `FLASK_PORT` 決定（預設 5000）。前端 proxy 目前指向 `http://127.0.0.1:50123`（在 `front-end/package.json`），兩邊要對上。
 
-```bash
-# 方法一：指令參數
-python app.py 5001
-
-# 方法二：環境變數（一次性）
-FLASK_PORT=5001 python app.py
-
-# 方法三：寫進 .env（永久生效）
-# 在 backend/.env 加上 FLASK_PORT=5001
-```
-
-> **macOS 注意：** AirPlay Receiver 預設佔用 port 5000，建議用上面任一方法改 port，
-> 或到「系統設定 → 一般 → AirDrop 與接力」關掉 AirPlay 接收器。
+> **macOS 注意：** AirPlay Receiver 預設佔用 port 5000，建議在 `.env` 設定 `FLASK_PORT=50123` 或關掉 AirPlay。
 
 ### 2. 啟動前端
 
 ```bash
 cd front-end
-npm install    # 第一次才需要
-npm start      # 開發伺服器跑在 http://localhost:3000
+npm start    # http://localhost:3000
 ```
 
-如果後端不是跑在 5000，需要同步改 `front-end/package.json`：
+### 3. 確認 USE_MOCK = false
 
-```json
-"proxy": "http://localhost:5001"
-```
-
-### 3. 切換到真實 API
-
-打開 `front-end/src/api/index.js`，把第 15 行改成：
+打開 `front-end/src/api/index.js` 第 15 行，確認是：
 
 ```javascript
 const USE_MOCK = false;
 ```
 
-改完後前端會從 mock data 切換成呼叫後端 API，資料來自真實資料庫。
+這樣前端所有 API 呼叫都會打到真實後端，資料來自 MySQL 資料庫。
 
-## 測試帳號
+### 4. 連線 MySQL
+
+```bash
+用 mysqlworkbench 連線到 mysql
+```
+
+密碼在 `backend/.env` 的 `DB_PASSWORD`。測試過程中保持這個 terminal 開著，隨時用 SQL 驗證資料。
+
+### 測試帳號
 
 所有 demo 使用者的密碼都是 `password123`：
 
@@ -97,602 +61,528 @@ const USE_MOCK = false;
 | jordan.kim@example.com | Jordan Kim |
 | taylor.nguyen@example.com | Taylor Nguyen |
 
-## 跑測試
-
-```bash
-cd backend
-venv/bin/python -m pytest tests/ -v
-```
-
-- `tests/test_unit_*.py` — Unit test（驗證密碼雜湊、JWT、Flask app 設定、401 保護）
-- `tests/test_integration.py` — Integration test（透過 Flask test client 打真實 DB，涵蓋全部 23 個 endpoint）
-
-只跑 unit test：
-
-```bash
-venv/bin/python -m pytest tests/test_unit_auth.py tests/test_unit_config.py tests/test_unit_app.py -v
-```
-
-只跑 integration test：
-
-```bash
-venv/bin/python -m pytest tests/test_integration.py -v
-```
-
-## 手動測試 API
-
-```bash
-# 不需登入的 endpoint
-curl http://localhost:5001/api/retailers
-curl http://localhost:5001/api/products
-curl http://localhost:5001/api/compare/1
-
-# 登入取得 token
-curl -X POST http://localhost:5001/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"alex.lee@example.com","password":"password123"}'
-
-# 用 token 呼叫需要登入的 endpoint
-curl http://localhost:5001/api/user/favorites \
-  -H "Authorization: Bearer <貼上拿到的 token>"
-```
-
-## 專案結構
-
-```
-Basket-Optimiser/
-├── front-end/                  # React 前端（前端同學負責）
-│   ├── src/
-│   │   ├── pages/              # 10 個頁面元件
-│   │   ├── components/         # 共用元件（Nav, Icons）
-│   │   ├── api/index.js        # API 層（USE_MOCK 開關在這裡）
-│   │   └── data/               # Mock 資料
-│   └── package.json
-│
-├── backend/                    # Flask 後端（後端同學負責）
-│   ├── app.py                  # 進入點，註冊 10 個 blueprint
-│   ├── config.py               # 讀 .env（DB 連線、JWT、port）
-│   ├── db.py                   # PyMySQL 連線
-│   ├── auth.py                 # bcrypt + JWT + @require_auth
-│   ├── sql_loader.py           # 讀取 db/queries/*.sql 的 loader
-│   ├── .env                    # 機密設定（不進 git）
-│   ├── routes/                 # 10 個路由檔，對應 23 個 endpoint
-│   └── tests/                  # Unit + Integration 測試（52 個）
-│
-├── db/                         # 資料庫相關（DB 同學負責）
-│   ├── schema.sql              # CREATE TABLE（15 張表 + 2 個 VIEW）
-│   ├── migration.sql           # ALTER TABLE 補欄位 + user_favorites 表
-│   ├── seed_data.sql           # placeholder — 由 DB 同學補完整 INSERT
-│   └── queries/                # 所有 SQL query（後端 + DB 同學共同維護）
-│       ├── retailers.sql       # 1 query
-│       ├── products.sql        # 1 query
-│       ├── compare.sql         # 1 query（核心比價）
-│       ├── trends.sql          # 2 queries
-│       ├── auth.sql            # 3 queries
-│       ├── favorites.sql       # 3 queries
-│       ├── lists.sql           # 11 queries（含 Transaction）
-│       ├── inventory.sql       # 6 queries
-│       ├── alerts.sql          # 12 queries（含 smart alert Transaction）
-│       ├── insight.sql         # 5 queries（含 spending_cte 子查詢）
-│       └── scrape.sql          # 6 queries — 全部 TODO，等爬蟲功能實作
-│
-└── docs/                       # API 規格、Use Cases、Table 屬性
-```
-
-## 資料庫
-
-- Host: `167.71.90.83` / Database: `smartcart` / User: `joj161`
-- 密碼在 `backend/.env`，不要 commit 到 git
-- Schema: 15 張表，定義在 `db/schema.sql`
-- Migration: `db/migration.sql`（新增 color、icon、user_favorites、dismissed）
-
 ---
 
-## 三方分工總覽
+## E2E 測試流程
 
-### 資料流
+> **測試原則：**
+> - 每次測試**建立一個全新帳號**，確保乾淨的起始狀態
+> - 每個操作在前端執行後，立刻到 MySQL Workbench 跑對應的 SQL，確認 DB 跟前端一致
+> - 所有 SQL 查詢都用 `@test_uid` 變數，不需手動替換 user_id
+> - 測試完畢刪除帳號，所有資料自動 CASCADE 清除，不影響其他人
 
-```
-使用者操作前端 → Frontend 呼叫 API → Backend 讀取 db/queries/*.sql 執行 → MySQL 回傳結果
-```
+### Step 0 — 設定 MySQL 變數
 
-### 各角色負責範圍
-
-| 角色 | 負責資料夾 | 主要工作 |
-|------|-----------|---------|
-| **Frontend** | `front-end/` | React 頁面、API 呼叫、UI 渲染 |
-| **Backend** | `backend/` | Flask 路由、JWT 認證、呼叫 SQL、回傳 JSON |
-| **DB** | `db/` | schema 設計、SQL query 撰寫、seed data、爬蟲 script |
-
----
-
-## SQL Query 的管理機制
-
-### 為什麼 SQL 不寫在 Python 裡面？
-
-所有 SQL query 都放在 `db/queries/` 的 `.sql` 檔案裡，Backend 的 Python code 透過 `sql_loader.py` 載入執行。這樣做的好處：
-
-- **分工清楚**：DB 同學改 SQL 不需要動 Python code，Backend 同學改邏輯不需要動 SQL
-- **方便審閱**：教授可以直接看 `.sql` 檔評分 SQL 品質
-- **集中管理**：同一功能的 SQL 放在同一個檔案，好找好改
-
-### 一個 `.sql` 檔裡怎麼放多個 query？
-
-每個 query 用 `-- name: 查詢名` 來標記，`sql_loader.py` 會自動用這些標記把檔案切成多段。
-
-以 `db/queries/auth.sql` 為例，裡面有 3 個 query：
+測試開始前，先在 MySQL Workbench 跑這行，後面所有 SQL 都會用到：
 
 ```sql
--- name: check_email_exists
-SELECT user_id FROM users WHERE email = %s;
-
--- name: insert_user
-INSERT INTO users (email, password_hash, display_name) VALUES (%s, %s, %s);
-
--- name: get_user_by_email
-SELECT user_id, email, password_hash, display_name FROM users WHERE email = %s;
+-- ⚠️ 先不要跑，等 UC7 註冊完再回來跑這行
+SET @test_uid = (SELECT user_id FROM users WHERE email = '你註冊的 email');
 ```
-
-### Backend 怎麼呼叫特定的 query？
-
-用 `get_query("檔名", "name 標記")`：
-
-```python
-from sql_loader import get_query
-
-# get_query("auth", "check_email_exists") → 回傳上面的 SELECT user_id ...
-cur.execute(get_query("auth", "check_email_exists"), (email,))
-cur.execute(get_query("auth", "insert_user"), (email, hashed, display_name))
-```
-
-### 如果要新增一個 query？
-
-直接在對應的 `.sql` 檔案裡加一個 `-- name: 新名字` 區塊，然後在 Python code 裡用 `get_query("檔名", "新名字")` 呼叫即可。
-
-### 目前的狀態
-
-- **45 個 query 已實作**，全部通過 52 個測試
-- **6 個 query 是 TODO**（在 `db/queries/scrape.sql`），等爬蟲功能實作時補上
-- **1 個動態 UPDATE**（`lists.py` 的 PATCH endpoint）因為 SET 欄位不固定，仍寫在 Python 裡
 
 ---
 
-## Backend Endpoint × DB Query 完整對照表
+### UC7 — 註冊新帳號
 
-下表列出每個 endpoint 對應呼叫了哪些 SQL query（檔案.查詢名），以及讀寫了哪些 DB 表。
+**瀏覽器操作：**
+1. 進入 http://localhost:3000/login
+2. 切換到 Register，用一個獨一無二的 email 註冊，例如 `test.你的名字@example.com`
+3. 密碼用 `password123`，Display Name 填你的名字
+4. 註冊成功後應自動登入，跳轉到 Dashboard
+5. 重新整理頁面（F5），確認仍然是登入狀態（JWT 3 小時 session）
 
-### 公開 Endpoint（不需登入）
-
-| # | Endpoint | SQL query (db/queries/) | 讀取的表 | 寫入的表 |
-|---|----------|------------------------|---------|---------|
-| 1 | `GET /api/retailers` | `retailers.get_all` | retailers | — |
-| 2 | `GET /api/products` | `products.get_all_with_category` | products, categories | — |
-| 3 | `GET /api/compare/{id}` | `compare.get_top5_cheapest` | price_records, product_variants, products, retailers, units, brands | — |
-| 4 | `POST /api/compare/summary` | `compare.get_top5_cheapest` ×N | 同上 | — |
-| 5 | `GET /api/trends/{id}` | `trends.get_monthly_avg_by_retailer`, `trends.get_seasonal_patterns` | price_records, product_variants, retailers, seasonal_patterns | — |
-| 6 | `POST /api/auth/register` | `auth.check_email_exists`, `auth.insert_user` | users | users |
-| 7 | `POST /api/auth/login` | `auth.get_user_by_email` | users | — |
-
-### 需登入 Endpoint（JWT 認證）
-
-| # | Endpoint | SQL query (db/queries/) | 讀取的表 | 寫入的表 | Transaction |
-|---|----------|------------------------|---------|---------|-------------|
-| 8 | `GET /api/user/favorites` | `favorites.get_by_user` | user_favorites | — | — |
-| 9 | `PUT /api/user/favorites` | `favorites.delete_all_by_user`, `favorites.insert_one` ×N | — | user_favorites | — |
-| 10 | `GET /api/lists` | `lists.get_user_lists` | shopping_lists, list_items | — | — |
-| 11 | `GET /api/lists/{id}` | `lists.verify_ownership`, `lists.get_items_with_product_info`, `lists.get_best_prices_for_products`, `lists.get_store_prices_for_products` | shopping_lists, list_items, product_variants, products, price_records, retailers, units | — | — |
-| 12 | `POST /api/lists` | `lists.insert_list` | — | shopping_lists | — |
-| 13 | `POST /api/lists/{id}/items` | `lists.verify_ownership`, `lists.insert_item`, `lists.update_estimated_total`, `lists.get_estimated_total` | price_records | list_items, shopping_lists | **YES** |
-| 14 | `PATCH /api/lists/{id}/items/{id}` | `lists.verify_item_ownership`, (動態 UPDATE), `lists.get_item_after_update` | list_items, shopping_lists | list_items | — |
-| 15 | `GET /api/inventory` | `inventory.get_user_inventory`, `inventory.get_unit_abbreviation` | inventory_items, products, product_variants, units | — | — |
-| 16 | `POST /api/inventory` | `inventory.check_existing`, `inventory.update_existing` 或 `inventory.insert_new` | inventory_items | inventory_items | — |
-| 17 | `PATCH /api/inventory/{id}/dismiss` | `inventory.dismiss` | — | inventory_items | — |
-| 18 | `GET /api/alerts` | `alerts.get_user_alerts`, `alerts.get_cheapest_current_price`, `alerts.get_tracked_product_ids`, `alerts.get_latest_cheapest_with_date`, `alerts.get_avg_price`, `alerts.check_existing_todo`, `alerts.get_variant_for_product`, `alerts.insert_smart_todo`, `alerts.get_product_name_icon` | price_alerts, products, price_records, product_variants, retailers, user_favorites, todos | todos | **YES** |
-| 19 | `POST /api/alerts` | `alerts.check_product_exists`, `alerts.insert_alert` | products | price_alerts | — |
-| 20 | `DELETE /api/alerts/{id}` | `alerts.delete_alert` | — | price_alerts | — |
-| 22 | `GET /api/insight/monthly` | `insight.spending_cte` + `insight.get_monthly` | list_items, shopping_lists, product_variants, products, categories, price_records | — | — |
-| 23 | `GET /api/insight/categories` | `insight.spending_cte` + `insight.get_by_category` | 同上 | — | — |
-| 24 | `GET /api/insight/summary` | `insight.spending_cte` + `insight.get_summary_months`, `insight.spending_cte` + `insight.get_top_category` | 同上 | — | — |
-
-### 尚未實作（placeholder in `db/queries/scrape.sql`）
-
-| 功能 | SQL query | 狀態 |
-|------|-----------|------|
-| 新增爬蟲 job | `scrape.insert_job` | TODO |
-| 更新 job 為成功 | `scrape.update_job_success` | TODO |
-| 更新 job 為失敗 | `scrape.update_job_failed` | TODO |
-| 插入新價格記錄 | `scrape.insert_price_record` | TODO |
-| 檢查觸發的警報 | `scrape.check_triggered_alerts` | TODO |
-| 標記警報已觸發 | `scrape.trigger_alert` | TODO |
-
----
-
-## 給 DB 同學的指引
-
-### 你的檔案在哪裡
-
-所有 DB 相關的檔案都在 `db/` 資料夾：
-
-| 檔案 | 用途 | 狀態 |
-|------|------|------|
-| `db/schema.sql` | CREATE TABLE（15 張表 + 2 個 VIEW） | 已完成 |
-| `db/migration.sql` | ALTER TABLE 補欄位 + user_favorites | 已完成 |
-| `db/seed_data.sql` | INSERT 測試資料 | **placeholder — 需要你補上** |
-| `db/queries/*.sql` | 所有 SQL query | 45 個已完成，6 個 TODO |
-
-### 如何新增或修改 SQL query
-
-每個 `.sql` 檔案用 `-- name: 查詢名` 來標記不同的 query：
-
+**SQL 驗證：**
 ```sql
--- name: get_all
-SELECT retailer_id AS id, name, color, logo_url, base_url
-FROM retailers
-ORDER BY retailer_id;
+-- 確認帳號已寫入，記下 user_id
+SELECT user_id, email, display_name, created_at
+FROM users
+WHERE email = '你註冊的 email';
+
+-- ✅ 現在設定變數，後面所有 SQL 都用 @test_uid
+SET @test_uid = (SELECT user_id FROM users WHERE email = '你註冊的 email');
+SELECT @test_uid;  -- 確認有值
 ```
 
-Backend 透過 `sql_loader.py` 自動讀取這些檔案，用法是：
-```python
-from sql_loader import get_query
-cur.execute(get_query("retailers", "get_all"))
-#                      ↑ 檔名       ↑ -- name: 後面的名字
-```
-
-### 需要你做的事
-
-1. **`db/seed_data.sql`** — 把完整的 INSERT 語句補上（或放你的 mock data script）
-2. **`db/queries/scrape.sql`** — 6 個 TODO query，等爬蟲功能設計好後把註解取消並修改
-3. 如果需要新增 query，直接在對應的 `.sql` 檔案加一個 `-- name: 新名字` 區塊即可
-4. 如果需要修改現有 query，直接改 `.sql` 檔案裡的 SQL，Backend 不用改任何 Python code
+**驗證重點：**
+- `users` 表有新 row，`password_hash` 是 bcrypt 雜湊（不是明文）
+- 重新整理後不會被登出
 
 ---
 
-## 給前端同學的指引
+### UC9 — 設定喜好商品（Favorites）
 
-### API 切換
+**瀏覽器操作：**
+1. 按 Dashboard 上的 edit 進入 Select 頁面（/select）
+2. 勾選至少 3 個商品（例如 Whole Milk、Greek Yogurt、Orange Juice）
+3. 點「See my dashboard →」儲存
+4. 確認 Dashboard 上顯示你選的商品
+5. **重新整理頁面（F5）**，確認喜好商品仍在，沒有消失
+6. 回到 /select，取消一個商品，儲存
+7. 重新整理，確認變更有保留
 
-在 `front-end/src/api/index.js` 第 15 行：
-- `USE_MOCK = true` → 使用 `src/data/mockData.js` 裡的假資料
-- `USE_MOCK = false` → 呼叫 Backend API，資料來自真實 DB
+**SQL 驗證：**
+```sql
+-- Step 3: 確認 favorites 已存入 DB
+SELECT uf.product_id, p.name
+FROM user_favorites uf
+INNER JOIN products p ON uf.product_id = p.product_id
+WHERE uf.user_id = @test_uid
+ORDER BY uf.product_id;
 
-### product_id 是整數
+-- Step 6: 取消後重新查，確認少了一筆
+SELECT uf.product_id, p.name
+FROM user_favorites uf
+INNER JOIN products p ON uf.product_id = p.product_id
+WHERE uf.user_id = @test_uid
+ORDER BY uf.product_id;
+```
 
-Mock data 和 Backend API 都使用整數 `product_id`（如 `1`, `2`, `3`），不是字串。
-
-### 商品列表是動態的
-
-前端呼叫 `GET /api/products` 取得商品列表，不要 hardcode。Backend 爬到新商品時前端會自動顯示。
-
-## 功能介紹與使用指南
-
-以下說明 SmartCart 的每個功能、操作方式、預期結果，以及背後會影響哪些資料庫表。
+**驗證重點：**
+- 前端顯示的數量 = SQL row 數
+- PUT 是全量覆蓋：先 DELETE all 再逐筆 INSERT
 
 ---
 
 ### UC1 — 商品比價
 
-**怎麼用：**
-1. 進入 Compare 頁面，選擇想比較的商品（例如 Whole Milk）
-2. 系統會列出 Amazon、Target、Walmart 三家零售商的價格，依照「每單位價格」由低到高排序，最多顯示前 5 筆
+**瀏覽器操作：**
+1. 進入 Compare 頁面（/compare）
+2. 選擇一個商品，例如 Whole Milk（product_id = 1）
+3. 確認顯示最多 5 筆結果，按單位價格由低到高排序
+4. 每筆顯示：商品名稱、品牌、零售商、包裝大小、總價、單位價格
 
-**預期結果：**
-- 每筆結果顯示：商品名稱、品牌、零售商、包裝大小、總價、單位價格（例如 $0.059/fl oz）
-- 第 1 名就是最便宜的選項
-
-**呼叫的 API：**
-- `GET /api/compare/{product_id}` — 取得單一商品的前 5 便宜選項
-
-**影響的 DB 表（唯讀）：**
-
-| 表名 | 用途 |
-|------|------|
-| `products` | 商品名稱、分類 |
-| `product_variants` | 各零售商的包裝規格（pack_size, unit_quantity） |
-| `price_records` | 取最新一筆價格來計算 unit_price |
-| `retailers` | 零售商名稱、顏色 |
-| `units` | 單位標籤（per oz, per lb 等） |
-
-**觀察方式：**
+**SQL 驗證：**
 ```sql
--- 查看某商品最新的比價結果
-SELECT pv.variant_id, r.name AS store, pr.price, pr.unit_price
+-- 查 product_id = 1 的比價結果，應該跟前端完全一致
+SELECT r.name AS store, b.name AS brand,
+       CONCAT(pv.pack_size, ' ', u.abbreviation) AS size,
+       pr.price, pr.unit_price,
+       CONCAT('$', FORMAT(pr.unit_price, 3), '/', u.abbreviation) AS unit_display
 FROM price_records pr
-INNER JOIN (SELECT variant_id, MAX(record_id) AS latest FROM price_records GROUP BY variant_id) l
-  ON pr.record_id = l.latest
+INNER JOIN (
+    SELECT variant_id, MAX(record_id) AS latest
+    FROM price_records GROUP BY variant_id
+) l ON pr.record_id = l.latest
+INNER JOIN product_variants pv ON pr.variant_id = pv.variant_id
+INNER JOIN retailers r ON pv.retailer_id = r.retailer_id
+INNER JOIN products p ON pv.product_id = p.product_id
+LEFT JOIN brands b ON p.brand_id = b.brand_id
+LEFT JOIN units u ON pv.unit_id = u.unit_id
+WHERE pv.product_id = 1
+ORDER BY pr.unit_price ASC
+LIMIT 5;
+```
+
+**驗證重點：**
+- 前端第 1 名 = SQL 第 1 筆（最便宜）
+- 價格、零售商、品牌完全一致
+- 這個查詢跟帳號無關（公開資料），所有人結果相同
+
+---
+
+### UC8 — 價格趨勢與季節性預測
+
+**瀏覽器操作：**
+1. 進入 Trends 頁面（/trends）
+2. 選擇一個商品
+3. 確認圖表顯示各零售商的歷史月均價（實線）
+4. 如果有季節性資料，確認未來月份有預測價格（虛線）
+
+**SQL 驗證：**
+```sql
+-- 歷史月均價（對應圖表實線）
+SELECT r.name AS retailer,
+       DATE_FORMAT(pr.scraped_at, '%Y-%m') AS month,
+       ROUND(AVG(pr.unit_price), 4) AS avg_unit_price
+FROM price_records pr
 INNER JOIN product_variants pv ON pr.variant_id = pv.variant_id
 INNER JOIN retailers r ON pv.retailer_id = r.retailer_id
 WHERE pv.product_id = 1
-ORDER BY pr.unit_price ASC;
+GROUP BY r.name, DATE_FORMAT(pr.scraped_at, '%Y-%m')
+ORDER BY month, r.name;
+
+-- 季節性模式（對應圖表虛線）
+SELECT sp.event_name, sp.typical_month, sp.avg_discount_pct, r.name AS retailer
+FROM seasonal_patterns sp
+INNER JOIN retailers r ON sp.retailer_id = r.retailer_id
+WHERE sp.product_id = 1;
 ```
+
+**驗證重點：**
+- 圖表每個月的數據點 = SQL 對應月份的 avg_unit_price
+- 這個查詢跟帳號無關（公開資料）
 
 ---
 
 ### UC2 — 購物清單管理
 
-**怎麼用：**
-1. 登入後進入 Shopping Lists 頁面
-2. 點「新增清單」，輸入名稱（例如「每週採購」）
-3. 在清單中新增商品，選擇規格和數量
-4. 系統自動計算：如果整張清單全在 Walmart 買要多少錢、全在 Target 買要多少錢……
-5. 買完後可以勾選「已購買」
+**瀏覽器操作：**
+1. 進入 Shopping Lists 頁面（/lists），確認目前清單是空的（新帳號）
+2. 點「+ New List」，輸入名稱「E2E Test」
+3. 點「+ Add Item」，搜尋商品（例如輸入 "milk"），點選 Whole Milk → 自動加入最便宜的 variant（qty 1）
+4. 繼續加 2～3 個商品（例如 Granola Bars、Pasta），加完關閉 modal
+5. 確認頁面顯示 Cheapest Store、各家店的總價、以及 savings
+6. 點商品旁的 ✕ 刪除一個商品，確認清單更新
+7. 勾選剩餘商品的 checkbox（標記為已購買）
+8. 點底部「Process Purchased Items」→ 確認已購買的商品出現在列表中 → 點「Confirm & Save」
+9. 成功畫面點「Done — Clear purchased items」→ 確認清單項目被清空，但清單本身還在
 
-**預期結果：**
-- 清單詳細頁顯示 `store_totals`（每家店的總價）
-- `cheapest_store` 標出最便宜的店
-- `savings_vs_expensive` 顯示最貴和最便宜之間的差額
-
-**呼叫的 API：**
-- `POST /api/lists` — 建立新清單
-- `POST /api/lists/{list_id}/items` — 新增項目（**含 Transaction**）
-- `GET /api/lists/{list_id}` — 查看清單詳情與各店總價
-- `PATCH /api/lists/{list_id}/items/{item_id}` — 勾選已購買
-
-**影響的 DB 表：**
-
-| 操作 | 寫入的表 | 說明 |
-|------|----------|------|
-| 建立清單 | `shopping_lists` | 新增一筆 row |
-| 新增項目 | `list_items` + `shopping_lists` | **Transaction**：插入項目 + 更新 estimated_total，失敗則 ROLLBACK |
-| 勾選已購買 | `list_items` | 更新 is_purchased = TRUE, purchased_at = NOW() |
-
-**觀察方式：**
+**SQL 驗證（每步驟後查一次）：**
 ```sql
--- 查看某使用者的購物清單
-SELECT * FROM shopping_lists WHERE user_id = 1;
+-- Step 2: 確認新清單已建立
+SELECT list_id, name, estimated_total, created_at
+FROM shopping_lists
+WHERE user_id = @test_uid;
 
--- 查看清單內的項目
-SELECT li.*, pv.product_id, p.name
+-- Step 3-4: 確認項目已新增（設定 @test_list 變數）
+SET @test_list = (SELECT list_id FROM shopping_lists WHERE user_id = @test_uid ORDER BY created_at DESC LIMIT 1);
+
+SELECT li.list_item_id, pv.product_id, p.name, li.quantity, li.variant_id
 FROM list_items li
 INNER JOIN product_variants pv ON li.variant_id = pv.variant_id
 INNER JOIN products p ON pv.product_id = p.product_id
-WHERE li.list_id = 1;
+WHERE li.list_id = @test_list;
 
--- 驗證 Transaction：新增項目後 estimated_total 是否正確更新
-SELECT list_id, name, estimated_total FROM shopping_lists WHERE list_id = 1;
+-- Step 4: 確認 estimated_total 已更新（Transaction 驗證）
+SELECT list_id, name, estimated_total
+FROM shopping_lists
+WHERE list_id = @test_list;
+
+-- Step 6: 刪除後確認少了一筆，estimated_total 有扣掉
+SELECT COUNT(*) AS item_count FROM list_items WHERE list_id = @test_list;
+SELECT estimated_total FROM shopping_lists WHERE list_id = @test_list;
+
+-- Step 7: 確認勾選後 is_purchased 和 purchased_at 已更新
+SELECT list_item_id, is_purchased, purchased_at
+FROM list_items
+WHERE list_id = @test_list;
+
+-- Step 8: Process 後確認寫入的表
+-- 8a: price_records 新增了價格記錄（透過 scrape_jobs）
+SELECT sj.job_id, sj.status, sj.items_scraped
+FROM scrape_jobs sj
+ORDER BY sj.job_id DESC LIMIT 1;
+
+-- 8b: inventory_items 新增或更新了庫存
+SELECT ii.inventory_id, p.name, ii.quantity, ii.depletion_date
+FROM inventory_items ii
+INNER JOIN products p ON ii.product_id = p.product_id
+WHERE ii.user_id = @test_uid;
+
+-- Step 9: Clear 後確認項目被清空，清單還在
+SELECT COUNT(*) AS remaining_items FROM list_items WHERE list_id = @test_list;
+SELECT list_id, name, estimated_total FROM shopping_lists WHERE list_id = @test_list;
 ```
+
+**驗證重點：**
+- 新增項目是 Transaction：`list_items` INSERT + `shopping_lists.estimated_total` UPDATE 同時成功
+- 刪除項目：`list_items` DELETE + `estimated_total` 扣回（Transaction）
+- Process：寫入 `price_records`（價格歷史）+ `inventory_items`（家庭庫存）
+- Clear：已購買的 `list_items` 被刪除，`estimated_total` 歸零，`shopping_lists` row 保留
+- 新帳號之前沒有清單，所以查到的一定是剛建的
+
+---
+
+### UC6 — 家庭庫存追蹤
+
+**瀏覽器操作：**
+1. 進入 Inventory 頁面（/inventory），確認是空的（新帳號）
+2. 新增庫存項目：選商品、輸入數量、輸入預計幾天用完（例如 7 天）
+3. 確認項目出現在庫存列表中
+4. 再新增同一個商品 → 確認是更新而非新增（UNIQUE 約束）
+5. 點 Dismiss 關閉提醒
+
+**SQL 驗證：**
+```sql
+-- Step 2: 查看庫存
+SELECT ii.inventory_id, p.name, ii.quantity,
+       ii.purchase_date, ii.depletion_date, ii.is_dismissed,
+       DATEDIFF(ii.depletion_date, CURDATE()) AS days_left
+FROM inventory_items ii
+INNER JOIN products p ON ii.product_id = p.product_id
+WHERE ii.user_id = @test_uid
+ORDER BY ii.depletion_date ASC;
+
+-- Step 4: 再查一次，確認仍然只有一筆（不是兩筆）
+SELECT COUNT(*) AS row_count
+FROM inventory_items
+WHERE ii.user_id = @test_uid AND product_id = <你選的 product_id>;
+
+-- Step 5: 驗證 dismiss
+SELECT inventory_id, is_dismissed
+FROM inventory_items
+WHERE user_id = @test_uid AND is_dismissed = TRUE;
+```
+
+**驗證重點：**
+- `depletion_date` = `purchase_date` + 你輸入的天數
+- 同使用者 + 同商品 = UPDATE（UNIQUE 約束，不會重複）
+- Dismiss 後 `is_dismissed = TRUE`，但 row 仍在
 
 ---
 
 ### UC3 — 價格警報
 
-**怎麼用：**
-1. 登入後進入 Alerts 頁面
-2. 點「新增警報」，選擇商品和目標價格（例如：Milk 低於 $3.00 時通知我）
-3. 系統會自動比對目前最低價格與你設定的目標價
+**瀏覽器操作：**
+1. 進入 Alerts 頁面（/alerts）
+2. 點「新增警報」，選一個商品，設定目標價（例如 Whole Milk，目標 $3.00）
+3. 確認警報出現在列表中
+4. 如果目前最低價 ≤ 目標價，確認顯示 triggered 狀態
+5. 刪除剛剛建立的警報
 
-**預期結果：**
-- 如果目前最低價 ≤ 目標價 → `is_triggered: true`，顯示在哪家店觸發的
-- 如果還沒到目標價 → `is_triggered: false`
-
-**呼叫的 API：**
-- `POST /api/alerts` — 建立警報
-- `GET /api/alerts` — 查看所有警報（含智慧警報）
-- `DELETE /api/alerts/{alert_id}` — 刪除警報
-
-**影響的 DB 表：**
-
-| 操作 | 寫入的表 | 說明 |
-|------|----------|------|
-| 建立警報 | `price_alerts` | 新增 row：user_id, product_id, target_price |
-| 刪除警報 | `price_alerts` | 刪除該 row |
-
-**觀察方式：**
+**SQL 驗證：**
 ```sql
--- 查看某使用者的警報
-SELECT pa.*, p.name FROM price_alerts pa
+-- Step 2: 確認警報已寫入
+SELECT pa.alert_id, p.name, pa.target_price, pa.created_at
+FROM price_alerts pa
 INNER JOIN products p ON pa.product_id = p.product_id
-WHERE pa.user_id = 1;
+WHERE pa.user_id = @test_uid
+ORDER BY pa.created_at DESC;
+
+-- 比對：該商品目前最低價（判斷是否應該 triggered）
+SELECT MIN(pr.unit_price) AS current_lowest
+FROM price_records pr
+INNER JOIN (
+    SELECT variant_id, MAX(record_id) AS latest
+    FROM price_records GROUP BY variant_id
+) l ON pr.record_id = l.latest
+INNER JOIN product_variants pv ON pr.variant_id = pv.variant_id
+WHERE pv.product_id = <你選的 product_id>;
+
+-- Step 5: 刪除後確認已不存在
+SELECT * FROM price_alerts WHERE user_id = @test_uid;
 ```
 
 ---
 
 ### UC4 — 智慧警報（Smart Alerts）
 
-**怎麼用：**
-- 不需要手動操作，系統自動偵測
-- 當你呼叫 `GET /api/alerts` 時，後端會自動檢查你追蹤的商品（favorites + alerts 裡的商品）
-- 如果某商品目前最低價比歷史平均低 20% 以上，自動產生一筆 smart alert
+**瀏覽器操作：**
+1. 在 Alerts 頁面，滾到下方的 Smart Alerts 區塊
+2. 如果有觸發的智慧警報，會顯示：商品名稱、目前價格、歷史均價、降價百分比、在哪家店
 
-**預期結果：**
-- Smart Alerts 區塊顯示：商品名稱、目前價格、歷史平均價、下跌百分比、在哪家店
-- 例如：「Protein Bar 在 Amazon 降價 33%（目前 $1.10，平均 $1.65）」
+> 智慧警報是自動產生的：當你進入 Alerts 頁面時（`GET /api/alerts`），後端會檢查你的 favorites 裡的商品，如果目前最低價比歷史均價低 20% 以上，自動寫入 `todos` 表。
 
-**影響的 DB 表：**
-
-| 操作 | 寫入的表 | 說明 |
-|------|----------|------|
-| 偵測到降價 | `todos` | **Transaction**：先檢查是否已存在同商品的 todo，沒有才 INSERT，避免重複 |
-
-**觀察方式：**
+**SQL 驗證：**
 ```sql
--- 查看系統自動產生的 smart alert todos
-SELECT t.*, p.name
+-- 查看系統幫你產生的 smart alert
+SELECT t.todo_id, p.name, t.todo_type, t.message, t.snapshot_price, t.compared_price
 FROM todos t
 INNER JOIN product_variants pv ON t.variant_id = pv.variant_id
 INNER JOIN products p ON pv.product_id = p.product_id
-WHERE t.user_id = 1 AND t.todo_type = 'buy_now';
+WHERE t.user_id = @test_uid AND t.todo_type = 'buy_now'
+ORDER BY t.created_at DESC;
+
+-- 手動驗算：你的 favorites 裡哪些商品降價 ≥ 20%？
+SELECT pv.product_id, p.name,
+       MIN(pr_now.unit_price) AS current_lowest,
+       AVG(pr_all.unit_price) AS historical_avg,
+       ROUND((1 - MIN(pr_now.unit_price) / AVG(pr_all.unit_price)) * 100, 1) AS drop_pct
+FROM product_variants pv
+INNER JOIN products p ON pv.product_id = p.product_id
+INNER JOIN price_records pr_all ON pr_all.variant_id = pv.variant_id
+INNER JOIN (
+    SELECT pr.variant_id, pr.unit_price
+    FROM price_records pr
+    INNER JOIN (SELECT variant_id, MAX(record_id) AS latest FROM price_records GROUP BY variant_id) l
+      ON pr.record_id = l.latest
+) pr_now ON pr_now.variant_id = pv.variant_id
+WHERE pv.product_id IN (
+    SELECT product_id FROM user_favorites WHERE user_id = @test_uid
+)
+GROUP BY pv.product_id, p.name
+HAVING drop_pct >= 20;
 ```
+
+**驗證重點：**
+- 前端 Smart Alerts 的商品 = SQL `HAVING drop_pct >= 20` 查出的商品
+- `todos` 表裡同一商品不會重複（Transaction 去重）
+- 如果 UC9 沒選到降價商品，Smart Alerts 可能是空的 — 這是正常的
 
 ---
 
 ### UC5 — 消費分析
 
-**怎麼用：**
-1. 登入後進入 Insight 頁面
-2. 系統自動顯示：月度消費趨勢圖、分類消費佔比、消費摘要與洞察
+> **前提：** 必須先在 UC2 把至少一個項目標為「已購買」，Insight 才有資料。
 
-**預期結果：**
-- **月度圖表**：過去 6 個月每月花了多少錢
-- **分類佔比**：Dairy 34%、Meat 26%……
-- **摘要**：6 個月總消費、月平均、本月 vs 上月的變化百分比
-- **洞察文字**：「本月消費下降了 15%」、「Dairy 是你花最多的分類」
+**瀏覽器操作：**
+1. 進入 Insight 頁面（/insight）
+2. 確認月度消費圖表有資料
+3. 確認分類佔比有資料
+4. 注意摘要文字
 
-**呼叫的 API：**
-- `GET /api/insight/monthly` — 月度消費
-- `GET /api/insight/categories` — 分類消費
-- `GET /api/insight/summary` — 摘要 + 洞察
-
-**影響的 DB 表（唯讀）：**
-- `list_items`（is_purchased = TRUE 的資料）
-- `shopping_lists`（篩選 user_id）
-- `price_records`（價格）
-- `products` + `categories`（分類名稱）
-
-**觀察方式：**
+**SQL 驗證：**
 ```sql
--- 查看某使用者的購買紀錄（insight 的資料來源）
-SELECT li.purchased_at, p.name, c.name AS category, pr.price, li.quantity
+-- 月度消費（對應前端的月度圖表）
+SELECT DATE_FORMAT(li.purchased_at, '%Y-%m') AS month,
+       ROUND(SUM(pr.price * li.quantity), 2) AS total
+FROM list_items li
+INNER JOIN shopping_lists sl ON li.list_id = sl.list_id
+INNER JOIN product_variants pv ON li.variant_id = pv.variant_id
+INNER JOIN (
+    SELECT variant_id, MAX(record_id) AS latest
+    FROM price_records GROUP BY variant_id
+) l ON pv.variant_id = l.variant_id
+INNER JOIN price_records pr ON pr.record_id = l.latest
+WHERE sl.user_id = @test_uid AND li.is_purchased = TRUE
+GROUP BY DATE_FORMAT(li.purchased_at, '%Y-%m')
+ORDER BY month;
+
+-- 分類消費（對應前端的分類佔比）
+SELECT c.name AS category,
+       ROUND(SUM(pr.price * li.quantity), 2) AS total
 FROM list_items li
 INNER JOIN shopping_lists sl ON li.list_id = sl.list_id
 INNER JOIN product_variants pv ON li.variant_id = pv.variant_id
 INNER JOIN products p ON pv.product_id = p.product_id
 LEFT JOIN categories c ON p.category_id = c.category_id
-INNER JOIN (SELECT variant_id, MAX(record_id) AS latest FROM price_records GROUP BY variant_id) l
-  ON pv.variant_id = l.variant_id
+INNER JOIN (
+    SELECT variant_id, MAX(record_id) AS latest
+    FROM price_records GROUP BY variant_id
+) l ON pv.variant_id = l.variant_id
 INNER JOIN price_records pr ON pr.record_id = l.latest
-WHERE sl.user_id = 1 AND li.is_purchased = TRUE
-ORDER BY li.purchased_at DESC;
+WHERE sl.user_id = @test_uid AND li.is_purchased = TRUE
+GROUP BY c.name
+ORDER BY total DESC;
 ```
+
+**驗證重點：**
+- 新帳號只有 UC2 標為已購買的那一筆，數據應該很簡單好驗
+- 前端月度金額 = SQL 月度加總
 
 ---
 
-### UC6 — 家庭庫存追蹤
+## 測試完清理
 
-**怎麼用：**
-1. 登入後進入 Inventory 頁面
-2. 新增庫存項目：選商品、輸入數量、輸入預計幾天用完（例如：牛奶 1 加侖、7 天用完）
-3. 系統自動計算預計用完日期（purchase_date + consumption_days）
-4. 快用完的項目（≤ 2 天）會標示為 `status: "low"`
-5. 如果不想看到提醒，可以點 dismiss
-
-**預期結果：**
-- 「快用完」區塊：顯示 days_left ≤ 2 的項目，建議加入購物清單
-- 「庫存正常」區塊：顯示還有存貨的項目
-- Dismiss 後項目不會再出現在「快用完」，但仍在庫存列表中
-
-**呼叫的 API：**
-- `GET /api/inventory` — 查看庫存（含 depletion 狀態）
-- `POST /api/inventory` — 新增/更新庫存
-- `PATCH /api/inventory/{id}/dismiss` — 關閉提醒
-
-**影響的 DB 表：**
-
-| 操作 | 寫入的表 | 說明 |
-|------|----------|------|
-| 新增庫存 | `inventory_items` | INSERT 或 UPDATE（同使用者+同商品會覆蓋） |
-| Dismiss | `inventory_items` | 設定 dismissed = TRUE |
-
-**觀察方式：**
 ```sql
--- 查看某使用者的庫存，依照到期日排序
-SELECT ii.*, p.name, DATEDIFF(ii.depletion_date, CURDATE()) AS days_left
-FROM inventory_items ii
-INNER JOIN products p ON ii.product_id = p.product_id
-WHERE ii.user_id = 1
-ORDER BY ii.depletion_date ASC;
+-- 一行搞定：刪除帳號，所有關聯資料自動 CASCADE 刪除
+-- （user_favorites, shopping_lists → list_items, price_alerts, todos, inventory_items）
+DELETE FROM users WHERE user_id = @test_uid;
+
+-- 驗證已清理乾淨
+SELECT 'users' AS tbl, COUNT(*) AS cnt FROM users WHERE user_id = @test_uid
+UNION ALL
+SELECT 'favorites', COUNT(*) FROM user_favorites WHERE user_id = @test_uid
+UNION ALL
+SELECT 'lists', COUNT(*) FROM shopping_lists WHERE user_id = @test_uid
+UNION ALL
+SELECT 'alerts', COUNT(*) FROM price_alerts WHERE user_id = @test_uid
+UNION ALL
+SELECT 'todos', COUNT(*) FROM todos WHERE user_id = @test_uid
+UNION ALL
+SELECT 'inventory', COUNT(*) FROM inventory_items WHERE user_id = @test_uid;
+-- 全部應該是 0
 ```
 
 ---
 
-### UC7 — 使用者帳號
+## 常見問題
 
-**怎麼用：**
-1. 在 Sign In 頁面註冊新帳號（email + 密碼 + 顯示名稱）
-2. 或用現有帳號登入
-3. 登入後可以使用所有需要認證的功能（清單、庫存、警報、分析）
-
-**預期結果：**
-- 註冊/登入成功後回傳 JWT token
-- 前端將 token 存起來，後續 API 請求帶在 `Authorization: Bearer <token>` header
-- 沒有 token 或 token 過期 → 所有 protected endpoint 回傳 401
-
-**呼叫的 API：**
-- `POST /api/auth/register` — 註冊
-- `POST /api/auth/login` — 登入
-
-**影響的 DB 表：**
-
-| 操作 | 寫入的表 | 說明 |
-|------|----------|------|
-| 註冊 | `users` | INSERT：email, password_hash (bcrypt), display_name |
-
-**觀察方式：**
-```sql
--- 查看所有使用者（不要 SELECT password_hash）
-SELECT user_id, email, display_name, created_at FROM users;
-```
-
----
-
-### UC8 — 季節性降價預測
-
-**怎麼用：**
-1. 進入 Trends 頁面，選擇一個商品
-2. 系統顯示過去幾個月各零售商的價格走勢圖
-3. 如果資料庫中有該商品的季節性模式（例如 Black Friday 通常降價 25%），會在未來月份顯示預測價格（虛線）
-
-**預期結果：**
-- 歷史月份：顯示各零售商的平均單位價格
-- 未來月份：顯示 `predicted` 預測價格（根據 seasonal_patterns 計算）
-- 前端畫實線（歷史）+ 虛線（預測）
-
-**呼叫的 API：**
-- `GET /api/trends/{product_id}`
-
-**影響的 DB 表（唯讀）：**
-
-| 表名 | 用途 |
+| 問題 | 解法 |
 |------|------|
-| `price_records` | 歷史價格，按月分組取平均 |
-| `product_variants` | 連結商品和零售商 |
-| `seasonal_patterns` | 季節性折扣模式（event_name, typical_month, avg_discount_pct） |
-| `retailers` | 零售商名稱 |
+| 前端 API 回 404 或 CORS 錯誤 | 確認後端有跑，且 port 跟 `package.json` proxy 一致 |
+| 登入後重新整理被登出 | 確認 `localStorage` 有 token，JWT 有效期 3 小時 |
+| Insight 頁面沒資料 | 需要先在 UC2 把清單項目標為「已購買」 |
+| Smart Alerts 區塊是空的 | 正常 — 只有追蹤商品降價 ≥ 20% 才會觸發 |
+| SQL 結果跟前端不一致 | 確認 `USE_MOCK = false`，前端不是在用 mock data |
+| 連不上 MySQL | 確認 IP `167.71.90.83`、帳號 `joj161`、密碼正確 |
 
-**觀察方式：**
-```sql
--- 查看某商品的季節性模式
-SELECT sp.*, r.name AS retailer
-FROM seasonal_patterns sp
-INNER JOIN retailers r ON sp.retailer_id = r.retailer_id
-WHERE sp.product_id = 1;
+---
+
+## 專案結構
+
+```
+Basket-Optimiser/
+├── front-end/                  # React 18 前端
+│   ├── src/
+│   │   ├── pages/              # 10 個頁面元件
+│   │   ├── components/         # Nav, Icons
+│   │   ├── api/index.js        # API 層（USE_MOCK 開關）
+│   │   └── data/mockData.js    # Mock 資料（測試時不使用）
+│   └── package.json            # proxy → http://127.0.0.1:50123
+│
+├── backend/                    # Flask 後端
+│   ├── app.py                  # 進入點，註冊 11 個 blueprint
+│   ├── routes/                 # 11 個路由檔
+│   ├── auth.py                 # bcrypt + JWT + @require_auth
+│   ├── sql_loader.py           # 讀取 db/queries/*.sql
+│   ├── config.py               # 讀 .env
+│   ├── .env                    # 機密設定（不進 git）
+│   └── tests/                  # pytest 測試
+│
+├── db/                         # 資料庫
+│   ├── schema.sql              # 18 張表（v3 DDL）
+│   ├── migration.sql           # ALTER TABLE 補欄位
+│   ├── seed_data.sql           # 測試資料
+│   └── queries/                # 12 個 SQL 檔，後端透過 sql_loader 載入
+│
+└── docs/                       # API 規格、Use Cases、Table 屬性
+    ├── API_SPEC_v2.md          # 24 個 endpoint 完整文件
+    ├── Basket_Optimiser_Use_Cases.md
+    └── SmartCart_Table_Attributes_v3.md
 ```
 
+## 待辦事項（TODO）
+
+> 根據老師 Deliverable II 反饋（詳見 `docs/SmartCart_Feedback_Response_v3.md`）以及目前實作狀態整理。
+
+### 已完成的反饋修改（Schema v3）
+
+| # | 反饋 | 改動 | 狀態 |
+|---|------|------|------|
+| F1 | `price_alerts` 和 `todos` 之間無法追蹤觸發關係 | `todos` 新增 `alert_id INT NULL` FK → `price_alerts`，ON DELETE SET NULL | ✅ Schema + 後端 |
+| F2 | `consumption_days` 忽略 `quantity`，`depletion_date` 不準 | 改名為 `consumption_days_per_unit`，公式改為 `purchase_date + (per_unit × qty)` | ✅ Schema + 後端 + mock data |
+| F3 | 沒有共用的 consumption 預設值，每個使用者重複輸入 | `products` 新增 `default_consumption_days_per_unit INT NULL`，17 個商品已填預設值 | ✅ Schema + mock data |
+| F4 | `inventory_items` 沒有 UNIQUE 約束，同使用者+同商品可能重複 | 新增 `UNIQUE(user_id, product_id)` | ✅ Schema |
+| F5 | `todos.message` 嵌入寫死的價格數字，日後會過時 | 新增 `snapshot_price` 和 `compared_price`（DECIMAL），UI 可比較當前價判斷優惠是否仍有效 | ✅ Schema + 後端寫入 |
+| F6 | 只有 `scrape_jobs.items_scraped` 計數，無法追蹤哪些 variant 持續失敗 | 新增 `scrape_failures` 表（5 筆 mock data） | ✅ Schema |
+| F7 | `confidence_score` 是魔術數字，沒有逐年證據可稽核 | 新增 `seasonal_pattern_years` 表（21 筆 mock data），分數可從年度觀測值推導 | ✅ Schema |
+| UC4 | 團隊決定移除 `return_rebuy` — 鼓勵退貨再買對零售商不公平 | `todo_type` ENUM 改為只有 `'buy_now'` | ✅ Schema |
+
+### 尚未完成
+
+| # | 項目 | 說明 | 相關檔案 |
+|---|------|------|----------|
+| T1 | **前端：Inventory 表單預填 consumption 預設值** | F3 的 `default_consumption_days_per_unit` 已在 `products` 表中，後端 receipts.py 有使用，但 Inventory 頁面手動新增庫存時沒有從商品預設值自動帶入，使用者每次都要手打天數 | `front-end/src/pages/Inventory.js` |
+| T2 | **前端：Smart Alerts 顯示優惠是否仍有效** | F5 的 `snapshot_price`/`compared_price` 後端已寫入 `todos` 表，但前端 Alerts 頁面沒有使用這兩個欄位。應比較 `snapshot_price` vs 目前最新價格，顯示「優惠仍有效」或「價格已回升」 | `front-end/src/pages/Alerts.js` |
+| T3 | **自動爬蟲流程** | `db/queries/scrape.sql` 的 6 個 query 全部是註解 TODO。目前沒有主動抓取新價格的機制，所有價格資料來自 seed data。需實作：建立 scrape job → 寫入 price_records → 更新 scrape_jobs 狀態 → 檢查觸發的 price_alerts | `db/queries/scrape.sql`, 需新增 scrape runner |
+| T4 | **爬蟲失敗追蹤** | F6 的 `scrape_failures` 表已建好，但沒有任何程式碼往裡面寫入。需在 T3 的爬蟲流程中，當單一 variant 抓取失敗時記錄到此表 | `scrape_failures` 表 |
+| T5 | **Receipt OCR 使用 hardcoded 假資料** | Shopping Lists 頁面的 Receipt Scanner UI 已完成，後端 `POST /api/receipts` 也已實作（含 Transaction），但前端 `handleScan` 目前回傳寫死的假掃描結果，沒有接真正的 OCR 服務 | `front-end/src/pages/ShoppingLists.js:100` |
+| T6 | **`GET /api/auth/me` endpoint** | API spec 定義了 `GET /api/auth/me`（回傳目前登入使用者資訊），但前端目前用 login response 裡的資料，沒有呼叫此 endpoint | `backend/routes/auth_routes.py` |
+
 ---
 
-### 功能 vs DB 表 對照總表
+## Endpoint × DB 表 對照表
 
-| 功能 | 讀取的表 | 寫入的表 | Transaction |
-|------|---------|---------|-------------|
-| UC1 比價 | products, product_variants, price_records, retailers, units | — | — |
-| UC2 購物清單 | shopping_lists, list_items, products, price_records | shopping_lists, list_items | 新增項目時 INSERT + UPDATE 原子操作 |
-| UC3 價格警報 | price_alerts, products, price_records | price_alerts | — |
-| UC4 智慧警報 | price_records, todos, products, user_favorites | todos | 偵測 + 去重 + INSERT 原子操作 |
-| UC5 消費分析 | list_items, shopping_lists, price_records, categories | — | — |
-| UC6 庫存追蹤 | inventory_items, products | inventory_items | — |
-| UC7 帳號 | users | users | — |
-| UC8 趨勢預測 | price_records, seasonal_patterns, retailers | — | — |
+### 公開 Endpoint（不需登入）
 
----
+| Endpoint | SQL query | 讀取的表 |
+|----------|-----------|---------|
+| `GET /api/retailers` | `retailers.get_all` | retailers |
+| `GET /api/products` | `products.get_all_with_category` | products, categories |
+| `GET /api/compare/{id}` | `compare.get_top5_cheapest` | price_records, product_variants, products, retailers, units, brands |
+| `POST /api/compare/summary` | `compare.get_top5_cheapest` ×N | 同上 |
+| `GET /api/trends/{id}` | `trends.get_monthly_avg_by_retailer`, `trends.get_seasonal_patterns` | price_records, product_variants, retailers, seasonal_patterns |
+| `POST /api/auth/register` | `auth.check_email_exists`, `auth.insert_user` | users |
+| `POST /api/auth/login` | `auth.get_user_by_email` | users |
 
-## 重要設計筆記
+### 需登入 Endpoint
 
-- **product_id 是整數**，不是字串（API spec 裡寫的 `"milk"` 是舊版，忽略）
-- **兩個 Transaction**（課程要求）：
-  1. `POST /api/lists/{id}/items` — 新增項目 + 更新預估總額，失敗 ROLLBACK
-  2. `GET /api/alerts` — 偵測價格下跌 > 20% 自動產生 smart alert 寫入 todos 表
-- **Endpoint #21（Receipt OCR）** 沒有實作
-- 總共 23 個 endpoint：7 個公開 + 16 個需要 JWT 認證
-- 所有 SQL 手寫（PyMySQL raw SQL），沒用 SQLAlchemy（課程評分要看 SQL）
-
-## 待修 / 注意事項
-
-- **`front-end/node_modules/`** — 之前被 commit 進雲端 git，需到 GitHub 上刪除
-- **前端 product_id 型別已更新** — mock data 的字串 ID 已改為整數，切換到真實 API 時由 `GET /api/products` 動態取得商品列表
-- **自動爬蟲流程尚未實作** — 目前後端只有回應前端請求的 API，沒有主動抓取新價格資料的機制。預計實作方式：
-  1. 新增一個 scrape endpoint 或 CLI 指令（例如 `python scrape.py`）
-  2. 執行時在 `scrape_jobs` 表建立一筆新 job（status = running）
-  3. 呼叫 DB 同學的 mock data script 產生新的價格資料
-  4. Script 產生的資料寫入 `price_records`（及可能的新 `product_variants`）
-  5. 更新 `scrape_jobs` 狀態為 success/failed
-  6. 檢查 `price_alerts`，如果有商品降到使用者設定的目標價以下則更新 triggered_at
-  7. DB 相關表：`scrape_jobs`（寫入）、`price_records`（寫入）、`product_variants`（可能寫入）、`price_alerts`（可能更新）
+| Endpoint | SQL query | 寫入的表 | Transaction |
+|----------|-----------|---------|-------------|
+| `GET /api/user/favorites` | `favorites.get_by_user` | — | — |
+| `PUT /api/user/favorites` | `favorites.delete_all_by_user`, `favorites.insert_one` ×N | user_favorites | — |
+| `GET /api/lists` | `lists.get_user_lists` | — | — |
+| `GET /api/lists/{id}` | `lists.verify_ownership` + 3 queries | — | — |
+| `POST /api/lists` | `lists.insert_list` | shopping_lists | — |
+| `POST /api/lists/{id}/items` | `lists.insert_item`, `lists.update_estimated_total` | list_items, shopping_lists | **YES** |
+| `PATCH /api/lists/{id}/items/{id}` | 動態 UPDATE | list_items | — |
+| `GET /api/inventory` | `inventory.get_user_inventory` | — | — |
+| `POST /api/inventory` | `inventory.check_existing`, INSERT 或 UPDATE | inventory_items | — |
+| `PATCH /api/inventory/{id}/dismiss` | `inventory.dismiss` | inventory_items | — |
+| `GET /api/alerts` | 多個 query + smart alert 偵測 | todos | **YES** |
+| `POST /api/alerts` | `alerts.insert_alert` | price_alerts | — |
+| `DELETE /api/alerts/{id}` | `alerts.delete_alert` | price_alerts | — |
+| `GET /api/insight/monthly` | `insight.spending_cte` + `insight.get_monthly` | — | — |
+| `GET /api/insight/categories` | `insight.spending_cte` + `insight.get_by_category` | — | — |
+| `GET /api/insight/summary` | `insight.spending_cte` + 2 queries | — | — |
