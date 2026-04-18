@@ -157,6 +157,18 @@ export async function updateListItem(listId, itemId, data) {
   });
 }
 
+export async function deleteListItem(listId, itemId) {
+  if (USE_MOCK) return { success: true };
+  return apiFetch(`/lists/${listId}/items/${itemId}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function clearPurchasedItems(listId) {
+  if (USE_MOCK) return { success: true, items_removed: 0 };
+  return apiFetch(`/lists/${listId}/clear`, { method: 'POST' });
+}
+
 // --- Inventory ---
 export async function getInventory() {
   if (USE_MOCK) return MOCK_INVENTORY;
