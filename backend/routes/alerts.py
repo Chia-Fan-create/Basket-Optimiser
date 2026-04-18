@@ -31,7 +31,6 @@ def get_alerts():
                         "alert_id": a["alert_id"],
                         "product_id": pid,
                         "product_name": a["product_name"],
-                        "icon": a["icon"],
                         "target_price": target,
                         "current_price": current_price,
                         "is_triggered": is_triggered,
@@ -77,7 +76,8 @@ def get_alerts():
                             cur.execute(
                                 get_query("alerts", "insert_smart_todo"),
                                 (g.user_id, variant["variant_id"],
-                                 f"Price dropped {drop_pct}%% — consider buying now"),
+                                 f"Price dropped {drop_pct}%% — consider buying now",
+                                 latest_price, avg_price),
                             )
                             todo_id = cur.lastrowid
                     else:
@@ -90,7 +90,6 @@ def get_alerts():
                         "alert_id": todo_id if not existing else existing["todo_id"],
                         "product_id": pid,
                         "product_name": prod["product_name"] if prod else "",
-                        "icon": prod["icon"] if prod else "",
                         "current_price": latest_price,
                         "previous_avg": round(avg_price, 2),
                         "drop_pct": drop_pct,

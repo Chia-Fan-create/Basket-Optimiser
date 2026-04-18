@@ -19,7 +19,7 @@ WHERE list_id = %s AND user_id = %s;
 
 -- name: get_items_with_product_info
 SELECT li.list_item_id, pv.product_id, p.name AS product_name,
-       p.icon, li.variant_id, li.quantity,
+       li.variant_id, li.quantity,
        li.is_purchased, li.purchased_at
 FROM list_items li
 INNER JOIN product_variants pv ON li.variant_id = pv.variant_id

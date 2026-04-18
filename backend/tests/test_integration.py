@@ -37,7 +37,7 @@ class TestProducts:
         for p in data:
             assert "id" in p
             assert "name" in p
-            assert "icon" in p
+            assert "category" in p
             assert "category" in p
 
     def test_product_id_is_integer(self, client):

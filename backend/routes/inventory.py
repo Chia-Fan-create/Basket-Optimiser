@@ -32,8 +32,8 @@ def get_inventory():
                 r["depletion_date"] = r["depletion_date"].isoformat() if r["depletion_date"] else None
                 days_left = (r["depletion_date"] and (date.fromisoformat(r["depletion_date"]) - today).days) or 0
                 r["days_left"] = max(days_left, 0)
-                r["status"] = "low" if days_left <= 2 and not r["dismissed"] else "ok"
-                del r["dismissed"]
+                r["status"] = "low" if days_left <= 2 and not r["is_dismissed"] else "ok"
+                del r["is_dismissed"]
 
         return jsonify(rows)
     finally:
@@ -52,7 +52,7 @@ def add_inventory():
         return jsonify({"error": True, "message": "product_id, quantity, and consumption_days are required"}), 400
 
     today = date.today()
-    depletion = today + timedelta(days=int(consumption_days))
+    depletion = today + timedelta(days=int(consumption_days) * int(quantity))
 
     conn = get_connection()
     try:

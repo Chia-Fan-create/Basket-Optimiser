@@ -3,7 +3,7 @@
 -- ============================================================
 
 -- name: get_user_alerts
-SELECT pa.alert_id, pa.product_id, p.name AS product_name, p.icon,
+SELECT pa.alert_id, pa.product_id, p.name AS product_name,
        pa.target_price, pa.is_active, pa.triggered_at
 FROM price_alerts pa
 INNER JOIN products p ON pa.product_id = p.product_id
@@ -69,11 +69,11 @@ LIMIT 1;
 
 -- name: insert_smart_todo
 -- TRANSACTION: auto-generate todo when price drops > 20%
-INSERT INTO todos (user_id, variant_id, todo_type, message)
-VALUES (%s, %s, 'buy_now', %s);
+INSERT INTO todos (user_id, variant_id, todo_type, message, snapshot_price, compared_price)
+VALUES (%s, %s, 'buy_now', %s, %s, %s);
 
 -- name: get_product_name_icon
-SELECT p.name AS product_name, p.icon
+SELECT p.name AS product_name
 FROM products p
 WHERE p.product_id = %s;
 
