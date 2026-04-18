@@ -61,6 +61,10 @@ def add_inventory():
             existing = cur.fetchone()
 
             if existing:
+                cur.execute(get_query("inventory", "get_existing_quantity"), (existing["inventory_id"],))
+                old_qty = float(cur.fetchone()["quantity"])
+                new_total = old_qty + float(quantity)
+                depletion = today + timedelta(days=int(consumption_days) * int(new_total))
                 cur.execute(
                     get_query("inventory", "update_existing"),
                     (quantity, today, consumption_days, depletion, existing["inventory_id"]),

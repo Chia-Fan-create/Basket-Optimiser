@@ -24,10 +24,14 @@ FROM inventory_items
 WHERE user_id = %s AND product_id = %s;
 
 -- name: update_existing
+-- Add to existing quantity and recalculate depletion from today
 UPDATE inventory_items
-SET quantity = %s, purchase_date = %s,
+SET quantity = quantity + %s, purchase_date = %s,
     consumption_days_per_unit = %s, depletion_date = %s, is_dismissed = FALSE
 WHERE inventory_id = %s;
+
+-- name: get_existing_quantity
+SELECT quantity FROM inventory_items WHERE inventory_id = %s;
 
 -- name: insert_new
 INSERT INTO inventory_items
