@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PlusSvg, CheckSvg, CameraSvg, ArrowR } from '../components/Icons';
 import { STORE_COLORS } from '../data/mockData';
-import { getLists, getListDetail, createList, updateListItem, processReceipt } from '../api';
+import { getLists, getListDetail, createList, addListItem, deleteListItem, clearPurchasedItems, updateListItem, processReceipt, getProducts, getComparison } from '../api';
 
 export default function ShoppingListsPage({ onNavigate }) {
   const [show, setShow] = useState(false);
@@ -17,6 +17,11 @@ export default function ShoppingListsPage({ onNavigate }) {
   const [error, setError] = useState(null);
 
   const [addItemOpen, setAddItemOpen] = useState(false);
+  const [allProducts, setAllProducts] = useState([]);
+  const [addSearch, setAddSearch] = useState('');
+  const [addBusy, setAddBusy] = useState(null);   // product id being added
+  const [addDone, setAddDone] = useState({});      // { pid: true } flash
+
   const [ocrOpen, setOcrOpen] = useState(false);
   const [ocrStep, setOcrStep] = useState(0);
   const [ocrChecked, setOcrChecked] = useState({});
@@ -92,27 +97,77 @@ export default function ShoppingListsPage({ onNavigate }) {
     }
   };
 
-  const handleOcrOpen = () => {
-    setOcrOpen(true); setOcrStep(0); setOcrResults([]); setOcrChecked({});
+  const handleDeleteItem = (itemId) => {
+    if (!itemId) return;
+    setActiveDetail(prev => ({
+      ...prev,
+      items: prev.items.filter(item => (item.list_item_id ?? item.id) !== itemId)
+    }));
+    deleteListItem(activeListId, itemId)
+      .then(() => getListDetail(activeListId))
+      .then(detail => {
+        setActiveDetail(detail);
+        getLists().then(setListMetas).catch(() => {});
+      })
+      .catch(err => {
+        setError(err.message);
+        getListDetail(activeListId).then(setActiveDetail).catch(() => {});
+      });
   };
 
-  const handleScan = () => {
-    const scanned = [
-      { product: 'Whole Milk 1 Gal', price: 3.42, qty: 2, matched: true },
-      { product: 'Chicken Breast 2.6lb', price: 8.37, qty: 1, matched: true },
-      { product: 'Organic Bananas', price: 1.29, qty: 1, matched: false },
-    ];
-    setOcrResults(scanned);
+  const handleAddItemOpen = () => {
+    setAddItemOpen(true);
+    setAddSearch('');
+    setAddDone({});
+    if (allProducts.length === 0) {
+      getProducts().then(setAllProducts).catch(() => {});
+    }
+  };
+
+  const handleQuickAdd = (product) => {
+    if (addBusy) return;
+    setAddBusy(product.id);
+    getComparison(product.id)
+      .then(variants => {
+        if (!variants || variants.length === 0) throw new Error('No variants found');
+        return addListItem(activeListId, variants[0].variant_id, 1);
+      })
+      .then(() => getListDetail(activeListId))
+      .then(detail => {
+        setActiveDetail(detail);
+        setAddDone(prev => ({ ...prev, [product.id]: true }));
+        getLists().then(setListMetas).catch(() => {});
+      })
+      .catch(err => setError(err.message))
+      .finally(() => setAddBusy(null));
+  };
+
+  const handleOcrOpen = () => {
+    // Pre-populate with items already checked as purchased
+    const purchased = (activeDetail?.items || []).filter(item => item.is_purchased ?? item.purchased);
+    if (purchased.length === 0) {
+      setOcrOpen(true); setOcrStep(0); setOcrResults([]); setOcrChecked({});
+      return;
+    }
+    const mapped = purchased.map(item => ({
+      product: item.product_name ?? item.product,
+      price: item.best_price ?? 0,
+      qty: item.quantity ?? item.qty ?? 1,
+      matched: true,
+    }));
+    setOcrResults(mapped);
     const checked = {};
-    scanned.forEach((_, i) => { checked[i] = true; });
+    mapped.forEach((_, i) => { checked[i] = true; });
     setOcrChecked(checked);
+    setOcrOpen(true);
     setOcrStep(1);
   };
 
   const handleOcrConfirm = () => {
     const selectedItems = ocrResults.filter((_, i) => ocrChecked[i]);
     setOcrSubmitting(true);
-    processReceipt(activeListId, 'Walmart', selectedItems)
+    const storeName = activeDetail?.cheapest_store || 'Unknown';
+    processReceipt(activeListId, storeName, selectedItems)
       .then(() => getListDetail(activeListId))
       .then(detail => { setActiveDetail(detail); setOcrStep(2); })
       .catch(err => setError(err.message))
@@ -186,6 +241,9 @@ export default function ShoppingListsPage({ onNavigate }) {
                 <h3>{activeDetail.name}</h3>
                 <span className="list-cnt">{items.length} items</span>
               </div>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '-4px 0 8px', fontFamily: 'Outfit, sans-serif' }}>
+                Check items off as you shop — checked items count toward your spending analytics.
+              </p>
 
               {items.map((item, i) => {
                 const itemId = item.list_item_id ?? item.id;
@@ -217,12 +275,20 @@ export default function ShoppingListsPage({ onNavigate }) {
                       <span className="li-bp">${price ? (price * qty).toFixed(2) : '—'}</span>
                       <span className="li-bs" style={{ color: storeColor }}>{storeName}</span>
                     </div>
+                    <button
+                      className="li-delete"
+                      title="Remove item"
+                      onClick={(e) => { e.stopPropagation(); handleDeleteItem(itemId); }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px', fontSize: 16, color: 'var(--sand)', marginLeft: 4, flexShrink: 0 }}
+                      onMouseEnter={e => e.currentTarget.style.color = '#c0392b'}
+                      onMouseLeave={e => e.currentTarget.style.color = 'var(--sand)'}
+                    >✕</button>
                   </div>
                 );
               })}
 
-              <button className="add-item-btn" onClick={() => setAddItemOpen(true)}>
-                <PlusSvg /> Add item from Compare
+              <button className="add-item-btn" onClick={handleAddItemOpen}>
+                <PlusSvg /> Add Item
               </button>
             </div>
           )}
@@ -237,25 +303,51 @@ export default function ShoppingListsPage({ onNavigate }) {
               <h3>Add Item to List</h3>
               <button className="ocr-close" onClick={() => setAddItemOpen(false)}>✕</button>
             </div>
-            <div style={{ padding: '16px 24px 24px' }}>
-              <p style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 20 }}>
-                Go to Compare page to find a product, then use the <strong>+ List</strong> button to add it directly.
-              </p>
-              <button className="btn-primary" style={{ width: '100%' }} onClick={() => { setAddItemOpen(false); onNavigate('compare'); }}>
-                Go to Compare <ArrowR />
-              </button>
+            <div style={{ padding: '12px 24px 24px' }}>
+              <input
+                autoFocus
+                placeholder="Search products..."
+                value={addSearch}
+                onChange={e => setAddSearch(e.target.value)}
+                style={{ width: '100%', marginBottom: 12, padding: '10px 14px', border: '1px solid var(--sand)', borderRadius: 10, fontSize: 14, fontFamily: 'Outfit, sans-serif', boxSizing: 'border-box' }}
+              />
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>Tap a product to add (auto-picks cheapest option, qty 1)</p>
+              <div style={{ maxHeight: 360, overflowY: 'auto' }}>
+                {allProducts
+                  .filter(p => !addSearch || p.name.toLowerCase().includes(addSearch.toLowerCase()))
+                  .map(p => {
+                    const done = addDone[p.id];
+                    const busy = addBusy === p.id;
+                    return (
+                      <div
+                        key={p.id}
+                        onClick={() => !done && handleQuickAdd(p)}
+                        style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 8px', cursor: busy ? 'wait' : done ? 'default' : 'pointer', borderBottom: '1px solid #f0ede4', borderRadius: 8, opacity: busy ? 0.5 : 1 }}
+                        onMouseEnter={e => { if (!done && !busy) e.currentTarget.style.background = '#f9f7f0'; }}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                      >
+                        <span style={{ fontSize: 22 }}>{p.icon}</span>
+                        <span style={{ fontFamily: 'Outfit, sans-serif', fontSize: 14, color: 'var(--brown-deep)', flex: 1 }}>{p.name}</span>
+                        {busy && <span style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'Outfit, sans-serif' }}>Adding...</span>}
+                        {done && <span style={{ fontSize: 12, color: 'var(--green)', fontWeight: 600, fontFamily: 'Outfit, sans-serif' }}>Added!</span>}
+                        {!busy && !done && <PlusSvg />}
+                      </div>
+                    );
+                  })
+                }
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Receipt OCR */}
+      {/* Process Purchased Items */}
       <div className="ocr-section">
         <button className="ocr-trigger" onClick={handleOcrOpen}>
-          <CameraSvg />
+          <CheckSvg />
           <div>
-            <strong>Upload Receipt</strong>
-            <p>Scan your receipt to mark items as purchased & update inventory</p>
+            <strong>Process Purchased Items</strong>
+            <p>Save prices to history & update your home inventory — no receipt needed</p>
           </div>
           <ArrowR />
         </button>
@@ -264,27 +356,23 @@ export default function ShoppingListsPage({ onNavigate }) {
           <div className="ocr-modal">
             <div className="ocr-card">
               <div className="ocr-head">
-                <h3>Receipt Scanner</h3>
+                <h3>Process Purchased Items</h3>
                 <button className="ocr-close" onClick={() => setOcrOpen(false)}>✕</button>
               </div>
 
               {ocrStep === 0 && (
                 <div className="ocr-upload">
-                  <div className="ocr-dropzone">
-                    <CameraSvg />
-                    <p>Drop receipt image here or tap to upload</p>
-                    <span>Supports JPG, PNG, PDF</span>
+                  <div style={{ textAlign: 'center', padding: '24px 16px' }}>
+                    <p style={{ fontSize: 14, color: 'var(--brown)', marginBottom: 8, fontFamily: 'Outfit, sans-serif' }}>No checked items yet</p>
+                    <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: 'Outfit, sans-serif' }}>Go back and check off the items you've purchased, then come back here to save prices & update inventory.</p>
                   </div>
-                  <button className="btn-primary ocr-go" onClick={handleScan}>
-                    Scan Receipt <ArrowR />
-                  </button>
                 </div>
               )}
 
               {ocrStep === 1 && (
                 <div className="ocr-confirm">
-                  <p className="ocr-confirm-title">Review detected items</p>
-                  <p className="ocr-confirm-sub">Check the items you want to import.</p>
+                  <p className="ocr-confirm-title">Review purchased items</p>
+                  <p className="ocr-confirm-sub">These are the items you checked off. Confirm to save prices & update inventory.</p>
                   <div className="ocr-select-all">
                     <button className="ocr-sel-btn" onClick={() => {
                       const allChecked = Object.values(ocrChecked).every(v => v);
@@ -336,7 +424,6 @@ export default function ShoppingListsPage({ onNavigate }) {
                     ))}
                   </div>
                   <div className="ocr-actions">
-                    <button className="btn-secondary" onClick={() => setOcrStep(0)}>← Re-scan</button>
                     <button
                       className="btn-primary"
                       disabled={ocrSubmitting || Object.values(ocrChecked).filter(Boolean).length === 0}
@@ -354,14 +441,29 @@ export default function ShoppingListsPage({ onNavigate }) {
               {ocrStep === 2 && (
                 <div className="ocr-done">
                   <div className="ocr-done-icon">✅</div>
-                  <h3>Receipt Processed!</h3>
+                  <h3>All Done!</h3>
                   <div className="ocr-done-list">
-                    <div className="ocr-done-item"><CheckSvg /> Items marked as purchased</div>
                     <div className="ocr-done-item"><CheckSvg /> Prices saved to history</div>
                     <div className="ocr-done-item"><CheckSvg /> Inventory updated</div>
                     <div className="ocr-done-item"><CheckSvg /> Spending analytics refreshed</div>
                   </div>
-                  <button className="btn-primary" onClick={() => setOcrOpen(false)}>Done <ArrowR /></button>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%' }}>
+                    <button className="btn-primary" onClick={() => {
+                      clearPurchasedItems(activeListId)
+                        .then(() => getListDetail(activeListId))
+                        .then(detail => {
+                          setActiveDetail(detail);
+                          getLists().then(setListMetas).catch(() => {});
+                        })
+                        .catch(() => {});
+                      setOcrOpen(false);
+                    }}>Done — Clear purchased items <ArrowR /></button>
+                    <button className="btn-secondary" style={{ width: '100%' }} onClick={() => {
+                      clearPurchasedItems(activeListId).catch(() => {});
+                      setOcrOpen(false);
+                      onNavigate('inventory');
+                    }}>View Inventory <ArrowR /></button>
+                  </div>
                 </div>
               )}
             </div>
