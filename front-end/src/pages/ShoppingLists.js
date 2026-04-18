@@ -1,34 +1,136 @@
 import React, { useState, useEffect } from 'react';
 import { PlusSvg, CheckSvg, CameraSvg, ArrowR } from '../components/Icons';
-import { MOCK_LISTS, STORE_COLORS } from '../data/mockData';
+import { STORE_COLORS } from '../data/mockData';
+import { getLists, getListDetail, createList, updateListItem, processReceipt } from '../api';
 
 export default function ShoppingListsPage({ onNavigate }) {
   const [show, setShow] = useState(false);
-  const [activeList, setActiveList] = useState(0);
-  const [purchased, setPurchased] = useState({});
+
+  // listMetas = array of { list_id, name, estimated_total } from GET /api/lists
+  // activeDetail = full object from GET /api/lists/:id (has items, store_totals, etc.)
+  const [listMetas, setListMetas] = useState([]);
+  const [activeDetail, setActiveDetail] = useState(null);
+  const [activeListId, setActiveListId] = useState(null);
+
+  const [loading, setLoading] = useState(true);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+  const [error, setError] = useState(null);
+
+  const [addItemOpen, setAddItemOpen] = useState(false);
   const [ocrOpen, setOcrOpen] = useState(false);
   const [ocrStep, setOcrStep] = useState(0);
-  const [ocrChecked, setOcrChecked] = useState({ 0: true, 1: true, 2: true });
+  const [ocrChecked, setOcrChecked] = useState({});
+  const [ocrResults, setOcrResults] = useState([]);
+  const [ocrSubmitting, setOcrSubmitting] = useState(false);
+
   useEffect(() => { setTimeout(() => setShow(true), 50); }, []);
 
-  const list = MOCK_LISTS[activeList];
-  const storeTotals = {};
-  list.items.forEach(item => {
-    ['Walmart', 'Target', 'Amazon'].forEach(store => {
-      const mk = store === 'Walmart' ? 1 : store === 'Target' ? 1.1 : 1.25;
-      storeTotals[store] = (storeTotals[store] || 0) + item.bestPrice * item.qty * mk;
-    });
-  });
-  const cheapest = Object.entries(storeTotals).sort((a, b) => a[1] - b[1])[0];
-  const expensive = Object.entries(storeTotals).sort((a, b) => b[1] - a[1])[0];
-  const savings = (expensive[1] - cheapest[1]).toFixed(2);
-  const togglePurchased = (i) => setPurchased(p => ({ ...p, [`${activeList}-${i}`]: !p[`${activeList}-${i}`] }));
+  // Step 1: fetch list metadata on mount
+  useEffect(() => {
+    getLists()
+      .then(data => {
+        setListMetas(data);
+        // backend uses list_id; mock uses id
+        const firstId = data[0]?.list_id ?? data[0]?.id;
+        if (firstId !== undefined) setActiveListId(firstId);
+      })
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
 
-  const ocrResults = [
-    { product: 'Whole Milk 1 Gal', price: 3.42, qty: 2, matched: true },
-    { product: 'Chicken Breast 2.6lb', price: 8.37, qty: 1, matched: true },
-    { product: 'Organic Bananas', price: 1.29, qty: 1, matched: false },
-  ];
+  // Step 2: fetch full detail whenever active list changes
+  useEffect(() => {
+    if (activeListId === null || activeListId === undefined) return;
+    setLoadingDetail(true);
+    getListDetail(activeListId)
+      .then(setActiveDetail)
+      .catch(err => setError(err.message))
+      .finally(() => setLoadingDetail(false));
+  }, [activeListId]);
+
+  const handleCreateList = () => {
+    const name = prompt('List name:');
+    if (!name) return;
+    createList(name)
+      .then(res => {
+        const newId = res.list_id;
+        return getLists().then(data => {
+          setListMetas(data);
+          setActiveListId(newId);
+        });
+      })
+      .catch(err => setError(err.message));
+  };
+
+  // Works with both mock (id) and backend (list_item_id)
+  const handleTogglePurchased = (itemId, itemIndex, currentState) => {
+    const matches = (item, idx) =>
+      itemId !== undefined ? (item.list_item_id ?? item.id) === itemId : idx === itemIndex;
+
+    setActiveDetail(prev => ({
+      ...prev,
+      items: prev.items.map((item, idx) =>
+        matches(item, idx)
+          ? { ...item, is_purchased: !currentState, purchased: !currentState }
+          : item
+      )
+    }));
+
+    if (itemId !== undefined) {
+      updateListItem(activeListId, itemId, { is_purchased: !currentState })
+        .catch(err => {
+          setActiveDetail(prev => ({
+            ...prev,
+            items: prev.items.map((item, idx) =>
+              matches(item, idx)
+                ? { ...item, is_purchased: currentState, purchased: currentState }
+                : item
+            )
+          }));
+          setError(err.message);
+        });
+    }
+  };
+
+  const handleOcrOpen = () => {
+    setOcrOpen(true); setOcrStep(0); setOcrResults([]); setOcrChecked({});
+  };
+
+  const handleScan = () => {
+    const scanned = [
+      { product: 'Whole Milk 1 Gal', price: 3.42, qty: 2, matched: true },
+      { product: 'Chicken Breast 2.6lb', price: 8.37, qty: 1, matched: true },
+      { product: 'Organic Bananas', price: 1.29, qty: 1, matched: false },
+    ];
+    setOcrResults(scanned);
+    const checked = {};
+    scanned.forEach((_, i) => { checked[i] = true; });
+    setOcrChecked(checked);
+    setOcrStep(1);
+  };
+
+  const handleOcrConfirm = () => {
+    const selectedItems = ocrResults.filter((_, i) => ocrChecked[i]);
+    setOcrSubmitting(true);
+    processReceipt(activeListId, 'Walmart', selectedItems)
+      .then(() => getListDetail(activeListId))
+      .then(detail => { setActiveDetail(detail); setOcrStep(2); })
+      .catch(err => setError(err.message))
+      .finally(() => setOcrSubmitting(false));
+  };
+
+  if (loading) return <div className="loading">Loading...</div>;
+  if (error) return <div className="error">{error}</div>;
+
+  // Normalise field names: backend uses list_id/list_item_id, mock uses id
+  const items = activeDetail?.items || [];
+  const storeTotals = activeDetail?.store_totals || {};
+  const sortedStores = Object.entries(storeTotals).sort((a, b) => a[1] - b[1]);
+  const cheapest = sortedStores[0];
+  const expensive = sortedStores[sortedStores.length - 1];
+  const savings = activeDetail?.savings_vs_expensive != null
+    ? activeDetail.savings_vs_expensive.toFixed(2)
+    : (cheapest && expensive ? (expensive[1] - cheapest[1]).toFixed(2) : '0.00');
 
   return (
     <div className="page lists-page" style={{ opacity: show ? 1 : 0, transform: show ? 'none' : 'translateY(30px)' }}>
@@ -36,82 +138,198 @@ export default function ShoppingListsPage({ onNavigate }) {
       <p className="page-sub">Build lists and find the cheapest store for everything</p>
 
       <div className="list-tabs">
-        {MOCK_LISTS.map((l, i) => <button key={l.id} className={`ltab2 ${activeList === i ? 'active' : ''}`} onClick={() => setActiveList(i)}>{l.name}</button>)}
-        <button className="ltab2 add-ltab"><PlusSvg /> New List</button>
-      </div>
-
-      <div className="store-banner">
-        <div className="sb-best"><span className="sb-label">Cheapest Store</span><span className="sb-store" style={{ color: STORE_COLORS[cheapest[0]] }}>{cheapest[0]}</span><span className="sb-price">${cheapest[1].toFixed(2)}</span></div>
-        <div className="sb-savings"><span className="sb-save">Save ${savings}</span><span className="sb-vs">vs. {expensive[0]}</span></div>
-        <div className="sb-all">
-          {Object.entries(storeTotals).sort((a, b) => a[1] - b[1]).map(([s, t]) => (
-            <div key={s} className="sb-row"><span className="sb-dot" style={{ background: STORE_COLORS[s] }} /><span className="sb-name">{s}</span><span className="sb-total">${t.toFixed(2)}</span></div>
-          ))}
-        </div>
-      </div>
-
-      <div className="list-card">
-        <div className="list-card-head"><h3>{list.name}</h3><span className="list-cnt">{list.items.length} items</span></div>
-        {list.items.map((item, i) => {
-          const isPurch = purchased[`${activeList}-${i}`] || item.purchased;
+        {listMetas.map(l => {
+          const id = l.list_id ?? l.id;
           return (
-            <div key={i} className={`li-row ${isPurch ? 'done' : ''}`} style={{ animationDelay: `${i * 60}ms` }}>
-              <button className={`li-check ${isPurch ? 'checked' : ''}`} onClick={() => togglePurchased(i)}>{isPurch && <CheckSvg />}</button>
-              <span className="li-icon">{item.icon}</span>
-              <div className="li-info"><span className="li-name">{item.product}</span><span className="li-detail">Qty: {item.qty} · {item.unit}</span></div>
-              <div className="li-price"><span className="li-bp">${(item.bestPrice * item.qty).toFixed(2)}</span><span className="li-bs" style={{ color: STORE_COLORS[item.bestStore] }}>{item.bestStore}</span></div>
-            </div>
+            <button
+              key={id}
+              className={`ltab2 ${activeListId === id ? 'active' : ''}`}
+              onClick={() => setActiveListId(id)}
+            >
+              {l.name}
+            </button>
           );
         })}
-        <button className="add-item-btn"><PlusSvg /> Add item from Compare</button>
+        <button className="ltab2 add-ltab" onClick={handleCreateList}><PlusSvg /> New List</button>
       </div>
+
+      {loadingDetail ? (
+        <div className="loading">Loading list...</div>
+      ) : (
+        <>
+          {cheapest && (
+            <div className="store-banner">
+              <div className="sb-best">
+                <span className="sb-label">Cheapest Store</span>
+                <span className="sb-store" style={{ color: STORE_COLORS[cheapest[0]] }}>{cheapest[0]}</span>
+                <span className="sb-price">${cheapest[1].toFixed(2)}</span>
+              </div>
+              <div className="sb-savings">
+                <span className="sb-save">Save ${savings}</span>
+                <span className="sb-vs">vs. {expensive[0]}</span>
+              </div>
+              <div className="sb-all">
+                {sortedStores.map(([s, t]) => (
+                  <div key={s} className="sb-row">
+                    <span className="sb-dot" style={{ background: STORE_COLORS[s] }} />
+                    <span className="sb-name">{s}</span>
+                    <span className="sb-total">${t.toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeDetail && (
+            <div className="list-card">
+              <div className="list-card-head">
+                <h3>{activeDetail.name}</h3>
+                <span className="list-cnt">{items.length} items</span>
+              </div>
+
+              {items.map((item, i) => {
+                const itemId = item.list_item_id ?? item.id;
+                const isPurchased = item.is_purchased ?? item.purchased ?? false;
+                const storeColor = item.best_store_color ?? STORE_COLORS[item.bestStore];
+                const storeName = item.best_store ?? item.bestStore;
+                const price = item.best_price ?? item.bestPrice;
+                const qty = item.quantity ?? item.qty;
+                const productName = item.product_name ?? item.product;
+
+                return (
+                  <div
+                    key={itemId ?? i}
+                    className={`li-row ${isPurchased ? 'done' : ''}`}
+                    style={{ animationDelay: `${i * 60}ms` }}
+                  >
+                    <button
+                      className={`li-check ${isPurchased ? 'checked' : ''}`}
+                      onClick={() => handleTogglePurchased(itemId, i, isPurchased)}
+                    >
+                      {isPurchased && <CheckSvg />}
+                    </button>
+                    <span className="li-icon">{item.icon ?? '🛒'}</span>
+                    <div className="li-info">
+                      <span className="li-name">{productName}</span>
+                      <span className="li-detail">Qty: {qty} · {item.unit}</span>
+                    </div>
+                    <div className="li-price">
+                      <span className="li-bp">${price ? (price * qty).toFixed(2) : '—'}</span>
+                      <span className="li-bs" style={{ color: storeColor }}>{storeName}</span>
+                    </div>
+                  </div>
+                );
+              })}
+
+              <button className="add-item-btn" onClick={() => setAddItemOpen(true)}>
+                <PlusSvg /> Add item from Compare
+              </button>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Add Item Modal */}
+      {addItemOpen && (
+        <div className="ocr-modal">
+          <div className="ocr-card">
+            <div className="ocr-head">
+              <h3>Add Item to List</h3>
+              <button className="ocr-close" onClick={() => setAddItemOpen(false)}>✕</button>
+            </div>
+            <div style={{ padding: '16px 24px 24px' }}>
+              <p style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 20 }}>
+                Go to Compare page to find a product, then use the <strong>+ List</strong> button to add it directly.
+              </p>
+              <button className="btn-primary" style={{ width: '100%' }} onClick={() => { setAddItemOpen(false); onNavigate('compare'); }}>
+                Go to Compare <ArrowR />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Receipt OCR */}
       <div className="ocr-section">
-        <button className="ocr-trigger" onClick={() => { setOcrOpen(true); setOcrStep(0); setOcrChecked({ 0: true, 1: true, 2: true }); }}>
+        <button className="ocr-trigger" onClick={handleOcrOpen}>
           <CameraSvg />
-          <div><strong>Upload Receipt</strong><p>Scan your receipt to mark items as purchased & update inventory</p></div>
+          <div>
+            <strong>Upload Receipt</strong>
+            <p>Scan your receipt to mark items as purchased & update inventory</p>
+          </div>
           <ArrowR />
         </button>
 
         {ocrOpen && (
           <div className="ocr-modal">
             <div className="ocr-card">
-              <div className="ocr-head"><h3>Receipt Scanner</h3><button className="ocr-close" onClick={() => setOcrOpen(false)}>✕</button></div>
+              <div className="ocr-head">
+                <h3>Receipt Scanner</h3>
+                <button className="ocr-close" onClick={() => setOcrOpen(false)}>✕</button>
+              </div>
 
               {ocrStep === 0 && (
                 <div className="ocr-upload">
-                  <div className="ocr-dropzone"><CameraSvg /><p>Drop receipt image here or tap to upload</p><span>Supports JPG, PNG, PDF</span></div>
-                  <button className="btn-primary ocr-go" onClick={() => setOcrStep(1)}>Scan Receipt <ArrowR /></button>
+                  <div className="ocr-dropzone">
+                    <CameraSvg />
+                    <p>Drop receipt image here or tap to upload</p>
+                    <span>Supports JPG, PNG, PDF</span>
+                  </div>
+                  <button className="btn-primary ocr-go" onClick={handleScan}>
+                    Scan Receipt <ArrowR />
+                  </button>
                 </div>
               )}
 
               {ocrStep === 1 && (
                 <div className="ocr-confirm">
                   <p className="ocr-confirm-title">Review detected items</p>
-                  <p className="ocr-confirm-sub">Check the items you want to import. Edit names, prices, and quantities as needed.</p>
+                  <p className="ocr-confirm-sub">Check the items you want to import.</p>
                   <div className="ocr-select-all">
                     <button className="ocr-sel-btn" onClick={() => {
                       const allChecked = Object.values(ocrChecked).every(v => v);
-                      const next = {}; ocrResults.forEach((_, i) => { next[i] = !allChecked; }); setOcrChecked(next);
-                    }}>{Object.values(ocrChecked).every(v => v) ? 'Deselect All' : 'Select All'}</button>
-                    <span className="ocr-sel-count">{Object.values(ocrChecked).filter(Boolean).length} of {ocrResults.length} selected</span>
+                      const next = {};
+                      ocrResults.forEach((_, i) => { next[i] = !allChecked; });
+                      setOcrChecked(next);
+                    }}>
+                      {Object.values(ocrChecked).every(v => v) ? 'Deselect All' : 'Select All'}
+                    </button>
+                    <span className="ocr-sel-count">
+                      {Object.values(ocrChecked).filter(Boolean).length} of {ocrResults.length} selected
+                    </span>
                   </div>
                   <div className="ocr-results">
                     {ocrResults.map((r, i) => (
                       <div key={i} className={`ocr-row ${r.matched ? '' : 'unmatched'} ${!ocrChecked[i] ? 'unchecked' : ''}`}>
-                        <button className={`ocr-check ${ocrChecked[i] ? 'checked' : ''}`} onClick={() => setOcrChecked(p => ({ ...p, [i]: !p[i] }))}>
+                        <button
+                          className={`ocr-check ${ocrChecked[i] ? 'checked' : ''}`}
+                          onClick={() => setOcrChecked(p => ({ ...p, [i]: !p[i] }))}
+                        >
                           {ocrChecked[i] && <CheckSvg />}
                         </button>
                         <div className="ocr-ri">
                           <div className="ocr-top-row">
                             <input className="ocr-input ocr-name-input" defaultValue={r.product} />
-                            {r.matched ? <span className="ocr-match">✓ Matched</span> : <span className="ocr-nomatch">? No match</span>}
+                            {r.matched
+                              ? <span className="ocr-match">✓ Matched</span>
+                              : <span className="ocr-nomatch">? No match</span>}
                           </div>
                           <div className="ocr-edit-row">
-                            <div className="ocr-field"><label className="ocr-field-label">Qty</label><input className="ocr-field-input" type="number" defaultValue={r.qty} /></div>
-                            <div className="ocr-field"><label className="ocr-field-label">Price</label><div className="ocr-price-input"><span className="ocr-dollar">$</span><input className="ocr-field-input" type="number" step="0.01" defaultValue={r.price.toFixed(2)} /></div></div>
-                            <div className="ocr-field"><label className="ocr-field-label">Unit Price</label><span className="ocr-unit-price">${(r.price / r.qty).toFixed(2)}/ea</span></div>
+                            <div className="ocr-field">
+                              <label className="ocr-field-label">Qty</label>
+                              <input className="ocr-field-input" type="number" defaultValue={r.qty} />
+                            </div>
+                            <div className="ocr-field">
+                              <label className="ocr-field-label">Price</label>
+                              <div className="ocr-price-input">
+                                <span className="ocr-dollar">$</span>
+                                <input className="ocr-field-input" type="number" step="0.01" defaultValue={r.price.toFixed(2)} />
+                              </div>
+                            </div>
+                            <div className="ocr-field">
+                              <label className="ocr-field-label">Unit Price</label>
+                              <span className="ocr-unit-price">${(r.price / r.qty).toFixed(2)}/ea</span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -119,8 +337,15 @@ export default function ShoppingListsPage({ onNavigate }) {
                   </div>
                   <div className="ocr-actions">
                     <button className="btn-secondary" onClick={() => setOcrStep(0)}>← Re-scan</button>
-                    <button className="btn-primary" disabled={Object.values(ocrChecked).filter(Boolean).length === 0} onClick={() => setOcrStep(2)}>
-                      Confirm & Save ({Object.values(ocrChecked).filter(Boolean).length} items) <CheckSvg />
+                    <button
+                      className="btn-primary"
+                      disabled={ocrSubmitting || Object.values(ocrChecked).filter(Boolean).length === 0}
+                      onClick={handleOcrConfirm}
+                    >
+                      {ocrSubmitting
+                        ? 'Saving...'
+                        : `Confirm & Save (${Object.values(ocrChecked).filter(Boolean).length} items)`}
+                      {!ocrSubmitting && <CheckSvg />}
                     </button>
                   </div>
                 </div>

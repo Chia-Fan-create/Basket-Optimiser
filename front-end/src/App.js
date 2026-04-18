@@ -19,6 +19,7 @@ export default function App() {
   const [page, setPage] = useState('landing');
   const [selectedIds, setSelectedIds] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
 
@@ -32,8 +33,16 @@ export default function App() {
     }, 250);
   }, []);
 
-  const handleLogin = () => {
+  const handleLogin = (user) => {
     setIsLoggedIn(true);
+    setCurrentUser(user);
+    navigate('dashboard');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+    setCurrentUser(null);
     navigate('dashboard');
   };
 
@@ -47,14 +56,35 @@ export default function App() {
     else navigate('landing');
   };
 
+  // ── DEV ONLY: quick login bypass ──────────────────────────
+  // Remove this block before production
+  const devLogin = () => handleLogin({ user_id: 1, email: 'demo@smartcart.com', display_name: 'Demo User' });
+  // ──────────────────────────────────────────────────────────
+
   return (
     <div className={`app-shell ${transitioning ? 'fading' : ''}`}>
       <Nav
         page={page}
         isLoggedIn={isLoggedIn}
+        currentUser={currentUser}
         onNavigate={navigate}
         onLogoClick={handleLogoClick}
+        onLogout={handleLogout}
       />
+
+      {/* DEV ONLY: quick login button — remove before production */}
+      {!isLoggedIn && page !== 'landing' && page !== 'login' && (
+        <div style={{ position: 'fixed', bottom: 20, right: 20, zIndex: 9999 }}>
+          <button onClick={devLogin} style={{
+            padding: '10px 18px', background: '#4A7169', color: 'white',
+            border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600,
+            cursor: 'pointer', fontFamily: 'Outfit, sans-serif',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.2)'
+          }}>
+            🔑 Dev Login
+          </button>
+        </div>
+      )}
 
       {page === 'landing' && <LandingPage onNext={() => navigate('select')} />}
       {page === 'select' && <SelectPage selectedIds={selectedIds} setSelectedIds={setSelectedIds} onNext={() => navigate('dashboard')} isEditing={isEditing} />}

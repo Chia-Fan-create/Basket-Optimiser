@@ -1,25 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import { LockSvg, ArrowR, SettingSvg } from '../components/Icons';
-import { PRODUCT_CATALOG, MOCK_COMPARISONS, MOCK_INVENTORY, STORE_COLORS } from '../data/mockData';
+import { STORE_COLORS } from '../data/mockData';
+import { getProducts, getCompareSummary, getInventory } from '../api';
 
 export default function DashboardPage({ selectedIds, isLoggedIn, onNavigate, onEditFavorites, onLogin }) {
   const [show, setShow] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [comparisons, setComparisons] = useState({});
+  const [inventory, setInventory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   useEffect(() => { setTimeout(() => setShow(true), 50); }, []);
 
+  useEffect(() => {
+    if (selectedIds.length === 0) { setLoading(false); return; }
+    Promise.all([
+      getProducts(),
+      getCompareSummary(selectedIds),
+      isLoggedIn ? getInventory() : Promise.resolve([]),
+    ])
+      .then(([productData, compData, inventoryData]) => {
+        setProducts(productData);
+        setComparisons(compData);
+        setInventory(inventoryData);
+      })
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
+  }, [selectedIds, isLoggedIn]);
+
+  if (loading) return <div className="loading">Loading...</div>;
+  if (error) return <div className="error">{error}</div>;
+
   const bestDeals = selectedIds.slice(0, 8).map(pid => {
-    const p = PRODUCT_CATALOG.find(x => x.id === pid);
-    const best = (MOCK_COMPARISONS[pid] || [])[0];
+    const p = products.find(x => x.id === pid);
+    const best = (comparisons[pid] || [])[0];
     return best ? { ...p, best } : null;
   }).filter(Boolean);
 
   const storeSummary = {};
-  selectedIds.forEach(pid => { const it = (MOCK_COMPARISONS[pid] || [])[0]; if (it) storeSummary[it.store] = (storeSummary[it.store] || 0) + 1; });
+  selectedIds.forEach(pid => { const it = (comparisons[pid] || [])[0]; if (it) storeSummary[it.store] = (storeSummary[it.store] || 0) + 1; });
   const topStore = Object.entries(storeSummary).sort((a, b) => b[1] - a[1])[0];
   const totalSavings = selectedIds.reduce((acc, pid) => {
-    const it = MOCK_COMPARISONS[pid] || [];
+    const it = comparisons[pid] || [];
     return it.length >= 2 ? acc + (it[it.length - 1].unitPrice - it[0].unitPrice) : acc;
   }, 0);
-  const lowInventory = MOCK_INVENTORY.filter(i => i.status === 'low');
+  const lowInventory = inventory.filter(i => i.status === 'low');
 
   return (
     <div className="page dash-page" style={{ opacity: show ? 1 : 0, transform: show ? 'none' : 'translateY(30px)' }}>

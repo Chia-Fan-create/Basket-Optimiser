@@ -12,15 +12,20 @@ import {
 // ============================================================
 // ⬇⬇⬇  CHANGE THIS TO `false` WHEN BACKEND IS READY  ⬇⬇⬇
 // ============================================================
-const USE_MOCK = true;
+const USE_MOCK = false;
 // ============================================================
 
 const BASE_URL = '/api';
 
-// Helper for real API calls
+// ── FIX: attach JWT token from localStorage on every request ──
 async function apiFetch(path, options = {}) {
+  const token = localStorage.getItem('token');
   const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options.headers },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      ...options.headers,
+    },
     ...options,
   });
   if (!res.ok) {
@@ -48,6 +53,7 @@ export async function getComparison(productId) {
   return apiFetch(`/compare/${productId}`);
 }
 
+// ── FIX: product_ids must be integers for the backend ──
 export async function getCompareSummary(productIds) {
   if (USE_MOCK) {
     const result = {};
@@ -56,7 +62,7 @@ export async function getCompareSummary(productIds) {
   }
   return apiFetch('/compare/summary', {
     method: 'POST',
-    body: JSON.stringify({ product_ids: productIds }),
+    body: JSON.stringify({ product_ids: productIds.map(Number) }),
   });
 }
 
@@ -88,7 +94,7 @@ export async function register(email, password, displayName) {
 
 // --- User Favorites ---
 export async function getFavorites() {
-  if (USE_MOCK) return { product_ids: [] }; // Will use local state
+  if (USE_MOCK) return { product_ids: [] };
   return apiFetch('/user/favorites');
 }
 
@@ -101,8 +107,10 @@ export async function updateFavorites(productIds) {
 }
 
 // --- Shopping Lists ---
+// ── FIX: getLists only returns list metadata (no items).
+//         getListDetail fetches the full list with items + store_totals. ──
 export async function getLists() {
-  if (USE_MOCK) return MOCK_LISTS;
+  if (USE_MOCK) return MOCK_LISTS.map(({ items, ...rest }) => rest); // strip items for consistency
   return apiFetch('/lists');
 }
 

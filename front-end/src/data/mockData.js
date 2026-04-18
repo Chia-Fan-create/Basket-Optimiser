@@ -90,14 +90,14 @@ export function generateTrendData(basePrice) {
 
 export const MOCK_LISTS = [
   { id: 1, name: "Weekly Groceries", items: [
-    { product: "Milk", icon: "🥛", qty: 2, bestStore: "Walmart", bestPrice: 3.42, unit: "per gallon", purchased: false },
-    { product: "Eggs", icon: "🥚", qty: 1, bestStore: "Walmart", bestPrice: 4.87, unit: "18 ct", purchased: true },
-    { product: "Chicken Breast", icon: "🍗", qty: 1, bestStore: "Walmart", bestPrice: 8.37, unit: "2.6 lb", purchased: false },
+    { id: 101, product: "Milk", icon: "🥛", qty: 2, bestStore: "Walmart", bestPrice: 3.42, unit: "per gallon", purchased: false },
+    { id: 102, product: "Eggs", icon: "🥚", qty: 1, bestStore: "Walmart", bestPrice: 4.87, unit: "18 ct", purchased: true },
+    { id: 103, product: "Chicken Breast", icon: "🍗", qty: 1, bestStore: "Walmart", bestPrice: 8.37, unit: "2.6 lb", purchased: false },
   ]},
   { id: 2, name: "Household Essentials", items: [
-    { product: "Toilet Paper", icon: "🧻", qty: 1, bestStore: "Walmart", bestPrice: 14.97, unit: "24 rolls", purchased: false },
-    { product: "Paper Towels", icon: "🧾", qty: 1, bestStore: "Target", bestPrice: 16.99, unit: "12 rolls", purchased: false },
-    { product: "Trash Bags", icon: "🗑️", qty: 1, bestStore: "Walmart", bestPrice: 7.97, unit: "80 bags", purchased: false },
+    { id: 201, product: "Toilet Paper", icon: "🧻", qty: 1, bestStore: "Walmart", bestPrice: 14.97, unit: "24 rolls", purchased: false },
+    { id: 202, product: "Paper Towels", icon: "🧾", qty: 1, bestStore: "Target", bestPrice: 16.99, unit: "12 rolls", purchased: false },
+    { id: 203, product: "Trash Bags", icon: "🗑️", qty: 1, bestStore: "Walmart", bestPrice: 7.97, unit: "80 bags", purchased: false },
   ]}
 ];
 

@@ -2,13 +2,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { CartIcon, ChevDown, UserSvg } from './Icons';
 
-export default function Nav({ page, isLoggedIn, onNavigate, onLogoClick }) {
+export default function Nav({ page, isLoggedIn, currentUser, onNavigate, onLogoClick, onLogout }) {
   const [shopOpen, setShopOpen] = useState(false);
-  const dropRef = useRef(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const shopRef = useRef(null);
+  const profileRef = useRef(null);
   const showNav = page !== 'landing' && page !== 'select';
 
   useEffect(() => {
-    const close = (e) => { if (dropRef.current && !dropRef.current.contains(e.target)) setShopOpen(false); };
+    const close = (e) => {
+      if (shopRef.current && !shopRef.current.contains(e.target)) setShopOpen(false);
+      if (profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false);
+    };
     document.addEventListener('mousedown', close);
     return () => document.removeEventListener('mousedown', close);
   }, []);
@@ -28,7 +33,8 @@ export default function Nav({ page, isLoggedIn, onNavigate, onLogoClick }) {
       {showNav && (
         <div className="nav-links">
           <button className={`nav-link ${page === 'dashboard' ? 'active' : ''}`} onClick={() => onNavigate('dashboard')}>Dashboard</button>
-          <div className="nav-dropdown" ref={dropRef}>
+
+          <div className="nav-dropdown" ref={shopRef}>
             <button className={`nav-link nav-drop-trigger ${isShopPage ? 'active' : ''}`} onClick={() => setShopOpen(!shopOpen)}>
               Shopping <ChevDown />
             </button>
@@ -43,11 +49,36 @@ export default function Nav({ page, isLoggedIn, onNavigate, onLogoClick }) {
               </div>
             )}
           </div>
+
           {isLoggedIn && (
             <button className={`nav-link ${page === 'insight' ? 'active' : ''}`} onClick={() => onNavigate('insight')}>Insight</button>
           )}
+
           {isLoggedIn ? (
-            <button className="nav-link nav-profile" onClick={() => onNavigate('dashboard')}><UserSvg /></button>
+            <div className="nav-dropdown" ref={profileRef}>
+              <button className="nav-link nav-profile" onClick={() => setProfileOpen(!profileOpen)}>
+                <UserSvg />
+                {currentUser?.display_name && <span className="nav-username">{currentUser.display_name}</span>}
+                <ChevDown />
+              </button>
+              {profileOpen && (
+                <div className="nav-drop-menu nav-profile-menu">
+                  {currentUser?.display_name && (
+                    <div className="nav-profile-header">
+                      <span className="nav-profile-name">{currentUser.display_name}</span>
+                      <span className="nav-profile-email">{currentUser.email}</span>
+                    </div>
+                  )}
+                  <button className="nav-drop-item" onClick={() => { onNavigate('dashboard'); setProfileOpen(false); }}>
+                    Dashboard
+                  </button>
+                  <div className="nav-drop-divider" />
+                  <button className="nav-drop-item nav-logout" onClick={() => { onLogout(); setProfileOpen(false); }}>
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <button className="nav-link nav-login" onClick={() => onNavigate('login')}>Sign In</button>
           )}
@@ -56,3 +87,13 @@ export default function Nav({ page, isLoggedIn, onNavigate, onLogoClick }) {
     </nav>
   );
 }
+
+// Add these styles to global.css:
+// .nav-username { font-size: 12px; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+// .nav-profile-menu { min-width: 200px; }
+// .nav-profile-header { padding: 12px 16px 8px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 4px; }
+// .nav-profile-name { display: block; color: #F5F2EA; font-weight: 600; font-size: 14px; }
+// .nav-profile-email { display: block; color: rgba(245,242,234,0.5); font-size: 12px; margin-top: 2px; }
+// .nav-drop-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 4px 8px; }
+// .nav-logout { color: #FF6B6B !important; }
+// .nav-logout:hover { background: rgba(255,107,107,0.15) !important; }
