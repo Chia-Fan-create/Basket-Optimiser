@@ -24,8 +24,10 @@ export default function InventoryPage({ onNavigate }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [addOpen, setAddOpen] = useState(false);
-  const [addForm, setAddForm] = useState({ product_id: '', qty: '', consumptionDays: '' });
+  const [addForm, setAddForm] = useState({ product_id: '', product_name: '', qty: '', consumptionDays: '' });
   const [addSubmitting, setAddSubmitting] = useState(false);
+  const [addSearch, setAddSearch] = useState('');
+  const [addStep, setAddStep] = useState('pick'); // 'pick' | 'form'
   const [products, setProducts] = useState([]);
 
   useEffect(() => { setTimeout(() => setShow(true), 50); }, []);
@@ -126,42 +128,82 @@ export default function InventoryPage({ onNavigate }) {
         )}
       </div>
 
-      <button className="add-item-btn" onClick={() => setAddOpen(true)}><PlusSvg /> Add item to inventory</button>
+      <button className="add-item-btn" onClick={() => { setAddOpen(true); setAddStep('pick'); setAddSearch(''); }}><PlusSvg /> Add item to inventory</button>
 
       {addOpen && (
         <div className="ocr-modal">
           <div className="ocr-card">
             <div className="ocr-head">
-              <h3>Add Inventory Item</h3>
+              <h3>{addStep === 'pick' ? 'Add Inventory Item' : addForm.product_name}</h3>
               <button className="ocr-close" onClick={() => setAddOpen(false)}>✕</button>
             </div>
-            <div style={{ padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div className="fg">
-                <label className="fl">Product</label>
-                <select className="fi" value={addForm.product_id} onChange={e => setAddForm(p => ({ ...p, product_id: e.target.value }))}>
-                  <option value="">Select product...</option>
-                  {products.map(p => (
-                    <option key={p.id ?? p.product_id} value={p.id ?? p.product_id}>{p.icon} {p.name}</option>
-                  ))}
-                </select>
+
+            {addStep === 'pick' && (
+              <div style={{ padding: '12px 24px 24px' }}>
+                <input
+                  autoFocus
+                  placeholder="Search products..."
+                  value={addSearch}
+                  onChange={e => setAddSearch(e.target.value)}
+                  style={{ width: '100%', marginBottom: 12, padding: '10px 14px', border: '1px solid var(--sand)', borderRadius: 10, fontSize: 14, fontFamily: 'Outfit, sans-serif', boxSizing: 'border-box' }}
+                />
+                <div style={{ maxHeight: 360, overflowY: 'auto' }}>
+                  {products
+                    .filter(p => !addSearch || p.name.toLowerCase().includes(addSearch.toLowerCase()))
+                    .map(p => (
+                      <div
+                        key={p.id ?? p.product_id}
+                        onClick={() => {
+                          const pid = p.id ?? p.product_id;
+                          const defaultDays = p.default_consumption_days_per_unit || '';
+                          setAddForm({ product_id: pid, product_name: p.name, qty: '1', consumptionDays: String(defaultDays) });
+                          setAddStep('form');
+                        }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 8px', cursor: 'pointer', borderBottom: '1px solid #f0ede4', borderRadius: 8 }}
+                        onMouseEnter={e => e.currentTarget.style.background = '#f9f7f0'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                      >
+                        <span style={{ fontFamily: 'Outfit, sans-serif', fontSize: 14, color: 'var(--brown-deep)', flex: 1 }}>{p.name}</span>
+                        {p.default_consumption_days_per_unit && (
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{p.default_consumption_days_per_unit}d/unit</span>
+                        )}
+                        <svg style={{ opacity: 0.3 }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 18 6-6-6-6"/></svg>
+                      </div>
+                    ))
+                  }
+                </div>
               </div>
-              <div className="fg">
-                <label className="fl">Quantity</label>
-                <input className="fi" type="number" placeholder="e.g. 2" value={addForm.qty} onChange={e => setAddForm(p => ({ ...p, qty: e.target.value }))} />
+            )}
+
+            {addStep === 'form' && (
+              <div style={{ padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <button
+                  onClick={() => setAddStep('pick')}
+                  style={{ background: 'none', border: 'none', color: 'var(--green)', cursor: 'pointer', fontSize: 13, fontFamily: 'Outfit, sans-serif', padding: 0, textAlign: 'left' }}
+                >← Change product</button>
+                <div className="fg">
+                  <label className="fl">Quantity</label>
+                  <input className="fi" type="number" min="1" placeholder="e.g. 2" value={addForm.qty} onChange={e => setAddForm(p => ({ ...p, qty: e.target.value }))} />
+                </div>
+                <div className="fg">
+                  <label className="fl">Days per unit until empty</label>
+                  <input className="fi" type="number" min="1" placeholder="e.g. 7 for a week" value={addForm.consumptionDays} onChange={e => setAddForm(p => ({ ...p, consumptionDays: e.target.value }))} />
+                  {addForm.consumptionDays && addForm.qty && (
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+                      Total: ~{parseInt(addForm.consumptionDays) * parseInt(addForm.qty) || 0} days until empty
+                    </span>
+                  )}
+                </div>
+                <button
+                  className="btn-primary"
+                  style={{ width: '100%', marginTop: 4 }}
+                  disabled={addSubmitting || !addForm.qty || !addForm.consumptionDays}
+                  onClick={handleAddItem}
+                >
+                  {addSubmitting ? 'Adding...' : 'Add to Inventory'}
+                </button>
               </div>
-              <div className="fg">
-                <label className="fl">Days Until Empty</label>
-                <input className="fi" type="number" placeholder="e.g. 7 for a week" value={addForm.consumptionDays} onChange={e => setAddForm(p => ({ ...p, consumptionDays: e.target.value }))} />
-              </div>
-              <button
-                className="btn-primary"
-                style={{ width: '100%', marginTop: 4 }}
-                disabled={addSubmitting || !addForm.product_id || !addForm.qty || !addForm.consumptionDays}
-                onClick={handleAddItem}
-              >
-                {addSubmitting ? 'Adding...' : 'Add to Inventory'}
-              </button>
-            </div>
+            )}
           </div>
         </div>
       )}
