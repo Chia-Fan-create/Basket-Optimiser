@@ -1,13 +1,29 @@
 -- ============================================================
--- Basket Optimiser — MySQL DDL
+-- Smart Cart — MySQL DDL (v3)
 -- INFSCI 2710 Final Project
 -- Team: Johnson Jao, Fran Hsu, Allen Jung
 -- ============================================================
 -- Engine: InnoDB | Charset: utf8mb4 | Naming: snake_case
 -- ============================================================
+-- Changes from v1 (professor feedback + UC4 scope change):
+--   F1: todos.alert_id (FK → price_alerts)
+--   F2: inventory_items.consumption_days → consumption_days_per_unit
+--   F3: products.default_consumption_days_per_unit
+--   F4: inventory_items UNIQUE(user_id, product_id)
+--   F5: todos.snapshot_price, todos.compared_price
+--   F6: New table: scrape_failures
+--   F7: New table: seasonal_pattern_years
+--   UC4: todos.todo_type ENUM changed to ('buy_now') only
+-- Changes from v2 (API spec gap resolution):
+--   G2: retailers.color
+--   G4: New table: user_favorites
+--   G5: inventory_items.is_dismissed
+-- ============================================================
 
 -- Drop tables in reverse dependency order (if re-running)
+DROP TABLE IF EXISTS seasonal_pattern_years;
 DROP TABLE IF EXISTS seasonal_patterns;
+DROP TABLE IF EXISTS scrape_failures;
 DROP TABLE IF EXISTS price_records;
 DROP TABLE IF EXISTS scrape_jobs;
 DROP TABLE IF EXISTS inventory_items;
@@ -16,6 +32,7 @@ DROP TABLE IF EXISTS price_alerts;
 DROP TABLE IF EXISTS list_items;
 DROP TABLE IF EXISTS shopping_lists;
 DROP TABLE IF EXISTS product_variants;
+DROP TABLE IF EXISTS user_favorites;
 DROP TABLE IF EXISTS products;
 DROP TABLE IF EXISTS units;
 DROP TABLE IF EXISTS brands;
@@ -44,7 +61,8 @@ CREATE TABLE retailers (
     retailer_id    INT            AUTO_INCREMENT PRIMARY KEY,
     name           VARCHAR(100)   NOT NULL UNIQUE,
     base_url       VARCHAR(255),
-    logo_url       VARCHAR(255)
+    logo_url       VARCHAR(255),
+    color          VARCHAR(7)                                      -- [G2] Hex color for UI display (e.g., '#FF9900')
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
@@ -80,6 +98,7 @@ CREATE TABLE units (
 
 -- ============================================================
 -- 6. products
+-- [F3] Added default_consumption_days_per_unit
 -- ============================================================
 CREATE TABLE products (
     product_id     INT            AUTO_INCREMENT PRIMARY KEY,
@@ -89,6 +108,7 @@ CREATE TABLE products (
     brand_id       INT,
     category_id    INT,
     image_url      VARCHAR(255),
+    default_consumption_days_per_unit INT,  -- [F3] Shared baseline for inventory consumption rate
     created_at     DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at     DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
@@ -101,15 +121,36 @@ CREATE TABLE products (
         ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Index: frequently filtered by category
+-- Index: browse by category (UC1)
 CREATE INDEX idx_products_category ON products(category_id);
 
--- Index: frequently filtered by brand
+-- Index: browse by brand (UC1)
 CREATE INDEX idx_products_brand ON products(brand_id);
 
 
 -- ============================================================
--- 7. product_variants
+-- 7. user_favorites [NEW — G4]
+-- Junction table: users ↔ products (M:N favorite relationship)
+-- ============================================================
+CREATE TABLE user_favorites (
+    user_id        INT            NOT NULL,
+    product_id     INT            NOT NULL,
+    created_at     DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (user_id, product_id),
+
+    CONSTRAINT fk_favorites_user
+        FOREIGN KEY (user_id) REFERENCES users(user_id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+
+    CONSTRAINT fk_favorites_product
+        FOREIGN KEY (product_id) REFERENCES products(product_id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ============================================================
+-- 8. product_variants
 -- ============================================================
 CREATE TABLE product_variants (
     variant_id     INT            AUTO_INCREMENT PRIMARY KEY,
@@ -135,23 +176,20 @@ CREATE TABLE product_variants (
         ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Index: look up all variants for a product
+-- Index: find all variants for a product (UC1 comparison view)
 CREATE INDEX idx_variants_product ON product_variants(product_id);
 
--- Index: look up all variants at a retailer
+-- Index: find all variants at a retailer
 CREATE INDEX idx_variants_retailer ON product_variants(retailer_id);
-
--- Index: composite for cross-retailer comparison queries
-CREATE INDEX idx_variants_product_retailer ON product_variants(product_id, retailer_id);
 
 
 -- ============================================================
--- 8. scrape_jobs
+-- 9. scrape_jobs
 -- ============================================================
 CREATE TABLE scrape_jobs (
     job_id         INT            AUTO_INCREMENT PRIMARY KEY,
     retailer_id    INT            NOT NULL,
-    status         ENUM('running', 'success', 'failed') NOT NULL DEFAULT 'running',
+    status         ENUM('running', 'success', 'failed') NOT NULL,
     started_at     DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     completed_at   DATETIME,
     items_scraped  INT            NOT NULL DEFAULT 0,
@@ -162,19 +200,19 @@ CREATE TABLE scrape_jobs (
         ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Index: find jobs by retailer and time
-CREATE INDEX idx_scrape_jobs_retailer_time ON scrape_jobs(retailer_id, started_at);
+-- Index: find jobs by retailer and status
+CREATE INDEX idx_scrape_jobs_retailer_status ON scrape_jobs(retailer_id, status);
 
 
 -- ============================================================
--- 9. price_records
+-- 10. price_records (Time-Series Fact Table)
 -- ============================================================
 CREATE TABLE price_records (
     record_id      INT            AUTO_INCREMENT PRIMARY KEY,
     variant_id     INT            NOT NULL,
     price          DECIMAL(10,2)  NOT NULL,
     unit_price     DECIMAL(10,4)  NOT NULL,
-    scraped_at     DATETIME       NOT NULL,
+    scraped_at     DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     scrape_job_id  INT            NOT NULL,
 
     CONSTRAINT fk_price_records_variant
@@ -197,7 +235,7 @@ CREATE INDEX idx_price_records_scraped_at ON price_records(scraped_at);
 
 
 -- ============================================================
--- 10. shopping_lists
+-- 11. shopping_lists
 -- ============================================================
 CREATE TABLE shopping_lists (
     list_id        INT            AUTO_INCREMENT PRIMARY KEY,
@@ -217,7 +255,7 @@ CREATE INDEX idx_shopping_lists_user ON shopping_lists(user_id);
 
 
 -- ============================================================
--- 11. list_items (Junction Table)
+-- 12. list_items (Junction Table)
 -- ============================================================
 CREATE TABLE list_items (
     list_item_id   INT            AUTO_INCREMENT PRIMARY KEY,
@@ -248,7 +286,7 @@ CREATE INDEX idx_list_items_purchased ON list_items(is_purchased, purchased_at);
 
 
 -- ============================================================
--- 12. price_alerts
+-- 13. price_alerts
 -- ============================================================
 CREATE TABLE price_alerts (
     alert_id       INT            AUTO_INCREMENT PRIMARY KEY,
@@ -276,14 +314,20 @@ CREATE INDEX idx_price_alerts_user ON price_alerts(user_id);
 
 
 -- ============================================================
--- 13. todos
+-- 14. todos
+-- [F1] Added alert_id (FK → price_alerts)
+-- [F5] Added snapshot_price, compared_price
+-- [UC4] todo_type ENUM changed to ('buy_now') only
 -- ============================================================
 CREATE TABLE todos (
     todo_id        INT            AUTO_INCREMENT PRIMARY KEY,
     user_id        INT            NOT NULL,
     variant_id     INT            NOT NULL,
-    todo_type      ENUM('buy_now', 'return_rebuy') NOT NULL,
+    alert_id       INT,                                           -- [F1] NULL = system-generated, non-null = triggered by this alert
+    todo_type      ENUM('buy_now') NOT NULL,                      -- [UC4] return_rebuy removed
     message        TEXT           NOT NULL,
+    snapshot_price DECIMAL(10,2)  NOT NULL,                       -- [F5] Actual price at todo creation time
+    compared_price DECIMAL(10,2)  NOT NULL,                       -- [F5] Baseline price for comparison
     is_done        BOOLEAN        NOT NULL DEFAULT FALSE,
     created_at     DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     completed_at   DATETIME,
@@ -294,25 +338,35 @@ CREATE TABLE todos (
 
     CONSTRAINT fk_todos_variant
         FOREIGN KEY (variant_id) REFERENCES product_variants(variant_id)
-        ON DELETE RESTRICT ON UPDATE CASCADE
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+
+    CONSTRAINT fk_todos_alert                                     -- [F1]
+        FOREIGN KEY (alert_id) REFERENCES price_alerts(alert_id)
+        ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Index: find pending todos for a user
 CREATE INDEX idx_todos_user_pending ON todos(user_id, is_done);
 
+-- Index: find todos triggered by a specific alert [F1]
+CREATE INDEX idx_todos_alert ON todos(alert_id);
+
 
 -- ============================================================
--- 14. inventory_items
+-- 15. inventory_items
+-- [F2] consumption_days → consumption_days_per_unit
+-- [F4] Added UNIQUE(user_id, product_id)
 -- ============================================================
 CREATE TABLE inventory_items (
-    inventory_id     INT            AUTO_INCREMENT PRIMARY KEY,
-    user_id          INT            NOT NULL,
-    product_id       INT            NOT NULL,
-    quantity         DECIMAL(10,2)  NOT NULL,
-    purchase_date    DATE           NOT NULL,
-    consumption_days INT            NOT NULL,
-    depletion_date   DATE           NOT NULL,
-    updated_at       DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    inventory_id   INT            AUTO_INCREMENT PRIMARY KEY,
+    user_id        INT            NOT NULL,
+    product_id     INT            NOT NULL,
+    quantity       DECIMAL(10,2)  NOT NULL,
+    purchase_date  DATE           NOT NULL,
+    consumption_days_per_unit INT NOT NULL,                        -- [F2] Days to consume ONE unit
+    depletion_date DATE           NOT NULL,                        -- [F2] = purchase_date + (consumption_days_per_unit × quantity)
+    is_dismissed   BOOLEAN        NOT NULL DEFAULT FALSE,          -- [G5] User dismissed the depletion reminder but keeps the record
+    updated_at     DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_inventory_user
         FOREIGN KEY (user_id) REFERENCES users(user_id)
@@ -320,7 +374,10 @@ CREATE TABLE inventory_items (
 
     CONSTRAINT fk_inventory_product
         FOREIGN KEY (product_id) REFERENCES products(product_id)
-        ON DELETE RESTRICT ON UPDATE CASCADE
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+
+    CONSTRAINT uq_inventory_user_product                          -- [F4]
+        UNIQUE (user_id, product_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Index: find items running low for a user (UC6 core query)
@@ -328,7 +385,7 @@ CREATE INDEX idx_inventory_user_depletion ON inventory_items(user_id, depletion_
 
 
 -- ============================================================
--- 15. seasonal_patterns
+-- 16. seasonal_patterns
 -- ============================================================
 CREATE TABLE seasonal_patterns (
     pattern_id       INT            AUTO_INCREMENT PRIMARY KEY,
@@ -358,73 +415,123 @@ CREATE INDEX idx_seasonal_product ON seasonal_patterns(product_id);
 
 
 -- ============================================================
+-- 17. scrape_failures [NEW — F6]
+-- Per-variant failure tracking for data quality monitoring
+-- ============================================================
+CREATE TABLE scrape_failures (
+    failure_id     INT            AUTO_INCREMENT PRIMARY KEY,
+    scrape_job_id  INT            NOT NULL,
+    variant_id     INT            NOT NULL,
+    error_message  TEXT,
+    failed_at      DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_scrape_failures_job
+        FOREIGN KEY (scrape_job_id) REFERENCES scrape_jobs(job_id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+
+    CONSTRAINT fk_scrape_failures_variant
+        FOREIGN KEY (variant_id) REFERENCES product_variants(variant_id)
+        ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Index: find failure history for a specific variant
+CREATE INDEX idx_scrape_failures_variant ON scrape_failures(variant_id);
+
+-- Index: find all failures in a specific job
+CREATE INDEX idx_scrape_failures_job ON scrape_failures(scrape_job_id);
+
+
+-- ============================================================
+-- 18. seasonal_pattern_years [NEW — F7]
+-- Year-by-year evidence for seasonal pattern confidence scores
+-- ============================================================
+CREATE TABLE seasonal_pattern_years (
+    pattern_year_id  INT            AUTO_INCREMENT PRIMARY KEY,
+    pattern_id       INT            NOT NULL,
+    year             INT            NOT NULL,
+    observed_discount DECIMAL(5,2)  NOT NULL,
+    observed_at      DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_pattern_years_pattern
+        FOREIGN KEY (pattern_id) REFERENCES seasonal_patterns(pattern_id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+
+    CONSTRAINT uq_pattern_year
+        UNIQUE (pattern_id, year)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ============================================================
 -- VIEWS
 -- ============================================================
 
--- View 1: Cheapest current unit price per product across all retailers
--- Used by: UC1 (comparison), UC2 (shopping list cost estimation)
+-- View 1: Cheapest unit price per product across all retailers (UC1, UC2)
+-- Returns the most recent unit_price for each variant, so the UI
+-- can highlight the best deal per product.
 CREATE OR REPLACE VIEW v_cheapest_unit_price AS
 SELECT
     p.product_id,
-    p.name AS product_name,
-    c.name AS category_name,
-    b.name AS brand_name,
-    r.name AS retailer_name,
+    p.name          AS product_name,
+    c.name          AS category_name,
+    b.name          AS brand_name,
+    r.name          AS retailer_name,
     pv.variant_id,
     pv.pack_size,
-    u.abbreviation AS unit,
+    u.abbreviation  AS unit_abbr,
     pv.unit_quantity,
     pr.price,
     pr.unit_price,
     pr.scraped_at
-FROM price_records pr
-INNER JOIN (
-    -- Subquery: get the latest price record for each variant
-    SELECT variant_id, MAX(record_id) AS latest_record_id
-    FROM price_records
-    GROUP BY variant_id
-) latest ON pr.record_id = latest.latest_record_id
-INNER JOIN product_variants pv ON pr.variant_id = pv.variant_id
-INNER JOIN products p ON pv.product_id = p.product_id
-INNER JOIN retailers r ON pv.retailer_id = r.retailer_id
-INNER JOIN units u ON pv.unit_id = u.unit_id
-LEFT JOIN categories c ON p.category_id = c.category_id
-LEFT JOIN brands b ON p.brand_id = b.brand_id
-ORDER BY p.product_id, pr.unit_price ASC;
+FROM products p
+JOIN product_variants pv ON p.product_id = pv.product_id
+JOIN retailers r         ON pv.retailer_id = r.retailer_id
+JOIN units u             ON pv.unit_id = u.unit_id
+LEFT JOIN brands b       ON p.brand_id = b.brand_id
+LEFT JOIN categories c   ON p.category_id = c.category_id
+JOIN price_records pr    ON pv.variant_id = pr.variant_id
+WHERE pr.record_id = (
+    SELECT pr2.record_id
+    FROM price_records pr2
+    WHERE pr2.variant_id = pv.variant_id
+    ORDER BY pr2.scraped_at DESC
+    LIMIT 1
+);
 
 
--- View 2: Monthly spending by category per user
--- Used by: UC5 (spending analytics dashboard)
+-- View 2: Monthly spending by category per user (UC5)
+-- Aggregates purchased list_items by month and category for
+-- the analytics dashboard.
 CREATE OR REPLACE VIEW v_monthly_spending_by_category AS
 SELECT
     sl.user_id,
     YEAR(li.purchased_at)  AS purchase_year,
     MONTH(li.purchased_at) AS purchase_month,
-    c.name AS category_name,
-    COUNT(li.list_item_id) AS items_bought,
+    c.name                 AS category_name,
+    COUNT(*)               AS items_bought,
     SUM(pr.price * li.quantity) AS total_spent
 FROM list_items li
-INNER JOIN shopping_lists sl ON li.list_id = sl.list_id
-INNER JOIN product_variants pv ON li.variant_id = pv.variant_id
-INNER JOIN products p ON pv.product_id = p.product_id
-LEFT JOIN categories c ON p.category_id = c.category_id
-INNER JOIN (
-    -- Get the price closest to purchase time for accurate spending calc
-    SELECT variant_id, MAX(record_id) AS latest_record_id
-    FROM price_records
-    GROUP BY variant_id
-) latest ON pv.variant_id = latest.variant_id
-INNER JOIN price_records pr ON pr.record_id = latest.latest_record_id
+JOIN shopping_lists sl   ON li.list_id = sl.list_id
+JOIN product_variants pv ON li.variant_id = pv.variant_id
+JOIN products p          ON pv.product_id = p.product_id
+LEFT JOIN categories c   ON p.category_id = c.category_id
+JOIN price_records pr    ON pv.variant_id = pr.variant_id
 WHERE li.is_purchased = TRUE
   AND li.purchased_at IS NOT NULL
-GROUP BY sl.user_id, purchase_year, purchase_month, c.name
-ORDER BY sl.user_id, purchase_year DESC, purchase_month DESC, total_spent DESC;
+  AND pr.record_id = (
+      SELECT pr2.record_id
+      FROM price_records pr2
+      WHERE pr2.variant_id = pv.variant_id
+        AND pr2.scraped_at <= li.purchased_at
+      ORDER BY pr2.scraped_at DESC
+      LIMIT 1
+  )
+GROUP BY sl.user_id, purchase_year, purchase_month, c.name;
 
 
 -- ============================================================
--- TRANSACTION EXAMPLE (for reference — execute in application)
+-- TRANSACTION EXAMPLE (for application layer reference)
 -- ============================================================
--- Scenario: Add an item to a shopping list and update the estimated total.
+-- Use case: UC2 — Add item to shopping list + update estimated total
 --           If either operation fails, ROLLBACK both.
 --
 -- START TRANSACTION;
