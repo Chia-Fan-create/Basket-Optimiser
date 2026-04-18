@@ -11,6 +11,7 @@ from routes.lists import lists_bp
 from routes.inventory import inventory_bp
 from routes.alerts import alerts_bp
 from routes.insight import insight_bp
+from routes.receipts import receipts_bp
 
 app = Flask(__name__)
 CORS(app)
@@ -26,6 +27,7 @@ app.register_blueprint(lists_bp)
 app.register_blueprint(inventory_bp)
 app.register_blueprint(alerts_bp)
 app.register_blueprint(insight_bp)
+app.register_blueprint(receipts_bp)
 
 
 @app.errorhandler(404)
