@@ -13,3 +13,8 @@ VALUES (%s, %s, %s);
 SELECT user_id, email, password_hash, display_name
 FROM users
 WHERE email = %s;
+
+-- name: get_user_by_id
+SELECT user_id, email, display_name
+FROM users
+WHERE user_id = %s;

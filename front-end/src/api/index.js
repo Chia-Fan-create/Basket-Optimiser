@@ -17,6 +17,10 @@ const USE_MOCK = false;
 
 const BASE_URL = '/api';
 
+// Callback set by App.js — called when token expires so UI can log out
+let _onAuthExpired = null;
+export function setOnAuthExpired(cb) { _onAuthExpired = cb; }
+
 // ── FIX: attach JWT token from localStorage on every request ──
 async function apiFetch(path, options = {}) {
   const token = localStorage.getItem('token');
@@ -29,6 +33,11 @@ async function apiFetch(path, options = {}) {
     ...options,
   });
   if (!res.ok) {
+    // Token expired or invalid — clear it and notify App
+    if (res.status === 401 && token && path !== '/auth/login' && path !== '/auth/register') {
+      localStorage.removeItem('token');
+      if (_onAuthExpired) _onAuthExpired();
+    }
     const err = await res.json().catch(() => ({ message: 'Request failed' }));
     throw new Error(err.message || `HTTP ${res.status}`);
   }
@@ -90,6 +99,11 @@ export async function register(email, password, displayName) {
     method: 'POST',
     body: JSON.stringify({ email, password, display_name: displayName }),
   });
+}
+
+// Validate existing token and return user info (used to restore session on refresh)
+export async function getMe() {
+  return apiFetch('/auth/me');
 }
 
 // --- User Favorites ---

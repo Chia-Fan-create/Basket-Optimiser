@@ -7,7 +7,7 @@ from flask import request, jsonify, g
 
 from config import JWT_SECRET
 
-TOKEN_EXPIRY_HOURS = 24
+TOKEN_EXPIRY_HOURS = 3
 
 
 def hash_password(password: str) -> str:

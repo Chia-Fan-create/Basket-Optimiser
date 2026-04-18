@@ -1,6 +1,6 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, g
 from db import get_connection
-from auth import hash_password, check_password, generate_token
+from auth import hash_password, check_password, generate_token, require_auth
 from sql_loader import get_query
 
 auth_bp = Blueprint("auth", __name__)
@@ -61,6 +61,26 @@ def login():
                 "display_name": user["display_name"],
             },
             "token": token,
+        })
+    finally:
+        conn.close()
+
+
+@auth_bp.route("/api/auth/me")
+@require_auth
+def me():
+    """Validate token and return current user info. Used to restore session on refresh."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(get_query("auth", "get_user_by_id"), (g.user_id,))
+            user = cur.fetchone()
+        if not user:
+            return jsonify({"error": True, "message": "User not found"}), 404
+        return jsonify({
+            "user_id": user["user_id"],
+            "email": user["email"],
+            "display_name": user["display_name"],
         })
     finally:
         conn.close()
