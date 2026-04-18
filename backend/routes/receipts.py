@@ -104,14 +104,17 @@ def process_receipt():
                         (g.user_id, product_id),
                     )
                     existing = cur.fetchone()
-                    depletion = today + timedelta(days=default_cpd * qty)
 
                     if existing:
+                        old_qty = float(existing["quantity"])
+                        new_total = old_qty + qty
+                        depletion = today + timedelta(days=default_cpd * int(new_total))
                         cur.execute(
                             get_query("receipts", "update_inventory"),
                             (qty, today, default_cpd, depletion, existing["inventory_id"]),
                         )
                     else:
+                        depletion = today + timedelta(days=default_cpd * qty)
                         cur.execute(
                             get_query("receipts", "insert_inventory"),
                             (g.user_id, product_id, qty, today, default_cpd, depletion),

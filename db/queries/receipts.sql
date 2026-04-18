@@ -40,8 +40,9 @@ FROM inventory_items
 WHERE user_id = %s AND product_id = %s;
 
 -- name: update_inventory
+-- Add to existing quantity
 UPDATE inventory_items
-SET quantity = %s, purchase_date = %s,
+SET quantity = quantity + %s, purchase_date = %s,
     consumption_days_per_unit = %s, depletion_date = %s, is_dismissed = FALSE
 WHERE inventory_id = %s;
 
