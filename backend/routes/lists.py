@@ -174,6 +174,63 @@ def add_list_item(list_id):
         conn.close()
 
 
+@lists_bp.route("/api/lists/<int:list_id>/clear", methods=["POST"])
+@require_auth
+def clear_purchased(list_id):
+    """Remove all purchased items from a list and reset estimated_total."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(get_query("lists", "verify_ownership"), (list_id, g.user_id))
+            if not cur.fetchone():
+                return jsonify({"error": True, "message": "List not found"}), 404
+
+            cur.execute(get_query("lists", "clear_purchased_items"), (list_id,))
+            deleted = cur.rowcount
+
+            cur.execute(get_query("lists", "reset_estimated_total"), (list_id,))
+
+        return jsonify({"success": True, "items_removed": deleted})
+    finally:
+        conn.close()
+
+
+@lists_bp.route("/api/lists/<int:list_id>/items/<int:item_id>", methods=["DELETE"])
+@require_auth
+def delete_list_item(list_id, item_id):
+    """Remove an item from a list and update estimated_total."""
+    conn = get_connection()
+    try:
+        conn.autocommit(False)
+        try:
+            with conn.cursor() as cur:
+                cur.execute(get_query("lists", "verify_item_ownership"), (item_id, list_id, g.user_id))
+                if not cur.fetchone():
+                    conn.rollback()
+                    return jsonify({"error": True, "message": "Item not found"}), 404
+
+                cur.execute(get_query("lists", "get_item_price"), (item_id,))
+                row = cur.fetchone()
+                item_total = float(row["item_total"]) if row else 0
+
+                cur.execute(get_query("lists", "delete_item"), (item_id,))
+
+                if item_total > 0:
+                    cur.execute(get_query("lists", "subtract_estimated_total"), (item_total, list_id))
+
+                cur.execute(get_query("lists", "get_estimated_total"), (list_id,))
+                new_total = float(cur.fetchone()["estimated_total"])
+
+            conn.commit()
+            return jsonify({"success": True, "estimated_total": new_total})
+        except Exception:
+            conn.rollback()
+            raise
+    finally:
+        conn.autocommit(True)
+        conn.close()
+
+
 @lists_bp.route("/api/lists/<int:list_id>/items/<int:item_id>", methods=["PATCH"])
 @require_auth
 def update_list_item(list_id, item_id):

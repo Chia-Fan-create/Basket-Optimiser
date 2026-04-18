@@ -85,6 +85,34 @@ FROM list_items li
 INNER JOIN shopping_lists sl ON li.list_id = sl.list_id
 WHERE li.list_item_id = %s AND li.list_id = %s AND sl.user_id = %s;
 
+-- name: delete_item
+DELETE FROM list_items WHERE list_item_id = %s;
+
+-- name: get_item_price
+-- Get the latest price × quantity for an item (to subtract from estimated_total)
+SELECT pr.price * li.quantity AS item_total
+FROM list_items li
+INNER JOIN price_records pr ON pr.variant_id = li.variant_id
+INNER JOIN (
+    SELECT variant_id, MAX(record_id) AS latest_record_id
+    FROM price_records
+    GROUP BY variant_id
+) latest ON pr.record_id = latest.latest_record_id
+WHERE li.list_item_id = %s;
+
+-- name: subtract_estimated_total
+UPDATE shopping_lists
+SET estimated_total = GREATEST(estimated_total - %s, 0)
+WHERE list_id = %s;
+
+-- name: clear_purchased_items
+-- Remove all purchased items from a list (keeps the list itself)
+DELETE FROM list_items
+WHERE list_id = %s AND is_purchased = TRUE;
+
+-- name: reset_estimated_total
+UPDATE shopping_lists SET estimated_total = 0.00 WHERE list_id = %s;
+
 -- name: get_item_after_update
 SELECT list_item_id, is_purchased, purchased_at
 FROM list_items
