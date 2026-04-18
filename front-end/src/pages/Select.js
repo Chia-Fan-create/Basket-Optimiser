@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { CheckSvg } from '../components/Icons';
-import { getProducts } from '../api';
+import { getProducts, updateFavorites } from '../api';
 
-export default function SelectPage({ onNext, selectedIds, setSelectedIds, isEditing }) {
+export default function SelectPage({ onNext, selectedIds, setSelectedIds, isEditing, isLoggedIn }) {
   const [show, setShow] = useState(false);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +39,10 @@ export default function SelectPage({ onNext, selectedIds, setSelectedIds, isEdit
         </div>
         <div className="select-actions">
           <span className="select-count">{selectedIds.length} selected</span>
-          <button className="btn-primary" disabled={selectedIds.length === 0} onClick={onNext}>
+          <button className="btn-primary" disabled={selectedIds.length === 0} onClick={() => {
+            if (isLoggedIn) updateFavorites(selectedIds).catch(() => {});
+            onNext();
+          }}>
             {isEditing ? 'Save & Back →' : 'See My Dashboard →'}
           </button>
         </div>

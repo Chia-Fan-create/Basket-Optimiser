@@ -4,7 +4,7 @@
 // ============================================================
 import React, { useState, useEffect, useCallback } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
-import { getMe, setOnAuthExpired } from './api';
+import { getMe, getFavorites, setOnAuthExpired } from './api';
 import Nav from './components/Nav';
 import LandingPage from './pages/Landing';
 import SelectPage from './pages/Select';
@@ -45,7 +45,12 @@ export default function App() {
     const token = localStorage.getItem('token');
     if (!token) return;
     getMe()
-      .then(user => { setIsLoggedIn(true); setCurrentUser(user); })
+      .then(user => {
+        setIsLoggedIn(true);
+        setCurrentUser(user);
+        return getFavorites();
+      })
+      .then(data => { if (data?.product_ids) setSelectedIds(data.product_ids); })
       .catch(() => { localStorage.removeItem('token'); });
   }, []);
 
@@ -67,6 +72,9 @@ export default function App() {
   const handleLogin = (user) => {
     setIsLoggedIn(true);
     setCurrentUser(user);
+    getFavorites()
+      .then(data => { if (data?.product_ids) setSelectedIds(data.product_ids); })
+      .catch(() => {});
     navigate('dashboard');
   };
 
@@ -119,7 +127,7 @@ export default function App() {
 
       <Routes>
         <Route path="/" element={<LandingPage onNext={() => navigate('select')} />} />
-        <Route path="/select" element={<SelectPage selectedIds={selectedIds} setSelectedIds={setSelectedIds} onNext={() => navigate('dashboard')} isEditing={isEditing} />} />
+        <Route path="/select" element={<SelectPage selectedIds={selectedIds} setSelectedIds={setSelectedIds} onNext={() => navigate('dashboard')} isEditing={isEditing} isLoggedIn={isLoggedIn} />} />
         <Route path="/login" element={<LoginPage onLogin={handleLogin} onBack={() => navigate('dashboard')} />} />
         <Route path="/dashboard" element={<DashboardPage selectedIds={selectedIds} isLoggedIn={isLoggedIn} onNavigate={navigate} onEditFavorites={handleEditFavorites} onLogin={() => navigate('login')} />} />
         <Route path="/compare" element={<ComparePage selectedIds={selectedIds} onNavigate={navigate} isLoggedIn={isLoggedIn} onLogin={() => navigate('login')} />} />
