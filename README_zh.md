@@ -77,7 +77,7 @@ const USE_MOCK = false;
 
 ```sql
 -- ⚠️ 先不要跑，等 UC7 註冊完再回來跑這行
-SET @test_uid = (SELECT user_id FROM users WHERE email = '你註冊的 email');
+SET @test_uid = (SELECT user_id FROM users WHERE email = 'e2e.test@example.com');
 ```
 
 ---
@@ -86,78 +86,75 @@ SET @test_uid = (SELECT user_id FROM users WHERE email = '你註冊的 email');
 
 **瀏覽器操作：**
 1. 進入 http://localhost:3000/login
-2. 切換到 Register，用一個獨一無二的 email 註冊，例如 `test.你的名字@example.com`
-3. 密碼用 `password123`，Display Name 填你的名字
-4. 註冊成功後應自動登入，跳轉到 Dashboard
-5. 重新整理頁面（F5），確認仍然是登入狀態（JWT 3 小時 session）
+2. 切換到 Register
+3. 填入：
+   - Email: `e2e.test@example.com`
+   - Password: `password123`
+   - Display Name: `E2E Test`
+4. 點 Register → 應自動登入，跳轉到 Dashboard
+5. 按 F5 重新整理頁面 → 確認仍然是登入狀態，沒被登出
 
 **SQL 驗證：**
 ```sql
--- 確認帳號已寫入，記下 user_id
+-- 確認帳號已寫入
 SELECT user_id, email, display_name, created_at
 FROM users
-WHERE email = '你註冊的 email';
+WHERE email = 'e2e.test@example.com';
+-- ✅ 應該有一筆，password_hash 是 bcrypt 雜湊（$2b$ 開頭，不是明文）
 
--- ✅ 現在設定變數，後面所有 SQL 都用 @test_uid
-SET @test_uid = (SELECT user_id FROM users WHERE email = '你註冊的 email');
+-- 設定變數，後面所有 SQL 都用 @test_uid
+SET @test_uid = (SELECT user_id FROM users WHERE email = 'e2e.test@example.com');
 SELECT @test_uid;  -- 確認有值
 ```
-
-**驗證重點：**
-- `users` 表有新 row，`password_hash` 是 bcrypt 雜湊（不是明文）
-- 重新整理後不會被登出
 
 ---
 
 ### UC9 — 設定喜好商品（Favorites）
 
 **瀏覽器操作：**
-1. 按 Dashboard 上的 edit 進入 Select 頁面（/select）
-2. 勾選至少 3 個商品（例如 Whole Milk、Greek Yogurt、Orange Juice）
+1. 在 Dashboard 點 edit 按鈕，進入 /select
+2. 勾選這 4 個商品：**Whole Milk**、**Sparkling Water**、**Ground Coffee**、**Ice Cream**
 3. 點「See my dashboard →」儲存
-4. 確認 Dashboard 上顯示你選的商品
-5. **重新整理頁面（F5）**，確認喜好商品仍在，沒有消失
-6. 回到 /select，取消一個商品，儲存
-7. 重新整理，確認變更有保留
+4. 確認 Dashboard 顯示 4 個商品卡片
+5. 按 F5 重新整理 → 確認 4 個商品仍在，沒消失
+6. 再進 /select，**取消 Sparkling Water**，儲存
+7. 按 F5 確認只剩 3 個
 
 **SQL 驗證：**
 ```sql
--- Step 3: 確認 favorites 已存入 DB
+-- Step 5 之後（應有 4 筆）：
 SELECT uf.product_id, p.name
 FROM user_favorites uf
 INNER JOIN products p ON uf.product_id = p.product_id
 WHERE uf.user_id = @test_uid
 ORDER BY uf.product_id;
+-- ✅ 預期：1 Whole Milk, 5 Sparkling Water, 6 Ground Coffee, 17 Ice Cream
 
--- Step 6: 取消後重新查，確認少了一筆
+-- Step 7 之後（應有 3 筆）：
 SELECT uf.product_id, p.name
 FROM user_favorites uf
 INNER JOIN products p ON uf.product_id = p.product_id
 WHERE uf.user_id = @test_uid
 ORDER BY uf.product_id;
+-- ✅ 預期：1 Whole Milk, 6 Ground Coffee, 17 Ice Cream（Sparkling Water 已移除）
 ```
-
-**驗證重點：**
-- 前端顯示的數量 = SQL row 數
-- PUT 是全量覆蓋：先 DELETE all 再逐筆 INSERT
 
 ---
 
 ### UC1 — 商品比價
 
 **瀏覽器操作：**
-1. 進入 Compare 頁面（/compare）
-2. 選擇一個商品，例如 Whole Milk（product_id = 1）
-3. 確認顯示最多 5 筆結果，按單位價格由低到高排序
-4. 每筆顯示：商品名稱、品牌、零售商、包裝大小、總價、單位價格
+1. 進入 /compare
+2. 點 **Whole Milk** tab
+3. 確認顯示 3 筆結果（3 家 retailer），按 unit price 由低到高
+4. 確認每筆有：商品名、零售商（帶顏色圓點）、包裝大小、總價、單位價格
+5. 第 1 名應標示 **BEST VALUE**
+6. 確認頁面上**沒有**「+ List」按鈕（已移除）
 
 **SQL 驗證：**
 ```sql
--- 查 product_id = 1 的比價結果，應該跟前端完全一致
-SELECT r.name AS store, b.name AS brand,
-       CONCAT(pv.pack_size, ' ', u.abbreviation) AS size,
-       pr.price, pr.unit_price,
-       CONCAT('$', FORMAT(pr.unit_price, 3), '/', u.abbreviation) AS unit_display
+-- 查 Whole Milk 比價結果，順序應跟前端完全一致
+SELECT r.name AS store, pr.price, pr.unit_price
 FROM price_records pr
 INNER JOIN (
     SELECT variant_id, MAX(record_id) AS latest
@@ -165,67 +162,75 @@ INNER JOIN (
 ) l ON pr.record_id = l.latest
 INNER JOIN product_variants pv ON pr.variant_id = pv.variant_id
 INNER JOIN retailers r ON pv.retailer_id = r.retailer_id
-INNER JOIN products p ON pv.product_id = p.product_id
-LEFT JOIN brands b ON p.brand_id = b.brand_id
-LEFT JOIN units u ON pv.unit_id = u.unit_id
 WHERE pv.product_id = 1
-ORDER BY pr.unit_price ASC
-LIMIT 5;
+ORDER BY pr.unit_price ASC;
+-- ✅ 預期順序：Amazon（最便宜）→ Walmart → Target
+-- 前端第 1 名 = SQL 第 1 筆
 ```
-
-**驗證重點：**
-- 前端第 1 名 = SQL 第 1 筆（最便宜）
-- 價格、零售商、品牌完全一致
-- 這個查詢跟帳號無關（公開資料），所有人結果相同
 
 ---
 
 ### UC8 — 價格趨勢與季節性預測
 
 **瀏覽器操作：**
-1. 進入 Trends 頁面（/trends）
-2. 選擇一個商品
-3. 確認圖表顯示各零售商的歷史月均價（實線）
-4. 如果有季節性資料，確認未來月份有預測價格（虛線）
+1. 進入 /trends，點 **Ice Cream** tab
+2. 確認圖表 x 軸有 **May → Apr 共 12 個月**
+3. 確認 3 條實線（Amazon 橘 / Target 紅 / Walmart 藍）+ 虛線（Predicted 灰）
+4. 用滑鼠 hover 數據點，確認 tooltip 顯示 retailer、價格、月份
+5. **目視確認季節性**：夏天（Jun–Aug）線段偏高、冬天（Nov–Jan）偏低
+6. 圖表下方應顯示 **Seasonal Patterns** 卡片區塊：
+   - **Prime Day Ice Cream** (Amazon, Jul) 12.0% off — 2023: 8.5%, 2024: 13.1%, 2025: 14.4%
+   - **Ice Cream Season End** (Walmart, Oct) 15.6% off — 2023: 12.3%, 2024: 16.8%, 2025: 17.7%
+7. 換 **Sparkling Water** tab → 確認趨勢相反（夏天低、冬天高）
 
 **SQL 驗證：**
 ```sql
--- 歷史月均價（對應圖表實線）
-SELECT r.name AS retailer,
-       DATE_FORMAT(pr.scraped_at, '%Y-%m') AS month,
+-- Ice Cream 月均價（應有 12 個月 × 3 retailers = ~36 rows）
+SELECT DATE_FORMAT(pr.scraped_at, '%Y-%m') AS month,
+       r.name AS retailer,
        ROUND(AVG(pr.unit_price), 4) AS avg_unit_price
 FROM price_records pr
 INNER JOIN product_variants pv ON pr.variant_id = pv.variant_id
 INNER JOIN retailers r ON pv.retailer_id = r.retailer_id
-WHERE pv.product_id = 1
-GROUP BY r.name, DATE_FORMAT(pr.scraped_at, '%Y-%m')
+WHERE pv.product_id = 17
+GROUP BY YEAR(pr.scraped_at), MONTH(pr.scraped_at), month, r.name
 ORDER BY month, r.name;
+-- ✅ Walmart 的 Jul 均價 (~0.12) > Nov 均價 (~0.10)
 
--- 季節性模式（對應圖表虛線）
-SELECT sp.event_name, sp.typical_month, sp.avg_discount_pct, r.name AS retailer
+-- 季節性模式 + 年度證據
+SELECT sp.event_name, sp.typical_month, sp.avg_discount_pct,
+       r.name AS retailer, sp.confidence_score
 FROM seasonal_patterns sp
 INNER JOIN retailers r ON sp.retailer_id = r.retailer_id
-WHERE sp.product_id = 1;
-```
+WHERE sp.product_id = 17;
+-- ✅ 應有 2 筆：Prime Day Ice Cream 和 Ice Cream Season End
 
-**驗證重點：**
-- 圖表每個月的數據點 = SQL 對應月份的 avg_unit_price
-- 這個查詢跟帳號無關（公開資料）
+SELECT spy.pattern_id, spy.year, spy.observed_discount
+FROM seasonal_pattern_years spy
+INNER JOIN seasonal_patterns sp ON spy.pattern_id = sp.pattern_id
+WHERE sp.product_id = 17
+ORDER BY spy.pattern_id, spy.year;
+-- ✅ 每個 pattern 有 2023/2024/2025 三年的觀測折扣
+```
 
 ---
 
 ### UC2 — 購物清單管理
 
 **瀏覽器操作：**
-1. 進入 Shopping Lists 頁面（/lists），確認目前清單是空的（新帳號）
-2. 點「+ New List」，輸入名稱「E2E Test」
-3. 點「+ Add Item」，搜尋商品（例如輸入 "milk"），點選 Whole Milk → 自動加入最便宜的 variant（qty 1）
-4. 繼續加 2～3 個商品（例如 Granola Bars、Pasta），加完關閉 modal
-5. 確認頁面顯示 Cheapest Store、各家店的總價、以及 savings
-6. 點商品旁的 ✕ 刪除一個商品，確認清單更新
-7. 勾選剩餘商品的 checkbox（標記為已購買）
-8. 點底部「Process Purchased Items」→ 確認已購買的商品出現在列表中 → 點「Confirm & Save」
-9. 成功畫面點「Done — Clear purchased items」→ 確認清單項目被清空，但清單本身還在
+1. 進入 /lists → 確認是空的（新帳號沒有清單）
+2. 點「+ New List」→ 輸入 `E2E Test List` → 建立
+3. 點「+ Add Item」→ 搜尋 `milk` → 點選 **Whole Milk**（自動加入 qty 1）
+4. 再加一個：搜尋 `granola` → 點選 **Granola Bars**（qty 1）
+5. 關閉搜尋 modal → 確認頁面顯示：
+   - 2 個商品
+   - Cheapest Store（應顯示 Walmart）
+   - 各家店的總價比較
+   - Savings 金額
+6. 點 Granola Bars 旁的 **✕** 刪除 → 確認只剩 Whole Milk，總價更新
+7. 勾選 Whole Milk 的 **checkbox**（標記已購買）
+8. 點「Process Purchased Items」→ 確認清單正確 → 「Confirm & Save」
+9. 成功畫面 →「Done — Clear purchased items」→ 確認清單項目被清空，但清單名還在
 
 **SQL 驗證（每步驟後查一次）：**
 ```sql
@@ -286,60 +291,62 @@ SELECT list_id, name, estimated_total FROM shopping_lists WHERE list_id = @test_
 ### UC6 — 家庭庫存追蹤
 
 **瀏覽器操作：**
-1. 進入 Inventory 頁面（/inventory），確認是空的（新帳號）
-2. 新增庫存項目：選商品、輸入數量、輸入預計幾天用完（例如 7 天）
-3. 確認項目出現在庫存列表中
-4. 再新增同一個商品 → 確認是更新而非新增（UNIQUE 約束）
-5. 點 Dismiss 關閉提醒
+1. 進入 /inventory → 確認是空的
+2. 點「+ Add Item」→ 搜尋 `milk` → 選 **Whole Milk**
+   - Quantity 填 `2`
+   - Days per unit 應**自動帶入** `7`（來自 `default_consumption_days_per_unit`）
+   - 點 Save
+3. 確認列表出現 Whole Milk，顯示 qty=2、depletion date（14 天後）
+4. 再新增一次 **Whole Milk**（qty=1）→ 確認仍然只有**一筆**，qty 變成 3、depletion 變成 21 天後（UPSERT 行為）
+5. 點 **Dismiss** 按鈕 → 確認項目被標記為 dismissed
 
 **SQL 驗證：**
 ```sql
--- Step 2: 查看庫存
+-- Step 4 之後：確認只有一筆、quantity 累加、depletion 正確
 SELECT ii.inventory_id, p.name, ii.quantity,
        ii.purchase_date, ii.depletion_date, ii.is_dismissed,
-       DATEDIFF(ii.depletion_date, CURDATE()) AS days_left
+       DATEDIFF(ii.depletion_date, ii.purchase_date) AS total_days
 FROM inventory_items ii
 INNER JOIN products p ON ii.product_id = p.product_id
-WHERE ii.user_id = @test_uid
-ORDER BY ii.depletion_date ASC;
+WHERE ii.user_id = @test_uid;
+-- ✅ 預期：1 筆，quantity=3，total_days=21 (3 × 7)，is_dismissed=0
 
--- Step 4: 再查一次，確認仍然只有一筆（不是兩筆）
+-- Step 4：確認沒有重複
 SELECT COUNT(*) AS row_count
 FROM inventory_items
-WHERE ii.user_id = @test_uid AND product_id = <你選的 product_id>;
+WHERE user_id = @test_uid AND product_id = 1;
+-- ✅ 預期：1（不是 2）
 
--- Step 5: 驗證 dismiss
+-- Step 5 之後：
 SELECT inventory_id, is_dismissed
 FROM inventory_items
-WHERE user_id = @test_uid AND is_dismissed = TRUE;
+WHERE user_id = @test_uid;
+-- ✅ 預期：is_dismissed = 1
 ```
-
-**驗證重點：**
-- `depletion_date` = `purchase_date` + 你輸入的天數
-- 同使用者 + 同商品 = UPDATE（UNIQUE 約束，不會重複）
-- Dismiss 後 `is_dismissed = TRUE`，但 row 仍在
 
 ---
 
 ### UC3 — 價格警報
 
 **瀏覽器操作：**
-1. 進入 Alerts 頁面（/alerts）
-2. 點「新增警報」，選一個商品，設定目標價（例如 Whole Milk，目標 $3.00）
-3. 確認警報出現在列表中
-4. 如果目前最低價 ≤ 目標價，確認顯示 triggered 狀態
-5. 刪除剛剛建立的警報
+1. 進入 /alerts
+2. 新增警報 #1：選 **Whole Milk**，目標價填 `0.08`（高於目前最低價 ~$0.059，所以會立即觸發）
+3. 確認出現在「Triggered」區塊，顯示綠色 ✅
+4. 新增警報 #2：選 **Ice Cream**，目標價填 `0.01`（遠低於目前價，不會觸發）
+5. 確認出現在「Active」區塊，顯示進度條
+6. 刪除 Ice Cream 的警報（點 ✕）→ 確認只剩 Whole Milk 的
 
 **SQL 驗證：**
 ```sql
--- Step 2: 確認警報已寫入
-SELECT pa.alert_id, p.name, pa.target_price, pa.created_at
+-- Step 4 之後：應有 2 筆 alert
+SELECT pa.alert_id, p.name, pa.target_price, pa.is_active, pa.triggered_at
 FROM price_alerts pa
 INNER JOIN products p ON pa.product_id = p.product_id
-WHERE pa.user_id = @test_uid
-ORDER BY pa.created_at DESC;
+WHERE pa.user_id = @test_uid;
+-- ✅ Whole Milk target=0.08 → triggered（目前最低 ~0.059 <= 0.08）
+-- ✅ Ice Cream target=0.01 → NOT triggered（目前 ~0.10 > 0.01）
 
--- 比對：該商品目前最低價（判斷是否應該 triggered）
+-- 驗證 Whole Milk 目前最低價
 SELECT MIN(pr.unit_price) AS current_lowest
 FROM price_records pr
 INNER JOIN (
@@ -347,36 +354,84 @@ INNER JOIN (
     FROM price_records GROUP BY variant_id
 ) l ON pr.record_id = l.latest
 INNER JOIN product_variants pv ON pr.variant_id = pv.variant_id
-WHERE pv.product_id = <你選的 product_id>;
+WHERE pv.product_id = 1;
+-- ✅ 預期 ~0.059，低於 0.08 → 正確觸發
 
--- Step 5: 刪除後確認已不存在
-SELECT * FROM price_alerts WHERE user_id = @test_uid;
+-- Step 6 之後：只剩 1 筆
+SELECT COUNT(*) FROM price_alerts WHERE user_id = @test_uid;
+-- ✅ 預期：1
 ```
 
 ---
 
-### UC4 — 智慧警報（Smart Alerts）
+### 模擬爬蟲 — POST /api/admin/scrape
 
-**瀏覽器操作：**
-1. 在 Alerts 頁面，滾到下方的 Smart Alerts 區塊
-2. 如果有觸發的智慧警報，會顯示：商品名稱、目前價格、歷史均價、降價百分比、在哪家店
+> **在 UC3 之後、UC4 之前觸發。**
 
-> 智慧警報是自動產生的：當你進入 Alerts 頁面時（`GET /api/alerts`），後端會檢查你的 favorites 裡的商品，如果目前最低價比歷史均價低 20% 以上，自動寫入 `todos` 表。
+**操作方式：** 打開瀏覽器 DevTools Console（F12），貼上：
+
+```javascript
+fetch('/api/admin/scrape', { method: 'POST' }).then(r => r.json()).then(console.log)
+```
+
+**確認 Console 輸出的 JSON：**
+| 欄位 | 預期值 | 說明 |
+|------|--------|------|
+| `success` | `true` | |
+| `prices_recorded` | ~50 | 3 家 × ~17 variants |
+| `jobs_created` | `3` | Amazon / Target / Walmart |
+| `forced_drops` | 6 筆 | 2 個隨機商品 × 3 家，降幅 25–35% |
+| `alerts_triggered` | ≥ 1 | 至少 Whole Milk 的 alert 會被觸發 |
+| `failures` | 0~3 | 5% 隨機失敗 |
+
+**重要：記下 `forced_drops` 裡的 product_id，後面 UC4 會用到。**
 
 **SQL 驗證：**
 ```sql
--- 查看系統幫你產生的 smart alert
-SELECT t.todo_id, p.name, t.todo_type, t.message, t.snapshot_price, t.compared_price
-FROM todos t
-INNER JOIN product_variants pv ON t.variant_id = pv.variant_id
-INNER JOIN products p ON pv.product_id = p.product_id
-WHERE t.user_id = @test_uid AND t.todo_type = 'buy_now'
-ORDER BY t.created_at DESC;
+-- 3 筆新 scrape_jobs
+SELECT job_id, retailer_id, status, items_scraped
+FROM scrape_jobs ORDER BY job_id DESC LIMIT 3;
+-- ✅ 全部 status='success', items_scraped ≈ 17
 
--- 手動驗算：你的 favorites 裡哪些商品降價 ≥ 20%？
+-- 新 price_records 數量
+SELECT COUNT(*) AS new_prices
+FROM price_records
+WHERE scrape_job_id >= (SELECT MAX(job_id) - 2 FROM scrape_jobs);
+-- ✅ ~50 筆
+
+-- 爬蟲失敗記錄（F6 反饋要求的 scrape_failures 表）
+SELECT failure_id, variant_id, error_message
+FROM scrape_failures ORDER BY failure_id DESC LIMIT 5;
+-- ✅ 如果 failures > 0，這裡會有記錄（HTTP 503, CAPTCHA 等）
+
+-- Whole Milk alert 應被觸發
+SELECT pa.alert_id, p.name, pa.target_price, pa.triggered_at
+FROM price_alerts pa
+INNER JOIN products p ON pa.product_id = p.product_id
+WHERE pa.user_id = @test_uid;
+-- ✅ Whole Milk 的 triggered_at 應有值（scrape 觸發了它）
+```
+
+---
+
+### UC4 — 智慧警報（Smart Alerts，Scrape 後驗證）
+
+**瀏覽器操作：**
+1. 按 F5 重新整理 /alerts（scrape 後必須重整才會觸發偵測）
+2. 確認 Whole Milk alert 顯示 **Triggered**（✅ 綠色）
+3. 滾到下方 **Smart Alerts** 區塊（⚡ 圖示）：
+   - 如果 scrape 的 forced_drops 商品**在你的 favorites 裡** → 這裡會有卡片
+   - 如果不在 → Smart Alerts 區塊是空的，**這是正常的**
+4. 如果有 Smart Alert 卡片，確認顯示：
+   - 商品名、降幅 %、目前價格、零售商
+   - 「Deal still valid」或「Price recovered」文字（T2 新功能）
+
+> **原理：** 後端在 `GET /api/alerts` 時自動檢查 favorites 商品，如果目前最低價比歷史均價低 ≥ 20%，自動寫入 `todos` 表。Scrape 的 forced_drops 降 25-35%，所以只要被降價的商品在 favorites 裡就會觸發。
+
+**SQL 驗證：**
+```sql
+-- 你的 favorites 裡哪些商品降價 ≥ 20%？
 SELECT pv.product_id, p.name,
-       MIN(pr_now.unit_price) AS current_lowest,
-       AVG(pr_all.unit_price) AS historical_avg,
        ROUND((1 - MIN(pr_now.unit_price) / AVG(pr_all.unit_price)) * 100, 1) AS drop_pct
 FROM product_variants pv
 INNER JOIN products p ON pv.product_id = p.product_id
@@ -387,29 +442,54 @@ INNER JOIN (
     INNER JOIN (SELECT variant_id, MAX(record_id) AS latest FROM price_records GROUP BY variant_id) l
       ON pr.record_id = l.latest
 ) pr_now ON pr_now.variant_id = pv.variant_id
-WHERE pv.product_id IN (
-    SELECT product_id FROM user_favorites WHERE user_id = @test_uid
-)
+WHERE pv.product_id IN (SELECT product_id FROM user_favorites WHERE user_id = @test_uid)
 GROUP BY pv.product_id, p.name
 HAVING drop_pct >= 20;
+-- ✅ 如果有結果 → 前端 Smart Alerts 應顯示這些商品
+-- ✅ 如果沒結果 → 前端 Smart Alerts 為空，正常
+
+-- 確認 todos 表
+SELECT t.todo_id, p.name, t.snapshot_price, t.compared_price
+FROM todos t
+INNER JOIN product_variants pv ON t.variant_id = pv.variant_id
+INNER JOIN products p ON pv.product_id = p.product_id
+WHERE t.user_id = @test_uid AND t.todo_type = 'buy_now';
+-- ✅ 數量 = 前端 Smart Alerts 的卡片數
 ```
 
-**驗證重點：**
-- 前端 Smart Alerts 的商品 = SQL `HAVING drop_pct >= 20` 查出的商品
-- `todos` 表裡同一商品不會重複（Transaction 去重）
-- 如果 UC9 沒選到降價商品，Smart Alerts 可能是空的 — 這是正常的
+---
+
+### UC8 — 價格趨勢（Scrape 後驗證）
+
+**瀏覽器操作：**
+1. 回到 /trends → 選 **Ice Cream**
+2. 確認 Apr 的數據點有更新（scrape 新增了價格）
+
+**SQL 驗證：**
+```sql
+SELECT r.name AS retailer,
+       ROUND(AVG(pr.unit_price), 4) AS avg_unit_price,
+       COUNT(*) AS data_points
+FROM price_records pr
+INNER JOIN product_variants pv ON pr.variant_id = pv.variant_id
+INNER JOIN retailers r ON pv.retailer_id = r.retailer_id
+WHERE pv.product_id = 17
+  AND YEAR(pr.scraped_at) = 2026 AND MONTH(pr.scraped_at) = 4
+GROUP BY r.name;
+-- ✅ data_points 應比之前多 1（scrape 新增了一筆）
+```
 
 ---
 
 ### UC5 — 消費分析
 
-> **前提：** 必須先在 UC2 把至少一個項目標為「已購買」，Insight 才有資料。
+> **前提：** UC2 已經把 Whole Milk 標為「已購買」。
 
 **瀏覽器操作：**
-1. 進入 Insight 頁面（/insight）
-2. 確認月度消費圖表有資料
-3. 確認分類佔比有資料
-4. 注意摘要文字
+1. 進入 /insight
+2. 確認月度消費圖表有一根柱子（本月）
+3. 確認分類佔比顯示 **Dairy 100%**
+4. 確認摘要文字提到 Dairy 是最大支出類別
 
 **SQL 驗證：**
 ```sql
@@ -454,25 +534,23 @@ ORDER BY total DESC;
 
 ## 測試完清理
 
+在 MySQL Workbench 跑：
+
 ```sql
--- 一行搞定：刪除帳號，所有關聯資料自動 CASCADE 刪除
--- （user_favorites, shopping_lists → list_items, price_alerts, todos, inventory_items）
+-- 刪除測試帳號，CASCADE 自動清除所有關聯資料
 DELETE FROM users WHERE user_id = @test_uid;
 
--- 驗證已清理乾淨
+-- 驗證 6 張表全部歸零
 SELECT 'users' AS tbl, COUNT(*) AS cnt FROM users WHERE user_id = @test_uid
-UNION ALL
-SELECT 'favorites', COUNT(*) FROM user_favorites WHERE user_id = @test_uid
-UNION ALL
-SELECT 'lists', COUNT(*) FROM shopping_lists WHERE user_id = @test_uid
-UNION ALL
-SELECT 'alerts', COUNT(*) FROM price_alerts WHERE user_id = @test_uid
-UNION ALL
-SELECT 'todos', COUNT(*) FROM todos WHERE user_id = @test_uid
-UNION ALL
-SELECT 'inventory', COUNT(*) FROM inventory_items WHERE user_id = @test_uid;
--- 全部應該是 0
+UNION ALL SELECT 'favorites', COUNT(*) FROM user_favorites WHERE user_id = @test_uid
+UNION ALL SELECT 'lists', COUNT(*) FROM shopping_lists WHERE user_id = @test_uid
+UNION ALL SELECT 'alerts', COUNT(*) FROM price_alerts WHERE user_id = @test_uid
+UNION ALL SELECT 'todos', COUNT(*) FROM todos WHERE user_id = @test_uid
+UNION ALL SELECT 'inventory', COUNT(*) FROM inventory_items WHERE user_id = @test_uid;
+-- ✅ 全部 cnt = 0
 ```
+
+> **注意：** scrape 產生的 `scrape_jobs`、`price_records`、`scrape_failures` 不會被 CASCADE 刪除（它們不屬於任何 user）。這是正常的 — 價格資料是全域共享的。
 
 ---
 
@@ -543,12 +621,12 @@ Basket-Optimiser/
 
 | # | 項目 | 說明 | 相關檔案 |
 |---|------|------|----------|
-| T1 | **前端：Inventory 表單預填 consumption 預設值** | F3 的 `default_consumption_days_per_unit` 已在 `products` 表中，後端 receipts.py 有使用，但 Inventory 頁面手動新增庫存時沒有從商品預設值自動帶入，使用者每次都要手打天數 | `front-end/src/pages/Inventory.js` |
-| T2 | **前端：Smart Alerts 顯示優惠是否仍有效** | F5 的 `snapshot_price`/`compared_price` 後端已寫入 `todos` 表，但前端 Alerts 頁面沒有使用這兩個欄位。應比較 `snapshot_price` vs 目前最新價格，顯示「優惠仍有效」或「價格已回升」 | `front-end/src/pages/Alerts.js` |
-| T3 | **自動爬蟲流程** | `db/queries/scrape.sql` 的 6 個 query 全部是註解 TODO。目前沒有主動抓取新價格的機制，所有價格資料來自 seed data。需實作：建立 scrape job → 寫入 price_records → 更新 scrape_jobs 狀態 → 檢查觸發的 price_alerts | `db/queries/scrape.sql`, 需新增 scrape runner |
-| T4 | **爬蟲失敗追蹤** | F6 的 `scrape_failures` 表已建好，但沒有任何程式碼往裡面寫入。需在 T3 的爬蟲流程中，當單一 variant 抓取失敗時記錄到此表 | `scrape_failures` 表 |
-| T5 | **Receipt OCR 使用 hardcoded 假資料** | Shopping Lists 頁面的 Receipt Scanner UI 已完成，後端 `POST /api/receipts` 也已實作（含 Transaction），但前端 `handleScan` 目前回傳寫死的假掃描結果，沒有接真正的 OCR 服務 | `front-end/src/pages/ShoppingLists.js:100` |
-| T6 | **`GET /api/auth/me` endpoint** | API spec 定義了 `GET /api/auth/me`（回傳目前登入使用者資訊），但前端目前用 login response 裡的資料，沒有呼叫此 endpoint | `backend/routes/auth_routes.py` |
+| ~~T1~~ | ~~**前端：Inventory 表單預填 consumption 預設值**~~ | Inventory 選商品時自動帶入 `default_consumption_days_per_unit`，搜尋列表旁顯示 `Xd/unit` 提示 | ✅ `front-end/src/pages/Inventory.js` |
+| ~~T2~~ | ~~**前端：Smart Alerts 顯示優惠是否仍有效**~~ | API 回傳 `snapshot_price` + `deal_still_valid`，前端顯示 "Deal still valid" 或 "Price recovered" | ✅ `alerts.py`, `alerts.sql`, `Alerts.js` |
+| ~~T3~~ | ~~**自動爬蟲流程**~~ | `POST /api/admin/scrape` 已實作模擬爬蟲：建立 scrape job → 寫入 price_records（±5% 波動 + 2 個隨機商品強制降價 25–35%）→ 更新 scrape_jobs → 檢查觸發 price_alerts | ✅ `backend/routes/scrape.py`, `db/queries/scrape.sql` |
+| ~~T4~~ | ~~**爬蟲失敗追蹤**~~ | scrape 中 5% 機率模擬失敗，寫入 `scrape_failures`（含隨機錯誤訊息） | ✅ 同 T3 |
+| ~~T5~~ | ~~**Receipt OCR**~~ | 不在專案範圍。購物清單的「Process Purchased Items」已可將已購買商品寫入 inventory，OCR 為未來擴充 | 移除 |
+| ~~T6~~ | ~~**`GET /api/auth/me` endpoint**~~ | 後端已實作，前端 App.js mount 時呼叫 `getMe()` 恢復 session | ✅ `auth_routes.py`, `App.js` |
 
 ---
 
@@ -562,7 +640,8 @@ Basket-Optimiser/
 | `GET /api/products` | `products.get_all_with_category` | products, categories |
 | `GET /api/compare/{id}` | `compare.get_top5_cheapest` | price_records, product_variants, products, retailers, units, brands |
 | `POST /api/compare/summary` | `compare.get_top5_cheapest` ×N | 同上 |
-| `GET /api/trends/{id}` | `trends.get_monthly_avg_by_retailer`, `trends.get_seasonal_patterns` | price_records, product_variants, retailers, seasonal_patterns |
+| `GET /api/trends/{id}` | `trends.get_monthly_avg_by_retailer`, `trends.get_seasonal_patterns`, `trends.get_pattern_years` | price_records, product_variants, retailers, seasonal_patterns, seasonal_pattern_years |
+| `POST /api/admin/scrape` | `scrape.*` (10 queries) | scrape_jobs, price_records, scrape_failures, price_alerts |
 | `POST /api/auth/register` | `auth.check_email_exists`, `auth.insert_user` | users |
 | `POST /api/auth/login` | `auth.get_user_by_email` | users |
 
