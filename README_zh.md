@@ -94,7 +94,7 @@ const USE_MOCK = false;
 --    5. F5 重新整理 → 確認沒被登出（JWT session 保持）
 -- ──────────────────────────────────────────────────────────────
 
-SELECT user_id, email, display_name, created_at
+SELECT *
 FROM users WHERE email = 'e2e.test@example.com';
 -- ✅ 1 筆，password_hash 是 $2b$ 開頭（bcrypt）
 
@@ -167,8 +167,8 @@ INNER JOIN product_variants pv ON pr.variant_id = pv.variant_id
 INNER JOIN retailers r ON pv.retailer_id = r.retailer_id
 WHERE pv.product_id = 1
 ORDER BY pr.unit_price ASC;
--- ✅ 順序：Amazon（最便宜）→ Walmart → Target
--- ✅ 前端第 1 名 = SQL 第 1 筆，價格完全一致
+-- ✅ 順序由低到高，前端第 1 名 = SQL 第 1 筆
+-- ✅ 價格完全一致（具體哪家最便宜取決於最新 scrape 資料）
 
 
 -- ══════════════════════════════════════════════════════════════
@@ -273,8 +273,12 @@ INNER JOIN products p ON ii.product_id = p.product_id
 WHERE ii.user_id = @test_uid;
 -- ✅ Whole Milk 已自動加入 inventory
 
+-- ══════════════════════════════════════════════════════════════
+-- UC2（續）— Clear purchased items
+-- ══════════════════════════════════════════════════════════════
 -- 👉 瀏覽器操作：
---    9. 成功畫面 → Done — Clear purchased items → 清單項目被清空，但清單名還在
+--    9. 回到 /lists → 進入 E2E Test List
+--       成功畫面 → Done — Clear purchased items → 清單項目被清空，但清單名還在
 -- ──────────────────────────────────────────────────────────────
 
 SELECT COUNT(*) AS remaining_items FROM list_items WHERE list_id = @test_list;
@@ -292,7 +296,7 @@ SELECT list_id, name, estimated_total FROM shopping_lists WHERE list_id = @test_
 -- 👉 瀏覽器操作：
 --    1. 進入 /inventory → 確認已有 Whole Milk（UC2 時加的）
 --    2. 點 + Add Item → 搜尋 coffee → 選 Ground Coffee
---       Quantity: 2, Days per unit: 自動帶入 7 → Save
+--       Quantity: 2, Days per unit: 自動帶入 21 → Save
 --    3. 確認列表出現 Ground Coffee qty=2
 -- ──────────────────────────────────────────────────────────────
 
@@ -303,7 +307,7 @@ FROM inventory_items ii
 INNER JOIN products p ON ii.product_id = p.product_id
 WHERE ii.user_id = @test_uid
 ORDER BY p.name;
--- ✅ Ground Coffee qty=2, total_days=14 + Whole Milk（UC2 的）
+-- ✅ Ground Coffee qty=2, total_days=42 + Whole Milk（UC2 的）
 
 -- 👉 瀏覽器操作：
 --    4. 再加一次 Ground Coffee（qty=1）→ 確認仍只有一筆，qty 變 3
@@ -319,7 +323,7 @@ SELECT ii.inventory_id, p.name, ii.quantity,
 FROM inventory_items ii
 INNER JOIN products p ON ii.product_id = p.product_id
 WHERE ii.user_id = @test_uid AND ii.product_id = 6;
--- ✅ quantity=3, total_days=21 (3 × 7)
+-- ✅ quantity=3, total_days=63 (3 × 21)
 
 -- 👉 瀏覽器操作：
 --    5. 測試 Dismiss → 加一個快到期的商品：
@@ -355,18 +359,23 @@ SELECT pa.alert_id, p.name, pa.target_price, pa.is_active, pa.triggered_at
 FROM price_alerts pa
 INNER JOIN products p ON pa.product_id = p.product_id
 WHERE pa.user_id = @test_uid;
--- ✅ Whole Milk target=0.08 → triggered
--- ✅ Ice Cream target=0.01 → NOT triggered
+-- ✅ 2 筆，triggered_at 都是 NULL — 這是正常的
+-- ⚠️ triggered_at 只有在跑 scrape 時才會被寫入
+-- ⚠️ 前端的 triggered 是 API 即時算的（current_price <= target_price），不看 triggered_at
 
-SELECT MIN(pr.unit_price) AS current_lowest
-FROM price_records pr
-INNER JOIN (
-    SELECT variant_id, MAX(record_id) AS latest
-    FROM price_records GROUP BY variant_id
-) l ON pr.record_id = l.latest
-INNER JOIN product_variants pv ON pr.variant_id = pv.variant_id
-WHERE pv.product_id = 1;
--- ✅ ~0.059 < 0.08 → 正確觸發
+-- 驗證前端的觸發邏輯：比較目前最低價 vs 目標價
+SELECT pa.alert_id, p.name, pa.target_price,
+       (SELECT MIN(pr.unit_price)
+        FROM price_records pr
+        INNER JOIN (SELECT variant_id, MAX(record_id) AS latest FROM price_records GROUP BY variant_id) l
+          ON pr.record_id = l.latest
+        INNER JOIN product_variants pv ON pr.variant_id = pv.variant_id
+        WHERE pv.product_id = pa.product_id) AS current_lowest
+FROM price_alerts pa
+INNER JOIN products p ON pa.product_id = p.product_id
+WHERE pa.user_id = @test_uid;
+-- ✅ Whole Milk: current_lowest (~0.059) <= target (0.08) → 前端顯示 triggered
+-- ✅ Ice Cream: current_lowest (~0.10) > target (0.01) → 前端顯示 active
 
 -- 👉 瀏覽器操作：
 --    6. 刪除 Ice Cream 的警報（點 ✕）
@@ -374,6 +383,20 @@ WHERE pv.product_id = 1;
 
 SELECT COUNT(*) FROM price_alerts WHERE user_id = @test_uid;
 -- ✅ 1（只剩 Whole Milk）
+
+
+-- ══════════════════════════════════════════════════════════════
+-- UC8 前置：記住 scrape 前的 data_points（等 scrape 後比對）
+-- ══════════════════════════════════════════════════════════════
+
+SELECT r.name AS retailer, COUNT(*) AS data_points_before
+FROM price_records pr
+INNER JOIN product_variants pv ON pr.variant_id = pv.variant_id
+INNER JOIN retailers r ON pv.retailer_id = r.retailer_id
+WHERE pv.product_id = 17
+  AND YEAR(pr.scraped_at) = 2026 AND MONTH(pr.scraped_at) = 4
+GROUP BY r.name;
+-- 📝 記下每家 retailer 的 data_points_before 數字
 
 
 -- ══════════════════════════════════════════════════════════════
@@ -443,15 +466,16 @@ INNER JOIN (
 WHERE pv.product_id IN (SELECT product_id FROM user_favorites WHERE user_id = @test_uid)
 GROUP BY pv.product_id, p.name
 HAVING drop_pct >= 20;
--- ✅ forced_drops 的商品應出現（drop ≥ 25%）
--- ✅ 數量 = 前端 Smart Alert 卡片數
+-- ⚠️ 這個 SQL 是近似驗算，可能比前端多幾筆（SQL 用 ROUND 1 位小數，後端用 Python round 取整數）
+-- ⚠️ 以下面的 todos 表為準
 
+-- 👇 這才是正確的驗證基準：todos 表的數量 = 前端 Smart Alert 卡片數
 SELECT t.todo_id, p.name, t.snapshot_price, t.compared_price
 FROM todos t
 INNER JOIN product_variants pv ON t.variant_id = pv.variant_id
 INNER JOIN products p ON pv.product_id = p.product_id
 WHERE t.user_id = @test_uid AND t.todo_type = 'buy_now';
--- ✅ todos 表有 buy_now 記錄，數量 = 前端卡片數
+-- ✅ 數量 = 前端 Smart Alert 卡片數（以此為準）
 
 -- 👉 瀏覽器操作：
 --    6. 進入 /select → 改回原本 4 個：Whole Milk, Sparkling Water, Ground Coffee, Ice Cream → 儲存
@@ -467,20 +491,22 @@ WHERE t.user_id = @test_uid AND t.todo_type = 'buy_now';
 
 SELECT r.name AS retailer,
        ROUND(AVG(pr.unit_price), 4) AS avg_unit_price,
-       COUNT(*) AS data_points
+       COUNT(*) AS data_points_after
 FROM price_records pr
 INNER JOIN product_variants pv ON pr.variant_id = pv.variant_id
 INNER JOIN retailers r ON pv.retailer_id = r.retailer_id
 WHERE pv.product_id = 17
   AND YEAR(pr.scraped_at) = 2026 AND MONTH(pr.scraped_at) = 4
 GROUP BY r.name;
--- ✅ data_points 比 scrape 前多 1（每家 retailer）
+-- ✅ data_points_after = data_points_before + 1（每家 retailer 各多 1 筆）
+-- ✅ 跟之前記下的數字比對
 
 
 -- ══════════════════════════════════════════════════════════════
 -- UC5 — 消費分析
 -- ══════════════════════════════════════════════════════════════
--- （前提：UC2 已經把 Whole Milk 標為已購買）
+-- ⚠️ 資料來自 purchases + purchase_items（Process 時寫入的快照）
+-- ⚠️ 即使 Clear 了清單，這裡的資料不受影響
 --
 -- 👉 瀏覽器操作：
 --    1. 進入 /insight
@@ -489,37 +515,48 @@ GROUP BY r.name;
 --    4. 確認摘要文字提到 Dairy 是最大支出
 -- ──────────────────────────────────────────────────────────────
 
-SELECT DATE_FORMAT(li.purchased_at, '%Y-%m') AS month,
-       ROUND(SUM(pr.price * li.quantity), 2) AS total
-FROM list_items li
-INNER JOIN shopping_lists sl ON li.list_id = sl.list_id
-INNER JOIN product_variants pv ON li.variant_id = pv.variant_id
-INNER JOIN (
-    SELECT variant_id, MAX(record_id) AS latest
-    FROM price_records GROUP BY variant_id
-) l ON pv.variant_id = l.variant_id
-INNER JOIN price_records pr ON pr.record_id = l.latest
-WHERE sl.user_id = @test_uid AND li.is_purchased = TRUE
-GROUP BY DATE_FORMAT(li.purchased_at, '%Y-%m')
+SELECT DATE_FORMAT(p.purchased_at, '%Y-%m') AS month,
+       ROUND(SUM(pi.price * pi.quantity), 2) AS total
+FROM purchase_items pi
+INNER JOIN purchases p ON pi.purchase_id = p.purchase_id
+WHERE p.user_id = @test_uid
+GROUP BY month
 ORDER BY month;
 -- ✅ 金額 = 前端月度圖表的數字
 
 SELECT c.name AS category,
-       ROUND(SUM(pr.price * li.quantity), 2) AS total
-FROM list_items li
-INNER JOIN shopping_lists sl ON li.list_id = sl.list_id
-INNER JOIN product_variants pv ON li.variant_id = pv.variant_id
-INNER JOIN products p ON pv.product_id = p.product_id
-LEFT JOIN categories c ON p.category_id = c.category_id
-INNER JOIN (
-    SELECT variant_id, MAX(record_id) AS latest
-    FROM price_records GROUP BY variant_id
-) l ON pv.variant_id = l.variant_id
-INNER JOIN price_records pr ON pr.record_id = l.latest
-WHERE sl.user_id = @test_uid AND li.is_purchased = TRUE
+       ROUND(SUM(pi.price * pi.quantity), 2) AS total
+FROM purchase_items pi
+INNER JOIN purchases p ON pi.purchase_id = p.purchase_id
+INNER JOIN products prod ON pi.product_id = prod.product_id
+LEFT JOIN categories c ON prod.category_id = c.category_id
+WHERE p.user_id = @test_uid
 GROUP BY c.name
 ORDER BY total DESC;
 -- ✅ Dairy 100%
+
+
+-- ══════════════════════════════════════════════════════════════
+-- UC10 — 購買紀錄（Purchase History）
+-- ══════════════════════════════════════════════════════════════
+-- 👉 瀏覽器操作：
+--    1. 在 /insight 頁面滾到最下方「Purchase History」區塊
+--    2. 確認有一筆購買紀錄（UC2 Process 時建的）
+--    3. 點擊展開 → 確認明細顯示 Whole Milk x1 和價格
+-- ──────────────────────────────────────────────────────────────
+
+SELECT p.purchase_id, p.purchased_at, p.total_amount, p.store,
+       (SELECT COUNT(*) FROM purchase_items pi WHERE pi.purchase_id = p.purchase_id) AS item_count
+FROM purchases p
+WHERE p.user_id = @test_uid
+ORDER BY p.purchased_at DESC;
+-- ✅ 1 筆購買紀錄
+
+SELECT pi.product_id, prod.name, pi.quantity, pi.price, pi.unit_price
+FROM purchase_items pi
+INNER JOIN products prod ON pi.product_id = prod.product_id
+WHERE pi.purchase_id = (SELECT MAX(purchase_id) FROM purchases WHERE user_id = @test_uid);
+-- ✅ Whole Milk x1，價格 = Process 當下的快照價
 
 
 -- ══════════════════════════════════════════════════════════════
