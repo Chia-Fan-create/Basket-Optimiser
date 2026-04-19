@@ -80,8 +80,10 @@ def get_alerts():
                                  latest_price, avg_price),
                             )
                             todo_id = cur.lastrowid
+                            snap_price = latest_price
                     else:
                         todo_id = existing["todo_id"]
+                        snap_price = float(existing["snapshot_price"]) if existing["snapshot_price"] else latest_price
 
                     cur.execute(get_query("alerts", "get_product_name_icon"), (pid,))
                     prod = cur.fetchone()
@@ -96,6 +98,8 @@ def get_alerts():
                         "store": cheapest["store"],
                         "store_color": cheapest["store_color"],
                         "detected_at": cheapest["scraped_at"].isoformat() if cheapest["scraped_at"] else None,
+                        "snapshot_price": round(snap_price, 4),
+                        "deal_still_valid": latest_price <= snap_price,
                     })
 
             conn.commit()

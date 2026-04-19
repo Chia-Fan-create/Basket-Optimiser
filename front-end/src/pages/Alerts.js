@@ -77,6 +77,11 @@ export default function AlertsPage() {
                 <span className="alert-name">{a.product_name}</span>
                 <span className="alert-detail">
                   Dropped <strong style={{ color: 'var(--green)' }}>{a.drop_pct}%</strong> to <strong>${a.current_price < 1 ? a.current_price.toFixed(3) : a.current_price.toFixed(2)}</strong> at <strong style={{ color: a.store_color || STORE_COLORS[a.store] }}>{a.store}</strong>
+                  {a.deal_still_valid != null && (
+                    <span style={{ marginLeft: 8, fontSize: 12, color: a.deal_still_valid ? 'var(--green)' : '#b5651d' }}>
+                      {a.deal_still_valid ? '· Deal still valid' : '· Price recovered'}
+                    </span>
+                  )}
                 </span>
                 {a.detected_at && <span className="alert-time">Detected {new Date(a.detected_at).toLocaleDateString()}</span>}
               </div>

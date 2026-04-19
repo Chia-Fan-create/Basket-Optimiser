@@ -54,7 +54,7 @@ WHERE pv.product_id = %s;
 
 -- name: check_existing_todo
 -- Check if an incomplete buy_now todo already exists (prevent duplicates)
-SELECT todo_id FROM todos
+SELECT todo_id, snapshot_price FROM todos
 WHERE user_id = %s
   AND variant_id IN (
       SELECT variant_id FROM product_variants WHERE product_id = %s
