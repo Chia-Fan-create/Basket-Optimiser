@@ -260,3 +260,8 @@ export async function getInsightSummary() {
   }
   return apiFetch('/insight/summary');
 }
+
+export async function getPurchaseHistory() {
+  if (USE_MOCK) return [];
+  return apiFetch('/insight/purchases');
+}

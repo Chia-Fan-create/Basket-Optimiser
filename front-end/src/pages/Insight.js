@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getMonthlySpending, getCategorySpending, getInsightSummary } from '../api';
+import { getMonthlySpending, getCategorySpending, getInsightSummary, getPurchaseHistory } from '../api';
 
 // Backend doesn't return a color field for categories — assign a fixed palette
 const CATEGORY_COLORS = [
@@ -12,21 +12,23 @@ export default function InsightPage() {
   const [monthlySpending, setMonthlySpending] = useState([]);
   const [categorySpending, setCategorySpending] = useState([]);
   const [summary, setSummary] = useState(null);
+  const [purchases, setPurchases] = useState([]);
+  const [expandedPurchase, setExpandedPurchase] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => { setTimeout(() => setShow(true), 50); }, []);
 
   useEffect(() => {
-    Promise.all([getMonthlySpending(), getCategorySpending(), getInsightSummary()])
-      .then(([monthly, categories, summaryData]) => {
+    Promise.all([getMonthlySpending(), getCategorySpending(), getInsightSummary(), getPurchaseHistory()])
+      .then(([monthly, categories, summaryData, purchaseData]) => {
         setMonthlySpending(monthly);
-        // Assign colors if backend didn't send them
         setCategorySpending(categories.map((c, i) => ({
           ...c,
           color: c.color ?? CATEGORY_COLORS[i % CATEGORY_COLORS.length],
         })));
         setSummary(summaryData);
+        setPurchases(purchaseData || []);
       })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
@@ -124,6 +126,48 @@ export default function InsightPage() {
             <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>No insights yet — keep shopping to build up data!</p>
           )}
         </div>
+      </div>
+
+      <div className="an-card">
+        <h3 className="an-title">Purchase History</h3>
+        {purchases.length === 0 ? (
+          <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>No purchase records yet. Process purchased items from your shopping list to see history here.</p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {purchases.map((p, i) => (
+              <div key={p.purchase_id} style={{ animationDelay: `${i * 60}ms` }}>
+                <div
+                  onClick={() => setExpandedPurchase(expandedPurchase === p.purchase_id ? null : p.purchase_id)}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: '#f9f7f0', borderRadius: 10, cursor: 'pointer', border: '1px solid #ebe7db' }}
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 600, fontSize: 14, color: 'var(--brown-deep)' }}>
+                      {new Date(p.purchased_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </span>
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                      {p.store && <span style={{ marginRight: 8 }}>{p.store}</span>}
+                      {p.item_count} item{p.item_count !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontWeight: 700, color: 'var(--green)', fontSize: 16 }}>${p.total_amount.toFixed(2)}</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: expandedPurchase === p.purchase_id ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', opacity: 0.4 }}><path d="m6 9 6 6 6-6"/></svg>
+                  </div>
+                </div>
+                {expandedPurchase === p.purchase_id && p.items && (
+                  <div style={{ padding: '8px 16px 12px', borderLeft: '2px solid var(--sand)', marginLeft: 16 }}>
+                    {p.items.map((item, j) => (
+                      <div key={j} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: j < p.items.length - 1 ? '1px solid #f0ede4' : 'none', fontSize: 13 }}>
+                        <span style={{ color: 'var(--brown-deep)' }}>{item.product_name} <span style={{ color: 'var(--text-muted)' }}>x{item.quantity}</span></span>
+                        <span style={{ fontWeight: 600 }}>${item.price.toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
