@@ -70,6 +70,8 @@ const USE_MOCK = false;
 > - 每個操作在前端執行後，立刻到 MySQL Workbench 跑對應的 SQL，確認 DB 跟前端一致
 > - 所有 SQL 查詢都用 `@test_uid` 變數，不需手動替換 user_id
 > - 測試完畢刪除帳號，所有資料自動 CASCADE 清除，不影響其他人
+>
+> **一次複製所有 SQL：** 頁面最底部有 [E2E 測試用 SQL（一次複製）](#e2e-測試用-sql一次複製) 段落，把整段 SQL 貼到 MySQL Workbench，測試時直接選取對應段落按 ⌘+Enter 執行，不用來回找。
 
 ### Step 0 — 設定 MySQL 變數
 
@@ -590,8 +592,6 @@ Basket-Optimiser/
 │
 ├── db/                         # 資料庫
 │   ├── schema.sql              # 18 張表（v3 DDL）
-│   ├── migration.sql           # ALTER TABLE 補欄位
-│   ├── seed_data.sql           # 測試資料
 │   └── queries/                # 12 個 SQL 檔，後端透過 sql_loader 載入
 │
 └── docs/                       # API 規格、Use Cases、Table 屬性
@@ -665,3 +665,258 @@ Basket-Optimiser/
 | `GET /api/insight/monthly` | `insight.spending_cte` + `insight.get_monthly` | — | — |
 | `GET /api/insight/categories` | `insight.spending_cte` + `insight.get_by_category` | — | — |
 | `GET /api/insight/summary` | `insight.spending_cte` + 2 queries | — | — |
+
+---
+
+## E2E 測試用 SQL（一次複製）
+
+> **使用方式：** 把下面整段 SQL 複製到 MySQL Workbench，全部貼好。測試時不用來回找 SQL — 直接選取對應段落按 ⌘+Enter（或 Ctrl+Enter）執行即可。
+
+```sql
+-- ============================================================
+-- SmartCart E2E 測試 SQL — 一次貼好，逐段執行
+-- ============================================================
+-- 使用方式：全部複製貼到 MySQL Workbench
+-- 測試時選取對應段落 → ⌘+Enter 執行
+-- ============================================================
+
+-- ── UC7：註冊後設定變數 ──────────────────────────────────────
+SELECT user_id, email, display_name, created_at
+FROM users WHERE email = 'e2e.test@example.com';
+
+SET @test_uid = (SELECT user_id FROM users WHERE email = 'e2e.test@example.com');
+SELECT @test_uid;
+
+-- ── UC9：Favorites（選完 4 個後跑）──────────────────────────
+SELECT uf.product_id, p.name
+FROM user_favorites uf
+INNER JOIN products p ON uf.product_id = p.product_id
+WHERE uf.user_id = @test_uid
+ORDER BY uf.product_id;
+-- ✅ 預期 4 筆：1 Whole Milk, 5 Sparkling Water, 6 Ground Coffee, 17 Ice Cream
+
+-- ── UC9：Favorites（取消 Sparkling Water 後跑）──────────────
+SELECT uf.product_id, p.name
+FROM user_favorites uf
+INNER JOIN products p ON uf.product_id = p.product_id
+WHERE uf.user_id = @test_uid
+ORDER BY uf.product_id;
+-- ✅ 預期 3 筆：1, 6, 17
+
+-- ── UC1：Compare Whole Milk ─────────────────────────────────
+SELECT r.name AS store, pr.price, pr.unit_price
+FROM price_records pr
+INNER JOIN (
+    SELECT variant_id, MAX(record_id) AS latest
+    FROM price_records GROUP BY variant_id
+) l ON pr.record_id = l.latest
+INNER JOIN product_variants pv ON pr.variant_id = pv.variant_id
+INNER JOIN retailers r ON pv.retailer_id = r.retailer_id
+WHERE pv.product_id = 1
+ORDER BY pr.unit_price ASC;
+-- ✅ 順序：Amazon → Walmart → Target
+
+-- ── UC8：Ice Cream 月均價 ───────────────────────────────────
+SELECT DATE_FORMAT(pr.scraped_at, '%Y-%m') AS month,
+       r.name AS retailer,
+       ROUND(AVG(pr.unit_price), 4) AS avg_unit_price
+FROM price_records pr
+INNER JOIN product_variants pv ON pr.variant_id = pv.variant_id
+INNER JOIN retailers r ON pv.retailer_id = r.retailer_id
+WHERE pv.product_id = 17
+GROUP BY YEAR(pr.scraped_at), MONTH(pr.scraped_at), month, r.name
+ORDER BY month, r.name;
+-- ✅ 12 個月，Walmart Jul (~0.12) > Nov (~0.10)
+
+-- ── UC8：Seasonal patterns + 年度證據 ──────────────────────
+SELECT sp.event_name, sp.typical_month, sp.avg_discount_pct,
+       r.name AS retailer, sp.confidence_score
+FROM seasonal_patterns sp
+INNER JOIN retailers r ON sp.retailer_id = r.retailer_id
+WHERE sp.product_id = 17;
+-- ✅ 2 筆 pattern
+
+SELECT spy.pattern_id, spy.year, spy.observed_discount
+FROM seasonal_pattern_years spy
+INNER JOIN seasonal_patterns sp ON spy.pattern_id = sp.pattern_id
+WHERE sp.product_id = 17
+ORDER BY spy.pattern_id, spy.year;
+-- ✅ 每個 pattern 有 2023/2024/2025
+
+-- ── UC2：建立清單後 ─────────────────────────────────────────
+SELECT list_id, name, estimated_total, created_at
+FROM shopping_lists WHERE user_id = @test_uid;
+
+SET @test_list = (SELECT list_id FROM shopping_lists
+                  WHERE user_id = @test_uid ORDER BY created_at DESC LIMIT 1);
+
+-- ── UC2：加商品後 ───────────────────────────────────────────
+SELECT li.list_item_id, pv.product_id, p.name, li.quantity, li.variant_id
+FROM list_items li
+INNER JOIN product_variants pv ON li.variant_id = pv.variant_id
+INNER JOIN products p ON pv.product_id = p.product_id
+WHERE li.list_id = @test_list;
+
+SELECT list_id, name, estimated_total
+FROM shopping_lists WHERE list_id = @test_list;
+
+-- ── UC2：刪除商品後 ─────────────────────────────────────────
+SELECT COUNT(*) AS item_count FROM list_items WHERE list_id = @test_list;
+SELECT estimated_total FROM shopping_lists WHERE list_id = @test_list;
+
+-- ── UC2：標記已購買後 ───────────────────────────────────────
+SELECT list_item_id, is_purchased, purchased_at
+FROM list_items WHERE list_id = @test_list;
+
+-- ── UC2：Process 後 ─────────────────────────────────────────
+SELECT sj.job_id, sj.status, sj.items_scraped
+FROM scrape_jobs sj ORDER BY sj.job_id DESC LIMIT 1;
+
+SELECT ii.inventory_id, p.name, ii.quantity, ii.depletion_date
+FROM inventory_items ii
+INNER JOIN products p ON ii.product_id = p.product_id
+WHERE ii.user_id = @test_uid;
+
+-- ── UC2：Clear 後 ───────────────────────────────────────────
+SELECT COUNT(*) AS remaining_items FROM list_items WHERE list_id = @test_list;
+SELECT list_id, name, estimated_total FROM shopping_lists WHERE list_id = @test_list;
+
+-- ── UC6：庫存 UPSERT 後 ────────────────────────────────────
+SELECT ii.inventory_id, p.name, ii.quantity,
+       ii.purchase_date, ii.depletion_date, ii.is_dismissed,
+       DATEDIFF(ii.depletion_date, ii.purchase_date) AS total_days
+FROM inventory_items ii
+INNER JOIN products p ON ii.product_id = p.product_id
+WHERE ii.user_id = @test_uid;
+-- ✅ 1 筆，quantity 累加，total_days = quantity × 7
+
+SELECT COUNT(*) AS row_count
+FROM inventory_items
+WHERE user_id = @test_uid AND product_id = 1;
+-- ✅ 1（不是 2）
+
+-- ── UC6：Dismiss 後 ────────────────────────────────────────
+SELECT inventory_id, is_dismissed
+FROM inventory_items WHERE user_id = @test_uid;
+-- ✅ is_dismissed = 1
+
+-- ── UC3：建立 2 個 alert 後 ────────────────────────────────
+SELECT pa.alert_id, p.name, pa.target_price, pa.is_active, pa.triggered_at
+FROM price_alerts pa
+INNER JOIN products p ON pa.product_id = p.product_id
+WHERE pa.user_id = @test_uid;
+-- ✅ Whole Milk 0.08 → triggered, Ice Cream 0.01 → not triggered
+
+SELECT MIN(pr.unit_price) AS current_lowest
+FROM price_records pr
+INNER JOIN (
+    SELECT variant_id, MAX(record_id) AS latest
+    FROM price_records GROUP BY variant_id
+) l ON pr.record_id = l.latest
+INNER JOIN product_variants pv ON pr.variant_id = pv.variant_id
+WHERE pv.product_id = 1;
+-- ✅ ~0.059 < 0.08 → 正確觸發
+
+-- ── UC3：刪除 Ice Cream alert 後 ───────────────────────────
+SELECT COUNT(*) FROM price_alerts WHERE user_id = @test_uid;
+-- ✅ 1
+
+-- ── Scrape：執行後 ─────────────────────────────────────────
+SELECT job_id, retailer_id, status, items_scraped
+FROM scrape_jobs ORDER BY job_id DESC LIMIT 3;
+-- ✅ 3 筆 status='success'
+
+SELECT COUNT(*) AS new_prices
+FROM price_records
+WHERE scrape_job_id >= (SELECT MAX(job_id) - 2 FROM scrape_jobs);
+-- ✅ ~50
+
+SELECT failure_id, variant_id, error_message
+FROM scrape_failures ORDER BY failure_id DESC LIMIT 5;
+-- ✅ 爬蟲失敗記錄（如有）
+
+SELECT pa.alert_id, p.name, pa.target_price, pa.triggered_at
+FROM price_alerts pa
+INNER JOIN products p ON pa.product_id = p.product_id
+WHERE pa.user_id = @test_uid;
+-- ✅ Whole Milk triggered_at 有值
+
+-- ── UC4：Smart Alerts 驗證 ─────────────────────────────────
+SELECT pv.product_id, p.name,
+       ROUND((1 - MIN(pr_now.unit_price) / AVG(pr_all.unit_price)) * 100, 1) AS drop_pct
+FROM product_variants pv
+INNER JOIN products p ON pv.product_id = p.product_id
+INNER JOIN price_records pr_all ON pr_all.variant_id = pv.variant_id
+INNER JOIN (
+    SELECT pr.variant_id, pr.unit_price
+    FROM price_records pr
+    INNER JOIN (SELECT variant_id, MAX(record_id) AS latest FROM price_records GROUP BY variant_id) l
+      ON pr.record_id = l.latest
+) pr_now ON pr_now.variant_id = pv.variant_id
+WHERE pv.product_id IN (SELECT product_id FROM user_favorites WHERE user_id = @test_uid)
+GROUP BY pv.product_id, p.name
+HAVING drop_pct >= 20;
+-- ✅ 有結果 → 前端有 Smart Alert；沒結果 → 前端為空，正常
+
+SELECT t.todo_id, p.name, t.snapshot_price, t.compared_price
+FROM todos t
+INNER JOIN product_variants pv ON t.variant_id = pv.variant_id
+INNER JOIN products p ON pv.product_id = p.product_id
+WHERE t.user_id = @test_uid AND t.todo_type = 'buy_now';
+-- ✅ 數量 = 前端 Smart Alerts 卡片數
+
+-- ── UC8：Scrape 後趨勢驗證 ─────────────────────────────────
+SELECT r.name AS retailer,
+       ROUND(AVG(pr.unit_price), 4) AS avg_unit_price,
+       COUNT(*) AS data_points
+FROM price_records pr
+INNER JOIN product_variants pv ON pr.variant_id = pv.variant_id
+INNER JOIN retailers r ON pv.retailer_id = r.retailer_id
+WHERE pv.product_id = 17
+  AND YEAR(pr.scraped_at) = 2026 AND MONTH(pr.scraped_at) = 4
+GROUP BY r.name;
+-- ✅ data_points 比 scrape 前多 1
+
+-- ── UC5：月度消費 ──────────────────────────────────────────
+SELECT DATE_FORMAT(li.purchased_at, '%Y-%m') AS month,
+       ROUND(SUM(pr.price * li.quantity), 2) AS total
+FROM list_items li
+INNER JOIN shopping_lists sl ON li.list_id = sl.list_id
+INNER JOIN product_variants pv ON li.variant_id = pv.variant_id
+INNER JOIN (
+    SELECT variant_id, MAX(record_id) AS latest
+    FROM price_records GROUP BY variant_id
+) l ON pv.variant_id = l.variant_id
+INNER JOIN price_records pr ON pr.record_id = l.latest
+WHERE sl.user_id = @test_uid AND li.is_purchased = TRUE
+GROUP BY DATE_FORMAT(li.purchased_at, '%Y-%m')
+ORDER BY month;
+
+-- ── UC5：分類消費 ──────────────────────────────────────────
+SELECT c.name AS category,
+       ROUND(SUM(pr.price * li.quantity), 2) AS total
+FROM list_items li
+INNER JOIN shopping_lists sl ON li.list_id = sl.list_id
+INNER JOIN product_variants pv ON li.variant_id = pv.variant_id
+INNER JOIN products p ON pv.product_id = p.product_id
+LEFT JOIN categories c ON p.category_id = c.category_id
+INNER JOIN (
+    SELECT variant_id, MAX(record_id) AS latest
+    FROM price_records GROUP BY variant_id
+) l ON pv.variant_id = l.variant_id
+INNER JOIN price_records pr ON pr.record_id = l.latest
+WHERE sl.user_id = @test_uid AND li.is_purchased = TRUE
+GROUP BY c.name
+ORDER BY total DESC;
+
+-- ── 清理：刪除測試帳號 ────────────────────────────────────
+DELETE FROM users WHERE user_id = @test_uid;
+
+SELECT 'users' AS tbl, COUNT(*) AS cnt FROM users WHERE user_id = @test_uid
+UNION ALL SELECT 'favorites', COUNT(*) FROM user_favorites WHERE user_id = @test_uid
+UNION ALL SELECT 'lists', COUNT(*) FROM shopping_lists WHERE user_id = @test_uid
+UNION ALL SELECT 'alerts', COUNT(*) FROM price_alerts WHERE user_id = @test_uid
+UNION ALL SELECT 'todos', COUNT(*) FROM todos WHERE user_id = @test_uid
+UNION ALL SELECT 'inventory', COUNT(*) FROM inventory_items WHERE user_id = @test_uid;
+-- ✅ 全部 cnt = 0
+```
