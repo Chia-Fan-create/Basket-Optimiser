@@ -50,3 +50,11 @@ WHERE inventory_id = %s;
 INSERT INTO inventory_items
     (user_id, product_id, quantity, purchase_date, consumption_days_per_unit, depletion_date)
 VALUES (%s, %s, %s, %s, %s, %s);
+
+-- name: insert_purchase
+INSERT INTO purchases (user_id, total_amount, store, list_id)
+VALUES (%s, %s, %s, %s);
+
+-- name: insert_purchase_item
+INSERT INTO purchase_items (purchase_id, product_id, variant_id, quantity, price, unit_price)
+VALUES (%s, %s, %s, %s, %s, %s);

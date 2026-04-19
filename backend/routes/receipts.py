@@ -50,6 +50,17 @@ def process_receipt():
                 unmatched_items = 0
                 today = date.today()
 
+                # Create purchase record
+                total_amount = sum(
+                    i.get("price", 0) * i.get("qty", 1)
+                    for i in items if i.get("matched")
+                )
+                cur.execute(
+                    get_query("receipts", "insert_purchase"),
+                    (g.user_id, total_amount, store, list_id),
+                )
+                purchase_id = cur.lastrowid
+
                 for item in items:
                     if not item.get("matched"):
                         unmatched_items += 1
@@ -98,7 +109,15 @@ def process_receipt():
                         )
                         prices_recorded += 1
 
-                    # 3. Upsert inventory
+                    # 3. Insert purchase_item
+                    if variant_id and product_id:
+                        unit_price_val = round(price / qty, 4) if qty else price
+                        cur.execute(
+                            get_query("receipts", "insert_purchase_item"),
+                            (purchase_id, product_id, variant_id, qty, price, unit_price_val),
+                        )
+
+                    # 4. Upsert inventory
                     cur.execute(
                         get_query("receipts", "upsert_inventory"),
                         (g.user_id, product_id),

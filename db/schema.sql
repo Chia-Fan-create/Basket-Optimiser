@@ -21,6 +21,8 @@
 -- ============================================================
 
 -- Drop tables in reverse dependency order (if re-running)
+DROP TABLE IF EXISTS purchase_items;
+DROP TABLE IF EXISTS purchases;
 DROP TABLE IF EXISTS seasonal_pattern_years;
 DROP TABLE IF EXISTS seasonal_patterns;
 DROP TABLE IF EXISTS scrape_failures;
@@ -385,7 +387,60 @@ CREATE INDEX idx_inventory_user_depletion ON inventory_items(user_id, depletion_
 
 
 -- ============================================================
--- 16. seasonal_patterns
+-- 16. purchases [UC10]
+-- Each "Process Purchased Items" creates one purchase record
+-- ============================================================
+CREATE TABLE purchases (
+    purchase_id    INT            AUTO_INCREMENT PRIMARY KEY,
+    user_id        INT            NOT NULL,
+    purchased_at   DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    total_amount   DECIMAL(10,2)  NOT NULL DEFAULT 0.00,
+    store          VARCHAR(100)   NULL,
+    list_id        INT            NULL,
+
+    CONSTRAINT fk_purchases_user
+        FOREIGN KEY (user_id) REFERENCES users(user_id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+
+    CONSTRAINT fk_purchases_list
+        FOREIGN KEY (list_id) REFERENCES shopping_lists(list_id)
+        ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE INDEX idx_purchases_user_date ON purchases(user_id, purchased_at);
+
+
+-- ============================================================
+-- 17. purchase_items [UC10]
+-- Line items for each purchase — price snapshot at purchase time
+-- ============================================================
+CREATE TABLE purchase_items (
+    item_id        INT            AUTO_INCREMENT PRIMARY KEY,
+    purchase_id    INT            NOT NULL,
+    product_id     INT            NOT NULL,
+    variant_id     INT            NOT NULL,
+    quantity       INT            NOT NULL DEFAULT 1,
+    price          DECIMAL(10,2)  NOT NULL,
+    unit_price     DECIMAL(10,4)  NOT NULL,
+
+    CONSTRAINT fk_purchase_items_purchase
+        FOREIGN KEY (purchase_id) REFERENCES purchases(purchase_id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+
+    CONSTRAINT fk_purchase_items_product
+        FOREIGN KEY (product_id) REFERENCES products(product_id)
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+
+    CONSTRAINT fk_purchase_items_variant
+        FOREIGN KEY (variant_id) REFERENCES product_variants(variant_id)
+        ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE INDEX idx_purchase_items_purchase ON purchase_items(purchase_id);
+
+
+-- ============================================================
+-- 18. seasonal_patterns
 -- ============================================================
 CREATE TABLE seasonal_patterns (
     pattern_id       INT            AUTO_INCREMENT PRIMARY KEY,
