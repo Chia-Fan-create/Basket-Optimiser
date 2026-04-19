@@ -61,7 +61,9 @@ def get_list_detail(list_id):
                     bp = best_prices.get(item["product_id"], {})
                     item["best_store"] = bp.get("store")
                     item["best_store_color"] = bp.get("store_color")
-                    item["best_price"] = float(bp["unit_price"]) if bp.get("unit_price") else None
+                    item["best_price"] = float(bp["price"]) if bp.get("price") else None
+                    item["best_unit_price"] = float(bp["unit_price"]) if bp.get("unit_price") else None
+                    item["best_variant_id"] = bp.get("variant_id")
                     item["unit"] = bp.get("unit")
 
             if product_ids:

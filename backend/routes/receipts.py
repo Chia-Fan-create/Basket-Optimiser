@@ -68,6 +68,7 @@ def process_receipt():
 
                     product_name = item.get("product", "")
                     price = item.get("price", 0)
+                    item_unit_price = item.get("unit_price") or (round(price / qty, 4) if qty else price)
                     qty = item.get("qty", 1)
 
                     # Extract first word(s) as search keyword (e.g. "Whole Milk 1 Gal" → "Whole Milk")
@@ -111,10 +112,9 @@ def process_receipt():
 
                     # 3. Insert purchase_item
                     if variant_id and product_id:
-                        unit_price_val = round(price / qty, 4) if qty else price
                         cur.execute(
                             get_query("receipts", "insert_purchase_item"),
-                            (purchase_id, product_id, variant_id, qty, price, unit_price_val),
+                            (purchase_id, product_id, variant_id, qty, price, item_unit_price),
                         )
 
                     # 4. Upsert inventory

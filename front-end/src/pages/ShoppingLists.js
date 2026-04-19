@@ -152,6 +152,7 @@ export default function ShoppingListsPage({ onNavigate }) {
     const mapped = purchased.map(item => ({
       product: item.product_name ?? item.product,
       price: item.best_price ?? 0,
+      unit_price: item.best_unit_price ?? 0,
       qty: item.quantity ?? item.qty ?? 1,
       matched: true,
     }));

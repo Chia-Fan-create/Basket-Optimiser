@@ -28,8 +28,8 @@ WHERE li.list_id = %s;
 
 -- name: get_best_prices_for_products
 -- Note: {placeholders} is dynamically replaced with %s,%s,... at runtime
-SELECT pv.product_id, r.name AS store, r.color AS store_color,
-       pr.unit_price, CONCAT('per ', u.name) AS unit
+SELECT pv.product_id, pv.variant_id, r.name AS store, r.color AS store_color,
+       pr.price, pr.unit_price, CONCAT('per ', u.name) AS unit
 FROM price_records pr
 INNER JOIN (
     SELECT variant_id, MAX(record_id) AS latest_record_id
