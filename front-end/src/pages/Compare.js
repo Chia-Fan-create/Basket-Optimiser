@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { SearchSvg, CheckSvg, PlusSvg, TrendSvg } from '../components/Icons';
+import { SearchSvg, TrendSvg } from '../components/Icons';
 import { getProducts, getComparison } from '../api';
 
-export default function ComparePage({ selectedIds, onNavigate, isLoggedIn, onLogin }) {
+export default function ComparePage({ selectedIds, onNavigate }) {
   const [show, setShow] = useState(false);
   const [products, setProducts] = useState([]);
   const [comparisonData, setComparisonData] = useState({});
@@ -11,8 +11,6 @@ export default function ComparePage({ selectedIds, onNavigate, isLoggedIn, onLog
   const [error, setError] = useState(null);
   const [active, setActive] = useState('all');
   const [search, setSearch] = useState('');
-  const [added, setAdded] = useState({});
-
   useEffect(() => { setTimeout(() => setShow(true), 50); }, []);
 
   // Fetch product catalog once on mount
@@ -33,12 +31,6 @@ export default function ComparePage({ selectedIds, onNavigate, isLoggedIn, onLog
       .catch(err => setError(err.message))
       .finally(() => setLoadingComparison(false));
   }, [active]);
-
-  const handleAdd = (pid) => {
-    if (!isLoggedIn) { onLogin(); return; }
-    setAdded(p => ({ ...p, [pid]: true }));
-    setTimeout(() => setAdded(p => ({ ...p, [pid]: false })), 2000);
-  };
 
   if (loadingProducts) return <div className="loading">Loading...</div>;
   if (error) return <div className="error">{error}</div>;
@@ -86,7 +78,6 @@ export default function ComparePage({ selectedIds, onNavigate, isLoggedIn, onLog
                     <span className="all-name">{p?.name}</span>
                     <span className="all-store" style={{ color: best.storeColor }}>{best.store}</span>
                     <span className="all-price">${best.unitPrice < 1 ? best.unitPrice.toFixed(3) : best.unitPrice.toFixed(2)} <small>{best.unit}</small></span>
-                    <button className="add-sm" onClick={e => { e.stopPropagation(); handleAdd(pid); }}>{added[pid] ? <CheckSvg /> : <PlusSvg />}</button>
                     <svg className="all-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
                   </div>
                 );
@@ -111,7 +102,6 @@ export default function ComparePage({ selectedIds, onNavigate, isLoggedIn, onLog
                       <div className="comp-up" style={{ color: i === 0 ? 'var(--green)' : 'var(--brown)' }}>${item.unitPrice < 1 ? item.unitPrice.toFixed(3) : item.unitPrice.toFixed(2)}<small>{item.unit}</small></div>
                       <div className="comp-tp">${item.totalPrice.toFixed(2)} total</div>
                     </div>
-                    <button className="add-btn" onClick={() => handleAdd(active)}>{added[active] ? '✓ Added' : '+ List'}</button>
                     {i === 0 && <div className="best-label">BEST VALUE</div>}
                   </div>
                 ))}

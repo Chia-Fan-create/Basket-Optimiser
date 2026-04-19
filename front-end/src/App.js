@@ -130,7 +130,7 @@ export default function App() {
         <Route path="/select" element={<SelectPage selectedIds={selectedIds} setSelectedIds={setSelectedIds} onNext={() => navigate('dashboard')} isEditing={isEditing} isLoggedIn={isLoggedIn} />} />
         <Route path="/login" element={<LoginPage onLogin={handleLogin} onBack={() => navigate('dashboard')} />} />
         <Route path="/dashboard" element={<DashboardPage selectedIds={selectedIds} isLoggedIn={isLoggedIn} onNavigate={navigate} onEditFavorites={handleEditFavorites} onLogin={() => navigate('login')} />} />
-        <Route path="/compare" element={<ComparePage selectedIds={selectedIds} onNavigate={navigate} isLoggedIn={isLoggedIn} onLogin={() => navigate('login')} />} />
+        <Route path="/compare" element={<ComparePage selectedIds={selectedIds} onNavigate={navigate} />} />
         <Route path="/trends" element={<TrendsPage selectedIds={selectedIds} />} />
         <Route path="/lists" element={<ShoppingListsPage onNavigate={navigate} />} />
         <Route path="/inventory" element={<InventoryPage onNavigate={navigate} />} />
