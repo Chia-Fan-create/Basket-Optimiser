@@ -22,6 +22,7 @@ export default function TrendsPage({ selectedIds }) {
   const [active, setActive] = useState(null);
   const [products, setProducts] = useState([]);
   const [trendCache, setTrendCache] = useState({});
+  const [seasonalCache, setSeasonalCache] = useState({});
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [loadingTrend, setLoadingTrend] = useState(false);
   const [error, setError] = useState(null);
@@ -49,14 +50,17 @@ export default function TrendsPage({ selectedIds }) {
     setLoadingTrend(true);
     getTrends(active)
       .then(raw => {
-        const normalized = normalizeTrendData(Array.isArray(raw) ? raw : []);
+        const trendArr = raw?.trend ?? (Array.isArray(raw) ? raw : []);
+        const normalized = normalizeTrendData(trendArr);
         setTrendCache(prev => ({ ...prev, [active]: normalized }));
+        if (raw?.seasonal) setSeasonalCache(prev => ({ ...prev, [active]: raw.seasonal }));
       })
       .catch(err => setError(err.message))
       .finally(() => setLoadingTrend(false));
   }, [active]);
 
   const trendData = trendCache[active] || [];
+  const seasonalData = seasonalCache[active] || [];
   const product = products.find(p => (p.id ?? p.product_id) === active);
 
   const allPrices = trendData.flatMap(d => [d.amazon, d.target, d.walmart].filter(Boolean));
@@ -200,6 +204,37 @@ export default function TrendsPage({ selectedIds }) {
             )}
           </div>
         </div>
+
+        {seasonalData.length > 0 && (
+          <div className="t-seasonal">
+            <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: 18, color: 'var(--green-deep)', marginBottom: 12 }}>Seasonal Patterns</h3>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+              {seasonalData.map((s, i) => (
+                <div key={i} style={{ flex: '1 1 260px', background: '#f9f7f0', borderRadius: 12, padding: '14px 16px', border: '1px solid #ebe7db' }}>
+                  <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 600, fontSize: 14, color: 'var(--brown-deep)', marginBottom: 4 }}>
+                    {s.event_name}
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>
+                    {s.retailer} · {s.month_label} · {s.avg_discount_pct > 0 ? `${s.avg_discount_pct}% off` : `${Math.abs(s.avg_discount_pct)}% premium`}
+                    <span style={{ marginLeft: 8, opacity: 0.7 }}>confidence {Math.round(s.confidence_score * 100)}%</span>
+                  </div>
+                  {s.years.length > 0 ? (
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      {s.years.map(y => (
+                        <div key={y.year} style={{ textAlign: 'center', fontSize: 11, color: 'var(--brown)' }}>
+                          <div style={{ fontWeight: 600 }}>{y.observed_discount > 0 ? `${y.observed_discount}%` : '—'}</div>
+                          <div style={{ opacity: 0.6 }}>{y.year}</div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>No yearly data yet</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
