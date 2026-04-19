@@ -120,3 +120,35 @@ def get_summary():
         })
     finally:
         conn.close()
+
+
+@insight_bp.route("/api/insight/purchases")
+@require_auth
+def get_purchases():
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(get_query("insight", "get_purchase_history"), (g.user_id,))
+            purchases = cur.fetchall()
+
+            result = []
+            for p in purchases:
+                cur.execute(get_query("insight", "get_purchase_detail"), (p["purchase_id"],))
+                items = cur.fetchall()
+                result.append({
+                    "purchase_id": p["purchase_id"],
+                    "purchased_at": p["purchased_at"].isoformat() if p["purchased_at"] else None,
+                    "total_amount": float(p["total_amount"]),
+                    "store": p["store"],
+                    "item_count": p["item_count"],
+                    "items": [{
+                        "product_name": i["product_name"],
+                        "category": i["category"],
+                        "quantity": i["quantity"],
+                        "price": float(i["price"]),
+                        "unit_price": float(i["unit_price"]),
+                    } for i in items],
+                })
+        return jsonify(result)
+    finally:
+        conn.close()

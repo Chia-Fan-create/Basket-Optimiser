@@ -4,28 +4,20 @@
 
 -- name: spending_cte
 -- Shared subquery for spending analytics: aggregate by user, month, category
--- Referenced by monthly, categories, and summary queries
+-- Now reads from purchases + purchase_items (price snapshot at purchase time)
+-- instead of list_items + price_records (which get deleted on Clear)
 SELECT
-    sl.user_id,
-    YEAR(li.purchased_at)  AS purchase_year,
-    MONTH(li.purchased_at) AS purchase_month,
+    p.user_id,
+    YEAR(p.purchased_at)  AS purchase_year,
+    MONTH(p.purchased_at) AS purchase_month,
     c.name AS category_name,
-    COUNT(li.list_item_id) AS items_bought,
-    SUM(pr.price * li.quantity) AS total_spent
-FROM list_items li
-INNER JOIN shopping_lists sl ON li.list_id = sl.list_id
-INNER JOIN product_variants pv ON li.variant_id = pv.variant_id
-INNER JOIN products p ON pv.product_id = p.product_id
-LEFT JOIN categories c ON p.category_id = c.category_id
-INNER JOIN (
-    SELECT variant_id, MAX(record_id) AS latest_record_id
-    FROM price_records
-    GROUP BY variant_id
-) latest ON pv.variant_id = latest.variant_id
-INNER JOIN price_records pr ON pr.record_id = latest.latest_record_id
-WHERE li.is_purchased = TRUE
-  AND li.purchased_at IS NOT NULL
-GROUP BY sl.user_id, purchase_year, purchase_month, c.name;
+    COUNT(pi.item_id) AS items_bought,
+    SUM(pi.price * pi.quantity) AS total_spent
+FROM purchase_items pi
+INNER JOIN purchases p ON pi.purchase_id = p.purchase_id
+INNER JOIN products prod ON pi.product_id = prod.product_id
+LEFT JOIN categories c ON prod.category_id = c.category_id
+GROUP BY p.user_id, purchase_year, purchase_month, c.name;
 
 -- name: get_monthly
 -- Note: {spending_cte} is replaced by spending_cte content at runtime
@@ -67,3 +59,22 @@ WHERE user_id = %s
 GROUP BY category_name
 ORDER BY amount DESC
 LIMIT 1;
+
+-- name: get_purchase_history
+-- List all purchases for a user (most recent first)
+SELECT p.purchase_id, p.purchased_at, p.total_amount, p.store,
+       (SELECT COUNT(*) FROM purchase_items pi WHERE pi.purchase_id = p.purchase_id) AS item_count
+FROM purchases p
+WHERE p.user_id = %s
+ORDER BY p.purchased_at DESC;
+
+-- name: get_purchase_detail
+-- Get items for a specific purchase
+SELECT pi.item_id, pi.product_id, prod.name AS product_name,
+       pi.quantity, pi.price, pi.unit_price,
+       c.name AS category
+FROM purchase_items pi
+INNER JOIN products prod ON pi.product_id = prod.product_id
+LEFT JOIN categories c ON prod.category_id = c.category_id
+WHERE pi.purchase_id = %s
+ORDER BY prod.name;
