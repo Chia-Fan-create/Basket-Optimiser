@@ -1,0 +1,19 @@
+# .gitignore
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.env
+.pytest_cache/
+
+# Node
+node_modules/
+build/
+
+# OS
+.DS_Store
+
+# Internal docs (not pushed to remote)
+backend/docs/
