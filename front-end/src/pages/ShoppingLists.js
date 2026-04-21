@@ -270,7 +270,7 @@ export default function ShoppingListsPage({ onNavigate }) {
                     <span className="li-icon">{item.icon ?? '🛒'}</span>
                     <div className="li-info">
                       <span className="li-name">{productName}</span>
-                      <span className="li-detail">Qty: {qty} · {item.unit}</span>
+                      <span className="li-detail">Qty: {qty}</span>
                     </div>
                     <div className="li-price">
                       <span className="li-bp">${price ? (price * qty).toFixed(2) : '—'}</span>
