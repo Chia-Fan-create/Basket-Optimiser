@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PlusSvg } from '../components/Icons';
-import { getInventory, dismissInventoryItem, addInventoryItem } from '../api';
+import { getInventory, dismissInventoryItem, deleteInventoryItem, addInventoryItem } from '../api';
 
 // Normalize backend field names to what the UI expects
 // backend: inventory_id, days_left, quantity (string "2 gal"), product_name
@@ -54,6 +54,15 @@ export default function InventoryPage({ onNavigate }) {
     });
   };
 
+  const handleDeleteInventory = (id, productName) => {
+    if (!window.confirm(`Permanently delete "${productName}" from inventory?`)) return;
+    setInventory(prev => prev.filter(i => i.id !== id));
+    deleteInventoryItem(id).catch(err => {
+      setError(err.message);
+      getInventory().then(data => setInventory(data.map(normalizeItem))).catch(() => {});
+    });
+  };
+
   const handleAddItem = () => {
     if (!addForm.product_id || !addForm.qty || !addForm.consumptionDays) return;
     setAddSubmitting(true);
@@ -101,6 +110,7 @@ export default function InventoryPage({ onNavigate }) {
               </div>
               <button className="btn-sm" onClick={() => onNavigate('lists')}>+ Add to List</button>
               <button className="btn-dismiss" onClick={() => handleDismiss(item.id)}>Dismiss</button>
+              <button className="btn-dismiss" onClick={() => handleDeleteInventory(item.id, item.product)} style={{ color: '#c0392b' }}>Delete</button>
             </div>
           ))}
         </div>
@@ -121,6 +131,7 @@ export default function InventoryPage({ onNavigate }) {
               </div>
               <span className="inv-days">{item.daysLeft} days left</span>
             </div>
+            <button className="btn-dismiss" onClick={() => handleDeleteInventory(item.id, item.product)} style={{ color: '#c0392b' }}>Delete</button>
           </div>
         ))}
         {ok.length === 0 && low.length === 0 && (
