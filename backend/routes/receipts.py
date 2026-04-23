@@ -68,8 +68,8 @@ def process_receipt():
 
                     product_name = item.get("product", "")
                     price = item.get("price", 0)
-                    item_unit_price = item.get("unit_price") or (round(price / qty, 4) if qty else price)
                     qty = item.get("qty", 1)
+                    item_unit_price = item.get("unit_price") or (round(price / qty, 4) if qty else price)
 
                     # Extract first word(s) as search keyword (e.g. "Whole Milk 1 Gal" → "Whole Milk")
                     keyword = _extract_keyword(product_name)
