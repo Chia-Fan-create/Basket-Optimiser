@@ -169,6 +169,19 @@ export async function clearPurchasedItems(listId) {
   return apiFetch(`/lists/${listId}/clear`, { method: 'POST' });
 }
 
+export async function renameList(listId, name) {
+  if (USE_MOCK) return { success: true, list_id: listId, name };
+  return apiFetch(`/lists/${listId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ name }),
+  });
+}
+
+export async function deleteList(listId) {
+  if (USE_MOCK) return { success: true, deleted: true };
+  return apiFetch(`/lists/${listId}`, { method: 'DELETE' });
+}
+
 // --- Inventory ---
 export async function getInventory() {
   if (USE_MOCK) return MOCK_INVENTORY;
@@ -186,6 +199,11 @@ export async function addInventoryItem(data) {
 export async function dismissInventoryItem(inventoryId) {
   if (USE_MOCK) return { success: true, inventory_id: inventoryId, dismissed: true };
   return apiFetch(`/inventory/${inventoryId}/dismiss`, { method: 'PATCH' });
+}
+
+export async function deleteInventoryItem(inventoryId) {
+  if (USE_MOCK) return { success: true, deleted: true };
+  return apiFetch(`/inventory/${inventoryId}`, { method: 'DELETE' });
 }
 
 // --- Alerts ---
@@ -210,6 +228,24 @@ export async function createAlert(productId, targetPrice) {
 export async function deleteAlert(alertId) {
   if (USE_MOCK) return { success: true, deleted: true };
   return apiFetch(`/alerts/${alertId}`, { method: 'DELETE' });
+}
+
+export async function updateAlert(alertId, data) {
+  if (USE_MOCK) return { success: true, alert_id: alertId };
+  return apiFetch(`/alerts/${alertId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function markTodoDone(todoId) {
+  if (USE_MOCK) return { success: true, todo_id: todoId, is_done: true };
+  return apiFetch(`/todos/${todoId}`, { method: 'PATCH' });
+}
+
+export async function deleteTodo(todoId) {
+  if (USE_MOCK) return { success: true, deleted: true };
+  return apiFetch(`/todos/${todoId}`, { method: 'DELETE' });
 }
 
 // --- Receipt OCR ---
