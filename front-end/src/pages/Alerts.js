@@ -139,7 +139,25 @@ export default function AlertsPage() {
                 <span className="alert-detail">Dropped to <strong style={{ color: 'var(--green)' }}>${a.current_price < 1 ? a.current_price.toFixed(3) : a.current_price.toFixed(2)}</strong> at <strong style={{ color: a.triggered_store_color || STORE_COLORS[a.triggered_store] }}>{a.triggered_store}</strong></span>
                 {a.triggered_at && <span className="alert-time">Triggered {new Date(a.triggered_at).toLocaleDateString()}</span>}
               </div>
-              <div className="alert-target"><span className="at-label">Target</span><span className="at-price">${a.target_price.toFixed(2)}</span></div>
+              <div className="alert-target">
+                <span className="at-label">Target</span>
+                {editingId === a.alert_id ? (
+                  <span style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                    <span style={{ fontSize: 13, color: 'var(--brown)' }}>$</span>
+                    <input
+                      autoFocus
+                      type="number" step="0.01" value={editPrice}
+                      onChange={e => setEditPrice(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') handleUpdatePrice(a.alert_id); if (e.key === 'Escape') setEditingId(null); }}
+                      style={{ width: 70, padding: '2px 6px', border: '1px solid var(--sand)', borderRadius: 6, fontSize: 13, fontFamily: 'Outfit, sans-serif' }}
+                    />
+                    <button onClick={() => handleUpdatePrice(a.alert_id)} style={{ background: 'var(--green)', color: '#fff', border: 'none', borderRadius: 4, padding: '2px 8px', fontSize: 12, cursor: 'pointer' }}>✓</button>
+                    <button onClick={() => setEditingId(null)} style={{ background: 'none', border: 'none', padding: '2px 4px', fontSize: 12, cursor: 'pointer', color: 'var(--text-muted)' }}>✕</button>
+                  </span>
+                ) : (
+                  <span className="at-price" onClick={() => { setEditingId(a.alert_id); setEditPrice(a.target_price.toFixed(2)); }} style={{ cursor: 'pointer' }} title="Click to edit">${a.target_price.toFixed(2)} ✎</span>
+                )}
+              </div>
               <button className="ac-dismiss" onClick={() => handleDelete(a.alert_id)} title="Delete alert">✕</button>
             </div>
           ))}
