@@ -106,7 +106,7 @@ npm install
 ```bash
 cd backend
 source venv/bin/activate
-python3 app.py          # Runs on http://localhost:50123
+python3 app.py 50123          # Runs on http://localhost:50123
 ```
 
 ### Start the Frontend
