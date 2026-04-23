@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BoltSvg, CheckSvg } from '../components/Icons';
 import { STORE_COLORS } from '../data/mockData';
-import { getProducts, getAlerts, createAlert, deleteAlert } from '../api';
+import { getProducts, getAlerts, createAlert, deleteAlert, updateAlert, markTodoDone, deleteTodo } from '../api';
 
 export default function AlertsPage() {
   const [show, setShow] = useState(false);
@@ -13,6 +13,9 @@ export default function AlertsPage() {
   const [newProductId, setNewProductId] = useState('');
   const [newTargetPrice, setNewTargetPrice] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [editPrice, setEditPrice] = useState('');
+  const [dismissedTodos, setDismissedTodos] = useState(new Set());
 
   useEffect(() => { setTimeout(() => setShow(true), 50); }, []);
 
@@ -43,6 +46,32 @@ export default function AlertsPage() {
     deleteAlert(alertId).then(() => loadData()).catch(err => setError(err.message));
   };
 
+  const handleUpdatePrice = (alertId) => {
+    const price = parseFloat(editPrice);
+    if (!price || price <= 0) return;
+    updateAlert(alertId, { target_price: price })
+      .then(() => { setEditingId(null); setEditPrice(''); loadData(); })
+      .catch(err => setError(err.message));
+  };
+
+  const handleToggleActive = (alertId, currentlyActive) => {
+    updateAlert(alertId, { is_active: !currentlyActive })
+      .then(() => loadData())
+      .catch(err => setError(err.message));
+  };
+
+  const handleTodoDone = (todoId) => {
+    markTodoDone(todoId)
+      .then(() => setSmartAlerts(prev => prev.filter(a => a.alert_id !== todoId)))
+      .catch(err => setError(err.message));
+  };
+
+  const handleTodoDismiss = (todoId) => {
+    deleteTodo(todoId)
+      .then(() => setDismissedTodos(prev => new Set([...prev, todoId])))
+      .catch(err => setError(err.message));
+  };
+
   if (loading) return <div className="loading">Loading...</div>;
   if (error) return <div className="error">{error}</div>;
 
@@ -70,24 +99,32 @@ export default function AlertsPage() {
         <div className="alert-section">
           <h3 className="alert-sec-title"><BoltSvg /> Smart Alerts</h3>
           <p className="alert-sec-sub">Automatically detected price drops</p>
-          {smartAlerts.map(a => (
-            <div key={a.alert_id} className="alert-row smart">
-              <span className="alert-icon">📉</span>
-              <div className="alert-info">
-                <span className="alert-name">{a.product_name}</span>
-                <span className="alert-detail">
-                  Dropped <strong style={{ color: 'var(--green)' }}>{a.drop_pct}%</strong> to <strong>${a.current_price < 1 ? a.current_price.toFixed(3) : a.current_price.toFixed(2)}</strong> at <strong style={{ color: a.store_color || STORE_COLORS[a.store] }}>{a.store}</strong>
-                  {a.deal_still_valid != null && (
-                    <span style={{ marginLeft: 8, fontSize: 12, color: a.deal_still_valid ? 'var(--green)' : '#b5651d' }}>
-                      {a.deal_still_valid ? '· Deal still valid' : '· Price recovered'}
-                    </span>
-                  )}
-                </span>
-                {a.detected_at && <span className="alert-time">Detected {new Date(a.detected_at).toLocaleDateString()}</span>}
+          {smartAlerts.map(a => {
+            const isDismissed = dismissedTodos.has(a.alert_id);
+            return (
+              <div key={a.alert_id} className="alert-row smart" style={isDismissed ? { opacity: 0.45 } : {}}>
+                <span className="alert-icon">📉</span>
+                <div className="alert-info">
+                  <span className="alert-name">{a.product_name}{isDismissed && <span style={{ marginLeft: 8, fontSize: 11, color: 'var(--text-muted)' }}>Dismissed</span>}</span>
+                  <span className="alert-detail">
+                    Dropped <strong style={{ color: 'var(--green)' }}>{a.drop_pct}%</strong> to <strong>${a.current_price < 1 ? a.current_price.toFixed(3) : a.current_price.toFixed(2)}</strong> at <strong style={{ color: a.store_color || STORE_COLORS[a.store] }}>{a.store}</strong>
+                    {a.deal_still_valid != null && (
+                      <span style={{ marginLeft: 8, fontSize: 12, color: a.deal_still_valid ? 'var(--green)' : '#b5651d' }}>
+                        {a.deal_still_valid ? '· Deal still valid' : '· Price recovered'}
+                      </span>
+                    )}
+                  </span>
+                  {a.detected_at && <span className="alert-time">Detected {new Date(a.detected_at).toLocaleDateString()}</span>}
+                </div>
+                {!isDismissed && (
+                  <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                    <button className="btn-sm" onClick={() => handleTodoDone(a.alert_id)} style={{ fontSize: 12, padding: '4px 10px', background: 'var(--green)', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'Outfit, sans-serif' }}>✓ Done</button>
+                    <button className="btn-sm" onClick={() => handleTodoDismiss(a.alert_id)} style={{ fontSize: 12, padding: '4px 10px', background: 'none', color: 'var(--text-muted)', border: '1px solid var(--sand)', borderRadius: 6, cursor: 'pointer', fontFamily: 'Outfit, sans-serif' }}>Dismiss</button>
+                  </div>
+                )}
               </div>
-              <span className="alert-badge smart">⚡ Smart</span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -117,8 +154,26 @@ export default function AlertsPage() {
           <div key={a.alert_id} className="alert-row">
             <span className="alert-icon">🔔</span>
             <div className="alert-info"><span className="alert-name">{a.product_name}</span><span className="alert-detail">Current: ${a.current_price != null ? (a.current_price < 1 ? a.current_price.toFixed(3) : a.current_price.toFixed(2)) : '—'}</span></div>
-            <div className="alert-target"><span className="at-label">Target</span><span className="at-price">${a.target_price.toFixed(2)}</span></div>
-            {a.current_price != null && (
+            <div className="alert-target">
+              <span className="at-label">Target</span>
+              {editingId === a.alert_id ? (
+                <span style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                  <span style={{ fontSize: 13, color: 'var(--brown)' }}>$</span>
+                  <input
+                    autoFocus
+                    type="number" step="0.01" value={editPrice}
+                    onChange={e => setEditPrice(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') handleUpdatePrice(a.alert_id); if (e.key === 'Escape') setEditingId(null); }}
+                    style={{ width: 70, padding: '2px 6px', border: '1px solid var(--sand)', borderRadius: 6, fontSize: 13, fontFamily: 'Outfit, sans-serif' }}
+                  />
+                  <button onClick={() => handleUpdatePrice(a.alert_id)} style={{ background: 'var(--green)', color: '#fff', border: 'none', borderRadius: 4, padding: '2px 8px', fontSize: 12, cursor: 'pointer' }}>✓</button>
+                  <button onClick={() => setEditingId(null)} style={{ background: 'none', border: 'none', padding: '2px 4px', fontSize: 12, cursor: 'pointer', color: 'var(--text-muted)' }}>✕</button>
+                </span>
+              ) : (
+                <span className="at-price" onClick={() => { setEditingId(a.alert_id); setEditPrice(a.target_price.toFixed(2)); }} style={{ cursor: 'pointer' }} title="Click to edit">${a.target_price.toFixed(2)} ✎</span>
+              )}
+            </div>
+            {a.current_price != null && editingId !== a.alert_id && (
               <div className="alert-prog">
                 <div className="ap-bar"><div className="ap-fill" style={{ width: `${Math.min((a.target_price / a.current_price) * 100, 100)}%` }} /></div>
                 <span className="ap-text">${(a.current_price - a.target_price).toFixed(2)} away</span>
