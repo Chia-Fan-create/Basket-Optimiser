@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PlusSvg, CheckSvg, CameraSvg, ArrowR } from '../components/Icons';
 import { STORE_COLORS } from '../data/mockData';
-import { getLists, getListDetail, createList, addListItem, deleteListItem, clearPurchasedItems, updateListItem, processReceipt, getProducts, getComparison } from '../api';
+import { getLists, getListDetail, createList, renameList, deleteList, addListItem, deleteListItem, clearPurchasedItems, updateListItem, processReceipt, getProducts, getComparison } from '../api';
 
 export default function ShoppingListsPage({ onNavigate }) {
   const [show, setShow] = useState(false);
@@ -27,6 +27,12 @@ export default function ShoppingListsPage({ onNavigate }) {
   const [ocrChecked, setOcrChecked] = useState({});
   const [ocrResults, setOcrResults] = useState([]);
   const [ocrSubmitting, setOcrSubmitting] = useState(false);
+
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [renameValue, setRenameValue] = useState('');
+
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createValue, setCreateValue] = useState('');
 
   useEffect(() => { setTimeout(() => setShow(true), 50); }, []);
 
@@ -54,15 +60,44 @@ export default function ShoppingListsPage({ onNavigate }) {
   }, [activeListId]);
 
   const handleCreateList = () => {
-    const name = prompt('List name:');
-    if (!name) return;
-    createList(name)
+    const trimmed = createValue.trim();
+    if (!trimmed) return;
+    createList(trimmed)
       .then(res => {
         const newId = res.list_id;
+        setCreateOpen(false);
+        setCreateValue('');
         return getLists().then(data => {
           setListMetas(data);
           setActiveListId(newId);
         });
+      })
+      .catch(err => setError(err.message));
+  };
+
+  const handleRenameList = () => {
+    const trimmed = renameValue.trim();
+    if (!trimmed) return;
+    renameList(activeListId, trimmed)
+      .then(() => {
+        setListMetas(prev => prev.map(l =>
+          (l.list_id ?? l.id) === activeListId ? { ...l, name: trimmed } : l
+        ));
+        setActiveDetail(prev => prev ? { ...prev, name: trimmed } : prev);
+        setRenameOpen(false);
+      })
+      .catch(err => setError(err.message));
+  };
+
+  const handleDeleteList = () => {
+    if (!window.confirm('Delete this list? All items in it will be removed.')) return;
+    deleteList(activeListId)
+      .then(() => getLists())
+      .then(data => {
+        setListMetas(data);
+        const firstId = data[0]?.list_id ?? data[0]?.id;
+        setActiveListId(firstId ?? null);
+        if (!firstId) setActiveDetail(null);
       })
       .catch(err => setError(err.message));
   };
@@ -206,7 +241,7 @@ export default function ShoppingListsPage({ onNavigate }) {
             </button>
           );
         })}
-        <button className="ltab2 add-ltab" onClick={handleCreateList}><PlusSvg /> New List</button>
+        <button className="ltab2 add-ltab" onClick={() => { setCreateValue(''); setCreateOpen(true); }}><PlusSvg /> New List</button>
       </div>
 
       {loadingDetail ? (
@@ -241,6 +276,18 @@ export default function ShoppingListsPage({ onNavigate }) {
               <div className="list-card-head">
                 <h3>{activeDetail.name}</h3>
                 <span className="list-cnt">{items.length} items</span>
+                <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+                  <button
+                    title="Rename list"
+                    onClick={() => { setRenameValue(activeDetail.name); setRenameOpen(true); }}
+                    style={{ background: 'none', border: '1px solid var(--sand)', borderRadius: 6, cursor: 'pointer', padding: '4px 8px', fontSize: 13, color: 'var(--brown)', fontFamily: 'Outfit, sans-serif' }}
+                  >✎ Rename</button>
+                  <button
+                    title="Delete list"
+                    onClick={handleDeleteList}
+                    style={{ background: 'none', border: '1px solid var(--sand)', borderRadius: 6, cursor: 'pointer', padding: '4px 8px', fontSize: 13, color: '#c0392b', fontFamily: 'Outfit, sans-serif' }}
+                  >🗑 Delete</button>
+                </div>
               </div>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '-4px 0 8px', fontFamily: 'Outfit, sans-serif' }}>
                 Check items off as you shop — checked items count toward your spending analytics.
@@ -294,6 +341,53 @@ export default function ShoppingListsPage({ onNavigate }) {
             </div>
           )}
         </>
+      )}
+
+      {/* Rename List Modal */}
+      {renameOpen && (
+        <div className="ocr-modal">
+          <div className="ocr-card" style={{ maxWidth: 400 }}>
+            <div className="ocr-head">
+              <h3>Rename List</h3>
+              <button className="ocr-close" onClick={() => setRenameOpen(false)}>✕</button>
+            </div>
+            <div style={{ padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <input
+                autoFocus
+                value={renameValue}
+                onChange={e => setRenameValue(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') handleRenameList(); }}
+                maxLength={100}
+                style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--sand)', borderRadius: 10, fontSize: 14, fontFamily: 'Outfit, sans-serif', boxSizing: 'border-box' }}
+              />
+              <button className="btn-primary" onClick={handleRenameList} disabled={!renameValue.trim()}>Save</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create List Modal */}
+      {createOpen && (
+        <div className="ocr-modal">
+          <div className="ocr-card" style={{ maxWidth: 400 }}>
+            <div className="ocr-head">
+              <h3>New Shopping List</h3>
+              <button className="ocr-close" onClick={() => setCreateOpen(false)}>✕</button>
+            </div>
+            <div style={{ padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <input
+                autoFocus
+                placeholder="List name"
+                value={createValue}
+                onChange={e => setCreateValue(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') handleCreateList(); }}
+                maxLength={100}
+                style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--sand)', borderRadius: 10, fontSize: 14, fontFamily: 'Outfit, sans-serif', boxSizing: 'border-box' }}
+              />
+              <button className="btn-primary" onClick={handleCreateList} disabled={!createValue.trim()}>Create</button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Add Item Modal */}
