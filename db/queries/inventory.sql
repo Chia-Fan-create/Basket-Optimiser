@@ -42,3 +42,7 @@ VALUES (%s, %s, %s, %s, %s, %s);
 UPDATE inventory_items
 SET is_dismissed = TRUE
 WHERE inventory_id = %s AND user_id = %s;
+
+-- name: delete_item
+DELETE FROM inventory_items
+WHERE inventory_id = %s AND user_id = %s;

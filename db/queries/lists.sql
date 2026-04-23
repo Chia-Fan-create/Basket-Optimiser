@@ -117,3 +117,12 @@ UPDATE shopping_lists SET estimated_total = 0.00 WHERE list_id = %s;
 SELECT list_item_id, is_purchased, purchased_at
 FROM list_items
 WHERE list_item_id = %s;
+
+-- name: rename_list
+UPDATE shopping_lists
+SET name = %s
+WHERE list_id = %s AND user_id = %s;
+
+-- name: delete_list
+DELETE FROM shopping_lists
+WHERE list_id = %s AND user_id = %s;
