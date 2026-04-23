@@ -13,6 +13,7 @@ from routes.alerts import alerts_bp
 from routes.insight import insight_bp
 from routes.receipts import receipts_bp
 from routes.scrape import scrape_bp
+from routes.todos import todos_bp
 
 app = Flask(__name__)
 CORS(app)
@@ -30,6 +31,7 @@ app.register_blueprint(alerts_bp)
 app.register_blueprint(insight_bp)
 app.register_blueprint(receipts_bp)
 app.register_blueprint(scrape_bp)
+app.register_blueprint(todos_bp)
 
 
 @app.errorhandler(404)

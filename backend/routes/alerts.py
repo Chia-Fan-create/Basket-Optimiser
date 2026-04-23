@@ -76,7 +76,7 @@ def get_alerts():
                             cur.execute(
                                 get_query("alerts", "insert_smart_todo"),
                                 (g.user_id, variant["variant_id"],
-                                 f"Price dropped {drop_pct}%% — consider buying now",
+                                 f"Price dropped {drop_pct}% — consider buying now",
                                  latest_price, avg_price),
                             )
                             todo_id = cur.lastrowid
@@ -138,6 +138,41 @@ def create_alert():
             "alert_id": alert_id,
             "message": f"Alert set for {prod['name']} at ${target_price:.2f}",
         }), 201
+    finally:
+        conn.close()
+
+
+@alerts_bp.route("/api/alerts/<int:alert_id>", methods=["PATCH"])
+@require_auth
+def update_alert(alert_id):
+    data = request.get_json()
+
+    sets = []
+    params = []
+    if "target_price" in data:
+        tp = data["target_price"]
+        if not isinstance(tp, (int, float)) or tp <= 0:
+            return jsonify({"error": True, "message": "target_price must be a positive number"}), 400
+        sets.append("target_price = %s")
+        params.append(tp)
+    if "is_active" in data:
+        sets.append("is_active = %s")
+        params.append(bool(data["is_active"]))
+
+    if not sets:
+        return jsonify({"error": True, "message": "No fields to update"}), 400
+
+    params.extend([alert_id, g.user_id])
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                f"UPDATE price_alerts SET {', '.join(sets)} WHERE alert_id = %s AND user_id = %s",
+                params,
+            )
+            if cur.rowcount == 0:
+                return jsonify({"error": True, "message": "Alert not found"}), 404
+        return jsonify({"success": True, "alert_id": alert_id})
     finally:
         conn.close()
 

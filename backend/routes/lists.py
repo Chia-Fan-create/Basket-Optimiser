@@ -133,6 +133,41 @@ def create_list():
         conn.close()
 
 
+@lists_bp.route("/api/lists/<int:list_id>", methods=["PATCH"])
+@require_auth
+def rename_list(list_id):
+    data = request.get_json()
+    name = data.get("name", "").strip() if data else ""
+    if not name:
+        return jsonify({"error": True, "message": "name is required"}), 400
+    if len(name) > 100:
+        return jsonify({"error": True, "message": "name must be 100 characters or fewer"}), 400
+
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(get_query("lists", "rename_list"), (name, list_id, g.user_id))
+            if cur.rowcount == 0:
+                return jsonify({"error": True, "message": "List not found"}), 404
+        return jsonify({"success": True, "list_id": list_id, "name": name})
+    finally:
+        conn.close()
+
+
+@lists_bp.route("/api/lists/<int:list_id>", methods=["DELETE"])
+@require_auth
+def delete_list(list_id):
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(get_query("lists", "delete_list"), (list_id, g.user_id))
+            if cur.rowcount == 0:
+                return jsonify({"error": True, "message": "List not found"}), 404
+        return jsonify({"success": True, "deleted": True})
+    finally:
+        conn.close()
+
+
 @lists_bp.route("/api/lists/<int:list_id>/items", methods=["POST"])
 @require_auth
 def add_list_item(list_id):

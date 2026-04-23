@@ -98,3 +98,17 @@ def dismiss_inventory(inv_id):
         return jsonify({"success": True, "inventory_id": inv_id, "dismissed": True})
     finally:
         conn.close()
+
+
+@inventory_bp.route("/api/inventory/<int:inv_id>", methods=["DELETE"])
+@require_auth
+def delete_inventory(inv_id):
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(get_query("inventory", "delete_item"), (inv_id, g.user_id))
+            if cur.rowcount == 0:
+                return jsonify({"error": True, "message": "Inventory item not found"}), 404
+        return jsonify({"success": True, "deleted": True})
+    finally:
+        conn.close()
